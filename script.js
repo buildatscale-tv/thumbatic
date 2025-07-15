@@ -8,8 +8,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const logoTypeSelect = document.getElementById('logoType');
     const logoLibraryCheckboxes = document.querySelectorAll('#logoLibraryGroup input[type="checkbox"]');
     const randomizeLogosBtn = document.getElementById('randomizeLogos');
+    const logoSizeSlider = document.getElementById('logoSize');
+    const logoSizeValue = document.getElementById('logoSizeValue');
     const decorativeIconsSelect = document.getElementById('decorativeIcons');
     const randomizeIconsBtn = document.getElementById('randomizeIcons');
+    const iconSizeSlider = document.getElementById('iconSize');
+    const iconSizeValue = document.getElementById('iconSizeValue');
     const themeSelect = document.getElementById('theme');
     const cornerStyleSelect = document.getElementById('cornerStyle');
     const slideTitleBefore = document.getElementById('slideTitleBefore');
@@ -85,6 +89,42 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         randomizeLogoPositions();
+        updateLogoSizes();
+    }
+
+    // Check if position is in center exclusion zone
+    function isInCenterExclusionZone(x, y) {
+        const slideWidth = 640; // Current slide width
+        const slideHeight = 360; // Current slide height
+        const exclusionWidth = 450;
+        const exclusionHeight = 200;
+        
+        const exclusionLeft = (slideWidth - exclusionWidth) / 2;
+        const exclusionTop = (slideHeight - exclusionHeight) / 2;
+        const exclusionRight = exclusionLeft + exclusionWidth;
+        const exclusionBottom = exclusionTop + exclusionHeight;
+        
+        // Convert percentage to pixels
+        const pixelX = (x / 100) * slideWidth;
+        const pixelY = (y / 100) * slideHeight;
+        
+        return pixelX >= exclusionLeft && pixelX <= exclusionRight && 
+               pixelY >= exclusionTop && pixelY <= exclusionBottom;
+    }
+
+    // Generate safe position outside center exclusion zone
+    function generateSafePosition() {
+        let x, y;
+        let attempts = 0;
+        const maxAttempts = 50;
+        
+        do {
+            x = Math.random() * 80 + 10; // 10-90%
+            y = Math.random() * 80 + 10; // 10-90%
+            attempts++;
+        } while (isInCenterExclusionZone(x, y) && attempts < maxAttempts);
+        
+        return { x, y };
     }
 
     // Randomize logo positions and rotations
@@ -92,8 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const logos = multipleLogosContainer.querySelectorAll('.random-logo');
         
         logos.forEach(logo => {
-            const x = Math.random() * 80 + 10; // 10-90%
-            const y = Math.random() * 80 + 10; // 10-90%
+            const { x, y } = generateSafePosition();
             const rotation = Math.random() * 30 - 15; // -15 to 15 degrees
             const scale = Math.random() * 0.4 + 0.8; // 0.8 to 1.2
             
@@ -165,13 +204,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Randomize icon positions, sizes, and rotations
     function randomizeIconPositions() {
         const icons = decorativeIconsContainer.querySelectorAll('.random-icon');
+        const baseSize = parseInt(iconSizeSlider.value);
         
         icons.forEach(icon => {
             const x = Math.random() * 90 + 5; // 5-95%
             const y = Math.random() * 90 + 5; // 5-95%
             const rotation = Math.random() * 360; // 0-360 degrees
             const scale = Math.random() * 0.6 + 0.4; // 0.4 to 1.0
-            const size = Math.floor(Math.random() * 20) + 12; // 12-32px
+            const size = baseSize + Math.floor(Math.random() * 8) - 4; // ±4px variation
             
             icon.style.left = `${x}%`;
             icon.style.top = `${y}%`;
@@ -179,6 +219,85 @@ document.addEventListener('DOMContentLoaded', function() {
             icon.style.width = `${size}px`;
             icon.style.height = `${size}px`;
         });
+    }
+
+    // Update logo sizes
+    function updateLogoSizes() {
+        const logos = multipleLogosContainer.querySelectorAll('.random-logo');
+        const size = parseInt(logoSizeSlider.value);
+        
+        logos.forEach(logo => {
+            logo.style.width = `${size}px`;
+            logo.style.height = `${size}px`;
+        });
+        
+        logoSizeValue.textContent = `${size}px`;
+    }
+
+    // Update icon sizes
+    function updateIconSizes() {
+        const icons = decorativeIconsContainer.querySelectorAll('.random-icon');
+        const baseSize = parseInt(iconSizeSlider.value);
+        
+        icons.forEach(icon => {
+            const currentSize = baseSize + Math.floor(Math.random() * 8) - 4; // ±4px variation
+            icon.style.width = `${currentSize}px`;
+            icon.style.height = `${currentSize}px`;
+        });
+        
+        iconSizeValue.textContent = `${baseSize}px`;
+    }
+
+    // Drag functionality
+    let isDragging = false;
+    let dragElement = null;
+    let offset = { x: 0, y: 0 };
+
+    function initializeDragAndDrop() {
+        slide.addEventListener('mousedown', handleMouseDown);
+        slide.addEventListener('mousemove', handleMouseMove);
+        slide.addEventListener('mouseup', handleMouseUp);
+        slide.addEventListener('mouseleave', handleMouseUp);
+    }
+
+    function handleMouseDown(e) {
+        const target = e.target.closest('.random-logo, .random-icon');
+        if (!target) return;
+
+        isDragging = true;
+        dragElement = target;
+        
+        const rect = slide.getBoundingClientRect();
+        const elementRect = target.getBoundingClientRect();
+        
+        offset.x = e.clientX - elementRect.left - elementRect.width / 2;
+        offset.y = e.clientY - elementRect.top - elementRect.height / 2;
+        
+        target.style.zIndex = '1000';
+        e.preventDefault();
+    }
+
+    function handleMouseMove(e) {
+        if (!isDragging || !dragElement) return;
+
+        const rect = slide.getBoundingClientRect();
+        const x = ((e.clientX - rect.left - offset.x) / rect.width) * 100;
+        const y = ((e.clientY - rect.top - offset.y) / rect.height) * 100;
+
+        // Constrain within slide boundaries
+        const constrainedX = Math.max(5, Math.min(95, x));
+        const constrainedY = Math.max(5, Math.min(95, y));
+
+        dragElement.style.left = `${constrainedX}%`;
+        dragElement.style.top = `${constrainedY}%`;
+    }
+
+    function handleMouseUp(e) {
+        if (isDragging && dragElement) {
+            dragElement.style.zIndex = '';
+            isDragging = false;
+            dragElement = null;
+        }
     }
 
     // Update theme
@@ -222,8 +341,10 @@ document.addEventListener('DOMContentLoaded', function() {
         checkbox.addEventListener('change', updateMultipleLogos);
     });
     randomizeLogosBtn.addEventListener('click', randomizeLogoPositions);
+    logoSizeSlider.addEventListener('input', updateLogoSizes);
     decorativeIconsSelect.addEventListener('change', updateDecorativeIcons);
     randomizeIconsBtn.addEventListener('click', randomizeIconPositions);
+    iconSizeSlider.addEventListener('input', updateIconSizes);
     themeSelect.addEventListener('change', updateTheme);
     cornerStyleSelect.addEventListener('change', updateCornerStyle);
 
@@ -265,4 +386,9 @@ document.addEventListener('DOMContentLoaded', function() {
     updateLogo();
     updateDecorativeIcons();
     updateTheme();
+    initializeDragAndDrop();
+    
+    // Initialize slider values
+    logoSizeValue.textContent = `${logoSizeSlider.value}px`;
+    iconSizeValue.textContent = `${iconSizeSlider.value}px`;
 });

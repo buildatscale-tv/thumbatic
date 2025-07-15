@@ -71,7 +71,7 @@
                     <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg"> GitHub</label>
                     <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/gitlab/gitlab-original.svg"> GitLab</label>
                     <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bitbucket/bitbucket-original.svg"> Bitbucket</label>
-                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg"> AWS</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-plain-wordmark.svg"> AWS</label>
                     <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg"> Azure</label>
                     <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg"> Google Cloud</label>
                     <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/digitalocean/digitalocean-original.svg"> DigitalOcean</label>
@@ -105,6 +105,11 @@
                     <label><input type="checkbox" value="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/claude-ai-icon.png"> Claude AI</label>
                 </div>
                 <button type="button" id="randomizeLogos">Randomize Positions</button>
+                <div class="slider-group">
+                    <label for="logoSize">Logo Size:</label>
+                    <input type="range" id="logoSize" min="16" max="64" value="32" step="2">
+                    <span id="logoSizeValue">32px</span>
+                </div>
             </div>
             <div class="input-group">
                 <label for="theme">Theme:</label>
@@ -132,6 +137,11 @@
                     <option value="mixed">Mixed</option>
                 </select>
                 <button type="button" id="randomizeIcons">Randomize Icons</button>
+                <div class="slider-group">
+                    <label for="iconSize">Icon Size:</label>
+                    <input type="range" id="iconSize" min="8" max="32" value="16" step="2">
+                    <span id="iconSizeValue">16px</span>
+                </div>
             </div>
             <button id="download">Download Slide</button>
         </div>
