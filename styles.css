@@ -564,7 +564,7 @@ body {
     position: absolute;
     width: 32px;
     height: 32px;
-    opacity: 0.6;
+    opacity: 0.8;
     cursor: move;
     pointer-events: auto;
     user-select: none;

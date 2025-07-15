@@ -35,7 +35,7 @@
                 <label for="logoType">Logo Type:</label>
                 <select id="logoType">
                     <option value="url">Custom URL</option>
-                    <option value="library">Logo Library</option>
+                    <option value="library" selected>Logo Library</option>
                 </select>
             </div>
             <div class="input-group" id="logoUrlGroup">
@@ -124,7 +124,7 @@
                 <label for="cornerStyle">Corner Style:</label>
                 <select id="cornerStyle">
                     <option value="rounded">Rounded</option>
-                    <option value="sharp">Sharp</option>
+                    <option value="sharp" selected>Sharp</option>
                 </select>
             </div>
             <div class="input-group">
@@ -134,13 +134,13 @@
                     <option value="tech">Tech Icons</option>
                     <option value="shapes">Geometric Shapes</option>
                     <option value="arrows">Arrows & Lines</option>
-                    <option value="mixed">Mixed</option>
+                    <option value="mixed" selected>Mixed</option>
                 </select>
                 <button type="button" id="randomizeIcons">Randomize Icons</button>
                 <div class="slider-group">
                     <label for="iconSize">Icon Size:</label>
-                    <input type="range" id="iconSize" min="8" max="32" value="16" step="2">
-                    <span id="iconSizeValue">16px</span>
+                    <input type="range" id="iconSize" min="16" max="64" value="24" step="2">
+                    <span id="iconSizeValue">24px</span>
                 </div>
             </div>
             <button id="download">Download Slide</button>

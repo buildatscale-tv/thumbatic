@@ -358,18 +358,24 @@ document.addEventListener('DOMContentLoaded', function() {
             html2canvas(slideElement, {
                 useCORS: true,
                 allowTaint: true,
-                width: 1280,
-                height: 720,
                 scale: 2,
                 logging: false,
                 removeContainer: true,
                 backgroundColor: null
             }).then(function(canvas) {
+                // Create a new canvas with the exact YouTube thumbnail dimensions
+                const targetCanvas = document.createElement('canvas');
+                const targetCtx = targetCanvas.getContext('2d');
+                targetCanvas.width = 1280;
+                targetCanvas.height = 720;
+                
+                // Draw the captured canvas onto the target canvas with proper scaling
+                targetCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, 1280, 720);
                 // Create download link
                 const link = document.createElement('a');
                 const filename = `${titleBeforeInput.value || ''}${titleHighlightInput.value || ''}${titleAfterInput.value || ''}`.replace(/[^a-zA-Z0-9]/g, '-') || 'slide';
                 link.download = `${filename}-intro-slide.png`;
-                link.href = canvas.toDataURL('image/png', 1.0);
+                link.href = targetCanvas.toDataURL('image/png', 1.0);
                 link.click();
             }).catch(function(error) {
                 console.error('Error generating image:', error);
