@@ -94,10 +94,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Check if position is in center exclusion zone
     function isInCenterExclusionZone(x, y) {
-        const slideWidth = 640; // Current slide width
-        const slideHeight = 360; // Current slide height
-        const exclusionWidth = 450;
-        const exclusionHeight = 200;
+        const slideWidth = 1280; // Current slide width
+        const slideHeight = 720; // Current slide height
+        const exclusionWidth = 900; // Scaled up proportionally
+        const exclusionHeight = 400; // Scaled up proportionally
         
         const exclusionLeft = (slideWidth - exclusionWidth) / 2;
         const exclusionTop = (slideHeight - exclusionHeight) / 2;
@@ -368,6 +368,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const targetCtx = targetCanvas.getContext('2d');
                 targetCanvas.width = 1280;
                 targetCanvas.height = 720;
+                
+                // Enable image smoothing for better quality downsampling
+                targetCtx.imageSmoothingEnabled = true;
+                targetCtx.imageSmoothingQuality = 'high';
                 
                 // Draw the captured canvas onto the target canvas with proper scaling
                 targetCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, 1280, 720);

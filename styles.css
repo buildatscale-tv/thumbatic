@@ -88,12 +88,14 @@ body {
 }
 
 .slide {
-    width: 640px;
-    height: 360px;
+    width: 1280px;
+    height: 720px;
     position: relative;
     border-radius: 0;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    transform: scale(0.5);
+    transform-origin: center;
 }
 
 .slide-content {
