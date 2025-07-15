@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Intro Slide Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <h1>YouTube Intro Slide Generator</h1>
+            <div class="input-group">
+                <label for="titleBefore">Title Before:</label>
+                <input type="text" id="titleBefore" value="CLAUDE" placeholder="Text before highlight">
+            </div>
+            <div class="input-group">
+                <label for="titleHighlight">Title Highlight:</label>
+                <input type="text" id="titleHighlight" value="CODE" placeholder="Highlighted text">
+            </div>
+            <div class="input-group">
+                <label for="titleAfter">Title After:</label>
+                <input type="text" id="titleAfter" value="" placeholder="Text after highlight">
+            </div>
+            <div class="input-group">
+                <label for="subtitle">Subtitle:</label>
+                <input type="text" id="subtitle" value="AI-Powered Development Tool" placeholder="Enter subtitle">
+            </div>
+            <div class="input-group">
+                <label for="version">Version/Badge:</label>
+                <input type="text" id="version" value="" placeholder="e.g., 4.0, v2.1">
+            </div>
+            <div class="input-group">
+                <label for="logoType">Logo Type:</label>
+                <select id="logoType">
+                    <option value="url">Custom URL</option>
+                    <option value="library">Logo Library</option>
+                </select>
+            </div>
+            <div class="input-group" id="logoUrlGroup">
+                <label for="logoUrl">Logo URL:</label>
+                <input type="url" id="logoUrl" value="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/claude-ai-icon.png" placeholder="Enter logo URL (SVG or PNG)">
+            </div>
+            <div class="input-group" id="logoLibraryGroup" style="display: none;">
+                <label for="logoLibrary">Select Logos:</label>
+                <div class="logo-checkboxes">
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg"> React</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg"> JavaScript</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg"> TypeScript</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg"> Python</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg"> Node.js</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg"> Vue.js</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angular/angular-original.svg"> Angular</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/svelte/svelte-original.svg"> Svelte</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg"> Next.js</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nuxtjs/nuxtjs-original.svg"> Nuxt.js</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg"> Express</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg"> FastAPI</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/django/django-plain.svg"> Django</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/flask/flask-original.svg"> Flask</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/spring/spring-original.svg"> Spring</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/laravel/laravel-plain.svg"> Laravel</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rails/rails-original-wordmark.svg"> Rails</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg"> Docker</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-plain.svg"> Kubernetes</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jenkins/jenkins-original.svg"> Jenkins</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/terraform/terraform-original.svg"> Terraform</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ansible/ansible-original.svg"> Ansible</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg"> Git</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg"> GitHub</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/gitlab/gitlab-original.svg"> GitLab</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bitbucket/bitbucket-original.svg"> Bitbucket</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg"> AWS</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg"> Azure</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg"> Google Cloud</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/digitalocean/digitalocean-original.svg"> DigitalOcean</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/heroku/heroku-original.svg"> Heroku</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vercel/vercel-original.svg"> Vercel</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/netlify/netlify-original.svg"> Netlify</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg"> Firebase</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/supabase/supabase-original.svg"> Supabase</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg"> MongoDB</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg"> PostgreSQL</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg"> MySQL</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg"> Redis</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/elasticsearch/elasticsearch-original.svg"> Elasticsearch</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/graphql/graphql-plain.svg"> GraphQL</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg"> Figma</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/sketch/sketch-original.svg"> Sketch</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/photoshop/photoshop-plain.svg"> Photoshop</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg"> VS Code</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/webstorm/webstorm-original.svg"> WebStorm</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vim/vim-original.svg"> Vim</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/sass/sass-original.svg"> Sass</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg"> Tailwind CSS</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bootstrap/bootstrap-original.svg"> Bootstrap</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/materialui/materialui-original.svg"> Material UI</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/webpack/webpack-original.svg"> Webpack</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vitejs/vitejs-original.svg"> Vite</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/babel/babel-original.svg"> Babel</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/eslint/eslint-original.svg"> ESLint</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jest/jest-plain.svg"> Jest</label>
+                    <label><input type="checkbox" value="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cypress/cypress-original.svg"> Cypress</label>
+                    <label><input type="checkbox" value="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/claude-ai-icon.png"> Claude AI</label>
+                </div>
+                <button type="button" id="randomizeLogos">Randomize Positions</button>
+            </div>
+            <div class="input-group">
+                <label for="theme">Theme:</label>
+                <select id="theme">
+                    <option value="claude">Claude Code</option>
+                    <option value="tech">Tech Blue</option>
+                    <option value="dark">Dark Mode</option>
+                    <option value="blueprint">Blueprint Build</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="cornerStyle">Corner Style:</label>
+                <select id="cornerStyle">
+                    <option value="rounded">Rounded</option>
+                    <option value="sharp">Sharp</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="decorativeIcons">Decorative Icons:</label>
+                <select id="decorativeIcons">
+                    <option value="none">None</option>
+                    <option value="tech">Tech Icons</option>
+                    <option value="shapes">Geometric Shapes</option>
+                    <option value="arrows">Arrows & Lines</option>
+                    <option value="mixed">Mixed</option>
+                </select>
+                <button type="button" id="randomizeIcons">Randomize Icons</button>
+            </div>
+            <button id="download">Download Slide</button>
+        </div>
+        
+        <div class="preview">
+            <div id="slide" class="slide claude-theme">
+                <div class="slide-content">
+                    <div class="logo-section">
+                        <div class="custom-logo">
+                            <img id="logoImage" src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/claude-ai-icon.png" alt="Logo" width="40" height="40">
+                        </div>
+                    </div>
+                    <div class="multiple-logos" id="multipleLogosContainer"></div>
+                    <div class="text-section">
+                        <div class="title-section">
+                            <span class="title-before" id="slideTitleBefore">CLAUDE</span>
+                            <span class="title-highlight" id="slideTitleHighlight">CODE</span>
+                            <span class="title-after" id="slideTitleAfter"></span>
+                        </div>
+                        <div class="subtitle-wrapper">
+                            <span class="subtitle-text" id="slideSubtitle">AI-Powered Development Tool</span>
+                        </div>
+                        <div class="version-badge" id="slideVersion" style="display: none;"></div>
+                    </div>
+                    <div class="accent-shapes">
+                        <div class="shape shape-1"></div>
+                        <div class="shape shape-2"></div>
+                        <div class="shape shape-3"></div>
+                    </div>
+                    <div class="decorative-icons" id="decorativeIconsContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
