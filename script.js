@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const slideTitleHighlight = document.getElementById('slideTitleHighlight');
     const slideTitleAfter = document.getElementById('slideTitleAfter');
     const slideSubtitle = document.getElementById('slideSubtitle');
-    const slideVersion = document.getElementById('slideVersion');
+    const slideAccentLabel = document.getElementById('slideAccentLabel');
     const logoImage = document.getElementById('logoImage');
     const multipleLogosContainer = document.getElementById('multipleLogosContainer');
     const decorativeIconsContainer = document.getElementById('decorativeIconsContainer');
@@ -34,12 +34,12 @@ document.addEventListener('DOMContentLoaded', function() {
         slideTitleAfter.textContent = titleAfterInput.value || '';
         slideSubtitle.textContent = subtitleInput.value || 'AI-Powered Development Tool';
         
-        // Handle version badge
+        // Handle accent label
         if (versionInput.value) {
-            slideVersion.textContent = versionInput.value;
-            slideVersion.style.display = 'block';
+            slideAccentLabel.textContent = versionInput.value;
+            slideAccentLabel.style.display = 'block';
         } else {
-            slideVersion.style.display = 'none';
+            slideAccentLabel.style.display = 'none';
         }
     }
 

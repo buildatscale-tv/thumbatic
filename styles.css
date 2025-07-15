@@ -106,6 +106,7 @@ body {
     justify-content: center;
     align-items: center;
     padding: 40px;
+    text-align: center;
 }
 
 /* Claude Theme */
@@ -128,7 +129,6 @@ body {
 }
 
 .claude-theme .text-section {
-    text-align: center;
     z-index: 10;
 }
 
@@ -164,7 +164,7 @@ body {
     box-shadow: 0 8px 32px rgba(255, 107, 53, 0.4);
 }
 
-.version-badge {
+.accent-label {
     background: rgba(255, 255, 255, 0.95);
     color: #1a1a2e;
     font-size: 48px;
@@ -175,6 +175,11 @@ body {
     display: inline-block;
     transform: skew(-2deg);
     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    width: fit-content;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%) skew(-2deg);
+    bottom: 120px;
 }
 
 .claude-theme .title-wrapper {
@@ -202,6 +207,7 @@ body {
     border-radius: 12px;
     transform: skew(2deg);
     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    display: inline-block;
 }
 
 .claude-theme .subtitle-text {
@@ -290,6 +296,7 @@ body {
     border-radius: 12px;
     transform: skew(2deg);
     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    display: inline-block;
 }
 
 .tech-theme .subtitle-text {
@@ -335,6 +342,7 @@ body {
     border-radius: 12px;
     transform: skew(2deg);
     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    display: inline-block;
 }
 
 .dark-theme .subtitle-text {
@@ -386,7 +394,6 @@ body {
 }
 
 .blueprint-theme .text-section {
-    text-align: center;
     z-index: 10;
     position: relative;
 }
@@ -405,11 +412,11 @@ body {
     letter-spacing: 3px;
 }
 
-.blueprint-theme .version-badge {
+.blueprint-theme .accent-label {
     background: rgba(255, 255, 255, 0.95);
     color: #1a1a2e;
     border-radius: 0;
-    transform: skew(0deg);
+    transform: translateX(-50%) skew(0deg);
 }
 
 .blueprint-theme .title-wrapper {
@@ -437,6 +444,7 @@ body {
     border-radius: 0;
     transform: skew(0deg);
     box-shadow: 0 8px 24px rgba(251, 191, 36, 0.4);
+    display: inline-block;
 }
 
 .blueprint-theme .subtitle-text {
@@ -460,7 +468,7 @@ body {
     border-radius: 0 !important;
 }
 
-.sharp-corners .version-badge {
+.sharp-corners .accent-label {
     border-radius: 0 !important;
 }
 
