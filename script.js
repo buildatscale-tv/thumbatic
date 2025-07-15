@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const y = Math.random() * 90 + 5; // 5-95%
             const rotation = Math.random() * 360; // 0-360 degrees
             const scale = Math.random() * 0.6 + 0.4; // 0.4 to 1.0
-            const size = baseSize + Math.floor(Math.random() * 8) - 4; // ±4px variation
+            const size = baseSize + Math.floor(Math.random() * 16) - 8; // ±8px variation
             
             icon.style.left = `${x}%`;
             icon.style.top = `${y}%`;
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const baseSize = parseInt(iconSizeSlider.value);
         
         icons.forEach(icon => {
-            const currentSize = baseSize + Math.floor(Math.random() * 8) - 4; // ±4px variation
+            const currentSize = baseSize + Math.floor(Math.random() * 16) - 8; // ±8px variation
             icon.style.width = `${currentSize}px`;
             icon.style.height = `${currentSize}px`;
         });
@@ -401,4 +401,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize slider values
     logoSizeValue.textContent = `${logoSizeSlider.value}px`;
     iconSizeValue.textContent = `${iconSizeSlider.value}px`;
+    
+    // Update existing elements with new sizes
+    updateLogoSizes();
+    updateIconSizes();
 });

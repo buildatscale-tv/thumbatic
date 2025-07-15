@@ -93,7 +93,6 @@ body {
     position: relative;
     border-radius: 0;
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
     transform: scale(0.5);
     transform-origin: center;
 }
@@ -567,8 +566,8 @@ body {
 
 .random-logo {
     position: absolute;
-    width: 64px;
-    height: 64px;
+    width: 128px;
+    height: 128px;
     opacity: 0.8;
     cursor: move;
     pointer-events: auto;
