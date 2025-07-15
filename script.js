@@ -348,45 +348,79 @@ document.addEventListener('DOMContentLoaded', function() {
     themeSelect.addEventListener('change', updateTheme);
     cornerStyleSelect.addEventListener('change', updateCornerStyle);
 
-    // Download functionality
-    downloadBtn.addEventListener('click', function() {
-        // Get slide element
-        const slideElement = document.getElementById('slide');
-        
-        // Use html2canvas library if available, otherwise show message
-        if (typeof html2canvas !== 'undefined') {
-            html2canvas(slideElement, {
-                useCORS: true,
-                allowTaint: true,
-                scale: 2,
-                logging: false,
-                removeContainer: true,
-                backgroundColor: null
-            }).then(function(canvas) {
-                // Create a new canvas with the exact YouTube thumbnail dimensions
-                const targetCanvas = document.createElement('canvas');
-                const targetCtx = targetCanvas.getContext('2d');
-                targetCanvas.width = 1280;
-                targetCanvas.height = 720;
+    // Download functionality using modern-screenshot
+    downloadBtn.addEventListener('click', async function() {
+        try {
+            // Show loading state
+            downloadBtn.textContent = 'Generating...';
+            downloadBtn.disabled = true;
+            
+            // Wait for any images to load
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Get slide element
+            const slideElement = document.getElementById('slide');
+            
+            // Temporarily remove the scale transform for capture
+            const originalTransform = slideElement.style.transform;
+            slideElement.style.transform = 'scale(1)';
+            slideElement.style.transformOrigin = 'top left';
+            
+            // Wait for the DOM to update
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Use modern-screenshot which handles CORS better
+            const canvas = await modernScreenshot.domToCanvas(slideElement, {
+                scale: 4,
+                backgroundColor: null,
+                debug: false
+            });
+            
+            // Restore the original transform
+            slideElement.style.transform = originalTransform;
+            
+            // Create a new canvas with exact YouTube dimensions
+            const targetCanvas = document.createElement('canvas');
+            const targetCtx = targetCanvas.getContext('2d');
+            targetCanvas.width = 1280;
+            targetCanvas.height = 720;
+            
+            // Enable high quality scaling
+            targetCtx.imageSmoothingEnabled = true;
+            targetCtx.imageSmoothingQuality = 'high';
+            
+            // Draw the captured canvas onto the target canvas with proper scaling
+            targetCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, 1280, 720);
+            
+            // Create download link
+            const link = document.createElement('a');
+            const filename = `${titleBeforeInput.value || ''}${titleHighlightInput.value || ''}${titleAfterInput.value || ''}`.replace(/[^a-zA-Z0-9]/g, '-') || 'slide';
+            link.download = `${filename}-intro-slide.png`;
+            link.href = targetCanvas.toDataURL('image/png', 1.0);
+            link.click();
+            
+        } catch (error) {
+            console.error('Error generating image:', error);
+            console.log('Falling back to simpler approach...');
+            
+            // Fallback to basic approach
+            try {
+                const slideElement = document.getElementById('slide');
+                const canvas = await modernScreenshot.domToCanvas(slideElement);
                 
-                // Enable image smoothing for better quality downsampling
-                targetCtx.imageSmoothingEnabled = true;
-                targetCtx.imageSmoothingQuality = 'high';
-                
-                // Draw the captured canvas onto the target canvas with proper scaling
-                targetCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, 1280, 720);
-                // Create download link
                 const link = document.createElement('a');
                 const filename = `${titleBeforeInput.value || ''}${titleHighlightInput.value || ''}${titleAfterInput.value || ''}`.replace(/[^a-zA-Z0-9]/g, '-') || 'slide';
                 link.download = `${filename}-intro-slide.png`;
-                link.href = targetCanvas.toDataURL('image/png', 1.0);
+                link.href = canvas.toDataURL('image/png', 1.0);
                 link.click();
-            }).catch(function(error) {
-                console.error('Error generating image:', error);
-                alert('Error generating image. Please try again.');
-            });
-        } else {
-            alert('To enable download functionality, please include html2canvas library. For now, you can take a screenshot of the slide.');
+            } catch (fallbackError) {
+                console.error('Fallback also failed:', fallbackError);
+                alert('Error generating image. Please try again or use browser screenshot.');
+            }
+        } finally {
+            // Reset button state
+            downloadBtn.textContent = 'Download Slide';
+            downloadBtn.disabled = false;
         }
     });
 
