@@ -127,6 +127,64 @@
                     <option value="sharp" selected>Sharp</option>
                 </select>
             </div>
+            
+            <!-- Element Selection Panel -->
+            <div class="element-selection-panel" id="elementSelectionPanel" style="display: none;">
+                <h3>Selected Element: <span id="selectedElementName"></span></h3>
+                <button type="button" id="clearSelection">Clear Selection</button>
+                
+                <!-- Text Element Properties -->
+                <div class="text-element-properties" id="textElementProperties" style="display: none;">
+                    <div class="slider-group">
+                        <label for="elementFontSize">Font Size:</label>
+                        <input type="range" id="elementFontSize" min="20" max="120" value="60" step="2">
+                        <span id="elementFontSizeValue">60px</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="elementBgColor">Background Color:</label>
+                        <input type="color" id="elementBgColor" value="#ff6b35">
+                    </div>
+                    <div class="input-group">
+                        <label for="elementBgStyle">Background Style:</label>
+                        <select id="elementBgStyle">
+                            <option value="none">None</option>
+                            <option value="highlight">Highlight</option>
+                            <option value="drop-shadow">Drop Shadow</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="elementCornerStyle">Corner Style:</label>
+                        <select id="elementCornerStyle">
+                            <option value="rounded">Rounded</option>
+                            <option value="sharp">Sharp</option>
+                        </select>
+                    </div>
+                    <div class="slider-group">
+                        <label for="elementOpacity">Opacity:</label>
+                        <input type="range" id="elementOpacity" min="0" max="100" value="100" step="5">
+                        <span id="elementOpacityValue">100%</span>
+                    </div>
+                </div>
+                
+                <!-- Logo/Icon Element Properties -->
+                <div class="logo-element-properties" id="logoElementProperties" style="display: none;">
+                    <div class="slider-group">
+                        <label for="elementSize">Size:</label>
+                        <input type="range" id="elementSize" min="32" max="512" value="128" step="8">
+                        <span id="elementSizeValue">128px</span>
+                    </div>
+                    <div class="slider-group">
+                        <label for="elementRotation">Rotation:</label>
+                        <input type="range" id="elementRotation" min="-180" max="180" value="0" step="1">
+                        <span id="elementRotationValue">0°</span>
+                    </div>
+                    <div class="slider-group">
+                        <label for="elementOpacityLogo">Opacity:</label>
+                        <input type="range" id="elementOpacityLogo" min="0" max="100" value="100" step="5">
+                        <span id="elementOpacityLogoValue">100%</span>
+                    </div>
+                </div>
+            </div>
             <div class="input-group">
                 <label for="decorativeIcons">Decorative Icons:</label>
                 <select id="decorativeIcons">
@@ -157,14 +215,14 @@
                     <div class="multiple-logos" id="multipleLogosContainer"></div>
                     <div class="text-section">
                         <div class="title-section">
-                            <span class="title-before" id="slideTitleBefore">CLAUDE</span>
-                            <span class="title-highlight" id="slideTitleHighlight">CODE</span>
-                            <span class="title-after" id="slideTitleAfter"></span>
+                            <span class="title-before selectable-element" id="slideTitleBefore" data-element-type="text" data-element-name="Title Before">CLAUDE</span>
+                            <span class="title-highlight selectable-element" id="slideTitleHighlight" data-element-type="text" data-element-name="Title Highlight">CODE</span>
+                            <span class="title-after selectable-element" id="slideTitleAfter" data-element-type="text" data-element-name="Title After"></span>
                         </div>
-                        <div class="subtitle-wrapper">
-                            <span class="subtitle-text" id="slideSubtitle">AI-Powered Development Tool</span>
+                        <div class="subtitle-wrapper selectable-element" id="slideSubtitle" data-element-type="text" data-element-name="Subtitle">
+                            <span class="subtitle-text">AI-Powered Development Tool</span>
                         </div>
-                        <div class="accent-label" id="slideAccentLabel" style="display: none;"></div>
+                        <div class="accent-label selectable-element" id="slideAccentLabel" data-element-type="text" data-element-name="Accent Label" style="display: none;"></div>
                     </div>
                     <div class="accent-shapes">
                         <div class="shape shape-1"></div>

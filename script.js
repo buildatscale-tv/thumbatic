@@ -26,13 +26,366 @@ document.addEventListener('DOMContentLoaded', function() {
     const decorativeIconsContainer = document.getElementById('decorativeIconsContainer');
     const slide = document.getElementById('slide');
     const downloadBtn = document.getElementById('download');
+    
+    // Element Selection System
+    const elementSelectionPanel = document.getElementById('elementSelectionPanel');
+    const selectedElementName = document.getElementById('selectedElementName');
+    const clearSelectionBtn = document.getElementById('clearSelection');
+    const textElementProperties = document.getElementById('textElementProperties');
+    const logoElementProperties = document.getElementById('logoElementProperties');
+    const elementFontSize = document.getElementById('elementFontSize');
+    const elementFontSizeValue = document.getElementById('elementFontSizeValue');
+    const elementBgColor = document.getElementById('elementBgColor');
+    const elementBgStyle = document.getElementById('elementBgStyle');
+    const elementCornerStyle = document.getElementById('elementCornerStyle');
+    const elementOpacity = document.getElementById('elementOpacity');
+    const elementOpacityValue = document.getElementById('elementOpacityValue');
+    const elementSize = document.getElementById('elementSize');
+    const elementSizeValue = document.getElementById('elementSizeValue');
+    const elementRotation = document.getElementById('elementRotation');
+    const elementRotationValue = document.getElementById('elementRotationValue');
+    const elementOpacityLogo = document.getElementById('elementOpacityLogo');
+    const elementOpacityLogoValue = document.getElementById('elementOpacityLogoValue');
+    
+    // Selected element tracking
+    let selectedElement = null;
+    let isShiftPressed = false;
+    let isRotating = false;
+    let rotationStartAngle = 0;
+    let initialRotation = 0;
+    
+    // Element properties storage
+    const elementProperties = new Map();
+    
+    // Element Selection System
+    function initializeElementSelection() {
+        // Add click listeners to all selectable elements
+        const selectableElements = document.querySelectorAll('.selectable-element');
+        selectableElements.forEach(element => {
+            // Remove existing listener if any
+            element.removeEventListener('click', handleElementSelection);
+            // Add new listener
+            element.addEventListener('click', handleElementSelection);
+        });
+        
+        // Clear selection when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.selectable-element') && !e.target.closest('.element-selection-panel')) {
+                clearSelection();
+            }
+        });
+        
+        // Clear selection button
+        clearSelectionBtn.addEventListener('click', clearSelection);
+        
+        // Keyboard listeners for shift key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Shift') {
+                isShiftPressed = true;
+            }
+        });
+        
+        document.addEventListener('keyup', function(e) {
+            if (e.key === 'Shift') {
+                isShiftPressed = false;
+            }
+        });
+    }
+    
+    function handleElementSelection(e) {
+        e.stopPropagation();
+        const element = e.target;
+        
+        // Clear previous selection
+        clearSelection();
+        
+        // Select new element
+        selectedElement = element;
+        element.classList.add('selected');
+        
+        // Show element properties panel
+        showElementProperties(element);
+    }
+    
+    function clearSelection() {
+        if (selectedElement) {
+            selectedElement.classList.remove('selected');
+            
+            // Check if subtitle has custom background styles, if not restore wrapper
+            if (selectedElement.id === 'slideSubtitle') {
+                const hasCustomBg = selectedElement.classList.contains('bg-style-highlight') ||
+                                  selectedElement.classList.contains('bg-style-drop-shadow');
+                const props = elementProperties.get(selectedElement.id);
+                if (!hasCustomBg || (props && props.backgroundStyle === 'none')) {
+                    restoreSubtitleWrapperBackground(selectedElement);
+                }
+            }
+            
+            selectedElement = null;
+        }
+        elementSelectionPanel.style.display = 'none';
+        textElementProperties.style.display = 'none';
+        logoElementProperties.style.display = 'none';
+    }
+    
+    function showElementProperties(element) {
+        const elementType = element.dataset.elementType;
+        const elementName = element.dataset.elementName;
+        
+        selectedElementName.textContent = elementName;
+        elementSelectionPanel.style.display = 'block';
+        
+        // Initialize element properties if not exists
+        if (!elementProperties.has(element.id)) {
+            const currentProps = getCurrentElementProperties(element, elementType);
+            elementProperties.set(element.id, currentProps);
+        }
+        
+        const props = elementProperties.get(element.id);
+        
+        if (elementType === 'text') {
+            textElementProperties.style.display = 'block';
+            logoElementProperties.style.display = 'none';
+            
+            // Update controls with current values
+            elementFontSize.value = props.fontSize;
+            elementFontSizeValue.textContent = props.fontSize + 'px';
+            elementBgColor.value = props.backgroundColor;
+            elementBgStyle.value = props.backgroundStyle;
+            elementCornerStyle.value = props.cornerStyle;
+            elementOpacity.value = props.opacity;
+            elementOpacityValue.textContent = props.opacity + '%';
+            
+        } else if (elementType === 'logo' || elementType === 'icon') {
+            textElementProperties.style.display = 'none';
+            logoElementProperties.style.display = 'block';
+            
+            // Update controls with current values
+            elementSize.value = props.size;
+            elementSizeValue.textContent = props.size + 'px';
+            elementRotation.value = props.rotation;
+            elementRotationValue.textContent = props.rotation + '°';
+            elementOpacityLogo.value = props.opacity;
+            elementOpacityLogoValue.textContent = props.opacity + '%';
+        }
+    }
+    
+    function getCurrentElementProperties(element, elementType) {
+        if (elementType === 'text') {
+            // Extract current properties from the element
+            let currentFontSize;
+            const defaultSize = element.id === 'slideSubtitle' ? 48 : 72;
+            
+            let computedStyle;
+            if (element.id === 'slideSubtitle' && element.classList.contains('subtitle-wrapper')) {
+                // For subtitle wrapper, get font size from the text span inside
+                const textSpan = element.querySelector('.subtitle-text');
+                if (textSpan) {
+                    const textComputedStyle = window.getComputedStyle(textSpan);
+                    currentFontSize = parseInt(textComputedStyle.fontSize) || defaultSize;
+                } else {
+                    currentFontSize = defaultSize;
+                }
+                computedStyle = window.getComputedStyle(element);
+            } else {
+                computedStyle = window.getComputedStyle(element);
+                currentFontSize = parseInt(computedStyle.fontSize) || defaultSize;
+            }
+            
+            const currentOpacity = Math.round(parseFloat(computedStyle.opacity || 1) * 100);
+            
+            // Determine current background style
+            let currentBackgroundStyle = 'none';
+            if (element.classList.contains('bg-style-highlight')) {
+                currentBackgroundStyle = 'highlight';
+            } else if (element.classList.contains('bg-style-drop-shadow')) {
+                currentBackgroundStyle = 'drop-shadow';
+            }
+            
+            // Get current background color from CSS custom property or computed style
+            const currentBgColor = element.style.getPropertyValue('--element-bg-color') || '#ff6b35';
+            
+            // Determine corner style
+            const currentCornerStyle = element.classList.contains('corner-style-sharp') ? 'sharp' : 'rounded';
+            
+            return {
+                fontSize: currentFontSize,
+                backgroundColor: currentBgColor,
+                backgroundStyle: currentBackgroundStyle,
+                cornerStyle: currentCornerStyle,
+                opacity: currentOpacity
+            };
+        } else if (elementType === 'logo' || elementType === 'icon') {
+            const computedStyle = window.getComputedStyle(element);
+            const currentSize = parseInt(computedStyle.width) || 128;
+            const currentOpacity = Math.round(parseFloat(computedStyle.opacity || 1) * 100);
+            
+            // Extract rotation from transform
+            let currentRotation = 0;
+            const transform = element.style.transform;
+            if (transform) {
+                const rotateMatch = transform.match(/rotate\(([^)]+)deg\)/);
+                if (rotateMatch) {
+                    currentRotation = parseInt(rotateMatch[1]) || 0;
+                }
+            }
+            
+            return {
+                size: currentSize,
+                rotation: currentRotation,
+                opacity: currentOpacity
+            };
+        }
+        return {};
+    }
+    
+    function getDefaultElementProperties(element, elementType) {
+        if (elementType === 'text') {
+            const defaultSize = element.id === 'slideSubtitle' ? 48 : 72;
+            return {
+                fontSize: defaultSize,
+                backgroundColor: '#ff6b35',
+                backgroundStyle: element.id === 'slideSubtitle' ? 'none' : 'highlight',
+                cornerStyle: 'rounded',
+                opacity: 100
+            };
+        } else if (elementType === 'logo' || elementType === 'icon') {
+            return {
+                size: 128,
+                rotation: 0,
+                opacity: 100
+            };
+        }
+        return {};
+    }
+    
+    function applyElementProperties(element, props) {
+        if (props.fontSize) {
+            if (element.id === 'slideSubtitle' && element.classList.contains('subtitle-wrapper')) {
+                // For subtitle wrapper, apply font size to the text span inside
+                const textSpan = element.querySelector('.subtitle-text');
+                if (textSpan) {
+                    textSpan.style.fontSize = props.fontSize + 'px';
+                }
+            } else {
+                element.style.fontSize = props.fontSize + 'px';
+            }
+        }
+        if (props.backgroundColor) {
+            element.style.setProperty('--element-bg-color', props.backgroundColor);
+            
+            // Set contrasting text color for background styles
+            if (props.backgroundStyle && props.backgroundStyle !== 'none') {
+                const textColor = getContrastingColor(props.backgroundColor);
+                element.style.setProperty('--element-text-color', textColor);
+            }
+            
+            // Set contrasting shadow color for drop-shadow style
+            if (props.backgroundStyle === 'drop-shadow') {
+                const shadowColor = getContrastingColor(props.backgroundColor);
+                element.style.setProperty('--element-shadow-color', shadowColor);
+            }
+        }
+        if (props.backgroundStyle) {
+            element.className = element.className.replace(/\s*bg-style-\w+/g, '');
+            
+            if (props.backgroundStyle === 'none') {
+                // Remove all background styling and restore subtitle wrapper if needed
+                if (element.id === 'slideSubtitle') {
+                    restoreSubtitleWrapperBackground(element);
+                }
+                element.style.removeProperty('--element-bg-color');
+                element.style.removeProperty('--element-shadow-color');
+                element.style.removeProperty('--element-text-color');
+            } else {
+                element.classList.add('bg-style-' + props.backgroundStyle);
+                
+                // Set contrasting text and shadow colors
+                if (props.backgroundColor) {
+                    const textColor = getContrastingColor(props.backgroundColor);
+                    element.style.setProperty('--element-text-color', textColor);
+                    
+                    if (props.backgroundStyle === 'drop-shadow') {
+                        const shadowColor = getContrastingColor(props.backgroundColor);
+                        element.style.setProperty('--element-shadow-color', shadowColor);
+                    } else {
+                        // Clear shadow color for non-drop-shadow styles
+                        element.style.removeProperty('--element-shadow-color');
+                    }
+                }
+                
+                // Handle subtitle special case - the element itself is now the wrapper
+                if (element.id === 'slideSubtitle' && element.classList.contains('subtitle-wrapper')) {
+                    // We'll apply the background styling directly to the wrapper
+                    // No additional processing needed here
+                }
+            }
+        }
+        if (props.cornerStyle) {
+            element.className = element.className.replace(/\s*corner-style-\w+/g, '');
+            element.classList.add('corner-style-' + props.cornerStyle);
+        }
+        if (props.opacity !== undefined) {
+            element.style.opacity = props.opacity / 100;
+        }
+        if (props.size) {
+            element.style.width = props.size + 'px';
+            element.style.height = props.size + 'px';
+        }
+        if (props.rotation !== undefined) {
+            const currentTransform = element.style.transform || '';
+            const newTransform = currentTransform.replace(/rotate\([^)]+\)/g, '') + ` rotate(${props.rotation}deg)`;
+            element.style.transform = newTransform.trim();
+        }
+    }
+    
+    function restoreSubtitleWrapperBackground(element) {
+        if (element.id === 'slideSubtitle' && element.classList.contains('subtitle-wrapper')) {
+            // Remove inline styles to restore theme-based styling
+            element.style.background = '';
+            element.style.boxShadow = '';
+        }
+    }
+    
+    // Color brightness detection - translated from Ruby
+    function getContrastingColor(hexColor) {
+        // Remove # if present
+        const color = hexColor.replace('#', '');
+        
+        // Parse RGB values
+        const r = parseInt(color.substr(0, 2), 16);
+        const g = parseInt(color.substr(2, 2), 16);
+        const b = parseInt(color.substr(4, 2), 16);
+        
+        // Calculate brightness using the same formula as Ruby
+        const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+        
+        // Return opposing color
+        return brightness > 186 ? '#000000' : '#ffffff';
+    }
 
     // Update slide content
     function updateSlide() {
         slideTitleBefore.textContent = titleBeforeInput.value || '';
         slideTitleHighlight.textContent = titleHighlightInput.value || '';
         slideTitleAfter.textContent = titleAfterInput.value || '';
-        slideSubtitle.textContent = subtitleInput.value || 'AI-Powered Development Tool';
+        
+        // Ensure empty text elements are still clickable by adding a minimum height and display
+        [slideTitleBefore, slideTitleAfter].forEach(element => {
+            if (!element.textContent.trim()) {
+                element.style.minHeight = '20px';
+                element.style.minWidth = '20px';
+                element.style.display = 'inline-block';
+            } else {
+                element.style.minHeight = '';
+                element.style.minWidth = '';
+                element.style.display = '';
+            }
+        });
+        const subtitleTextSpan = slideSubtitle.querySelector('.subtitle-text');
+        if (subtitleTextSpan) {
+            subtitleTextSpan.textContent = subtitleInput.value || 'AI-Powered Development Tool';
+        }
         
         // Handle accent label
         if (versionInput.value) {
@@ -79,16 +432,40 @@ document.addEventListener('DOMContentLoaded', function() {
             .filter(checkbox => checkbox.checked)
             .map(checkbox => checkbox.value);
         
-        multipleLogosContainer.innerHTML = '';
+        // Get existing logos and their URLs
+        const existingLogos = Array.from(multipleLogosContainer.querySelectorAll('.random-logo'));
+        const existingLogoUrls = existingLogos.map(logo => logo.querySelector('img').src);
         
-        selectedLogos.forEach((logoUrl, index) => {
-            const logoDiv = document.createElement('div');
-            logoDiv.className = 'random-logo';
-            logoDiv.innerHTML = `<img src="${logoUrl}" alt="Logo ${index + 1}">`;
-            multipleLogosContainer.appendChild(logoDiv);
+        // Remove logos that are no longer selected
+        existingLogos.forEach(logo => {
+            const logoUrl = logo.querySelector('img').src;
+            if (!selectedLogos.includes(logoUrl)) {
+                logo.remove();
+            }
         });
         
-        randomizeLogoPositions();
+        // Add new logos that were just selected
+        const newLogos = [];
+        selectedLogos.forEach((logoUrl, index) => {
+            if (!existingLogoUrls.includes(logoUrl)) {
+                const logoDiv = document.createElement('div');
+                logoDiv.className = 'random-logo selectable-element';
+                logoDiv.dataset.elementType = 'logo';
+                logoDiv.dataset.elementName = `Logo ${index + 1}`;
+                logoDiv.id = `logo-${Date.now()}-${index}`; // Use timestamp to avoid ID conflicts
+                logoDiv.innerHTML = `<img src="${logoUrl}" alt="Logo ${index + 1}">`;
+                logoDiv.addEventListener('click', handleElementSelection);
+                multipleLogosContainer.appendChild(logoDiv);
+                newLogos.push(logoDiv);
+            }
+        });
+        
+        // Only randomize positions for new logos
+        if (newLogos.length > 0) {
+            randomizeSpecificLogoPositions(newLogos);
+        }
+        
+        // Update all logo sizes
         updateLogoSizes();
     }
 
@@ -130,7 +507,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Randomize logo positions and rotations
     function randomizeLogoPositions() {
         const logos = multipleLogosContainer.querySelectorAll('.random-logo');
-        
+        randomizeSpecificLogoPositions(logos);
+    }
+    
+    function randomizeSpecificLogoPositions(logos) {
         logos.forEach(logo => {
             const { x, y } = generateSafePosition();
             const rotation = Math.random() * 30 - 15; // -15 to 15 degrees
@@ -193,8 +573,12 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = 0; i < numIcons; i++) {
             const randomIcon = iconsToUse[Math.floor(Math.random() * iconsToUse.length)];
             const iconDiv = document.createElement('div');
-            iconDiv.className = 'decorative-icon random-icon';
+            iconDiv.className = 'decorative-icon random-icon selectable-element';
+            iconDiv.dataset.elementType = 'icon';
+            iconDiv.dataset.elementName = `Icon ${i + 1}`;
+            iconDiv.id = `icon-${i}`;
             iconDiv.innerHTML = randomIcon;
+            iconDiv.addEventListener('click', handleElementSelection);
             decorativeIconsContainer.appendChild(iconDiv);
         }
         
@@ -270,8 +654,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const rect = slide.getBoundingClientRect();
         const elementRect = target.getBoundingClientRect();
         
-        offset.x = e.clientX - elementRect.left - elementRect.width / 2;
-        offset.y = e.clientY - elementRect.top - elementRect.height / 2;
+        if (isShiftPressed) {
+            // Rotation mode
+            isRotating = true;
+            const centerX = elementRect.left + elementRect.width / 2;
+            const centerY = elementRect.top + elementRect.height / 2;
+            rotationStartAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+            
+            // Get current rotation or default to 0
+            const currentTransform = target.style.transform || '';
+            const rotateMatch = currentTransform.match(/rotate\(([^)]+)deg\)/);
+            initialRotation = rotateMatch ? parseFloat(rotateMatch[1]) : 0;
+        } else {
+            // Drag mode
+            isRotating = false;
+            offset.x = e.clientX - elementRect.left - elementRect.width / 2;
+            offset.y = e.clientY - elementRect.top - elementRect.height / 2;
+        }
         
         target.style.zIndex = '1000';
         e.preventDefault();
@@ -281,21 +680,47 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!isDragging || !dragElement) return;
 
         const rect = slide.getBoundingClientRect();
-        const x = ((e.clientX - rect.left - offset.x) / rect.width) * 100;
-        const y = ((e.clientY - rect.top - offset.y) / rect.height) * 100;
+        
+        if (isRotating) {
+            // Rotation mode
+            const elementRect = dragElement.getBoundingClientRect();
+            const centerX = elementRect.left + elementRect.width / 2;
+            const centerY = elementRect.top + elementRect.height / 2;
+            const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+            const angleDiff = (currentAngle - rotationStartAngle) * (180 / Math.PI);
+            const newRotation = initialRotation + angleDiff;
+            
+            // Update element rotation
+            const currentTransform = dragElement.style.transform || '';
+            const newTransform = currentTransform.replace(/rotate\([^)]+\)/g, '') + ` rotate(${newRotation}deg)`;
+            dragElement.style.transform = newTransform.trim();
+            
+            // Update properties if this element is selected
+            if (dragElement === selectedElement && elementProperties.has(dragElement.id)) {
+                const props = elementProperties.get(dragElement.id);
+                props.rotation = Math.round(newRotation);
+                elementRotation.value = props.rotation;
+                elementRotationValue.textContent = props.rotation + '°';
+            }
+        } else {
+            // Drag mode
+            const x = ((e.clientX - rect.left - offset.x) / rect.width) * 100;
+            const y = ((e.clientY - rect.top - offset.y) / rect.height) * 100;
 
-        // Constrain within slide boundaries
-        const constrainedX = Math.max(5, Math.min(95, x));
-        const constrainedY = Math.max(5, Math.min(95, y));
+            // Constrain within slide boundaries
+            const constrainedX = Math.max(5, Math.min(95, x));
+            const constrainedY = Math.max(5, Math.min(95, y));
 
-        dragElement.style.left = `${constrainedX}%`;
-        dragElement.style.top = `${constrainedY}%`;
+            dragElement.style.left = `${constrainedX}%`;
+            dragElement.style.top = `${constrainedY}%`;
+        }
     }
 
     function handleMouseUp(e) {
         if (isDragging && dragElement) {
             dragElement.style.zIndex = '';
             isDragging = false;
+            isRotating = false;
             dragElement = null;
         }
     }
@@ -424,6 +849,76 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Element property control listeners
+    elementFontSize.addEventListener('input', function() {
+        if (selectedElement) {
+            const props = elementProperties.get(selectedElement.id);
+            props.fontSize = parseInt(this.value);
+            elementFontSizeValue.textContent = this.value + 'px';
+            applyElementProperties(selectedElement, props);
+        }
+    });
+    
+    elementBgColor.addEventListener('input', function() {
+        if (selectedElement) {
+            const props = elementProperties.get(selectedElement.id);
+            props.backgroundColor = this.value;
+            applyElementProperties(selectedElement, props);
+        }
+    });
+    
+    elementBgStyle.addEventListener('change', function() {
+        if (selectedElement) {
+            const props = elementProperties.get(selectedElement.id);
+            props.backgroundStyle = this.value;
+            applyElementProperties(selectedElement, props);
+        }
+    });
+    
+    elementCornerStyle.addEventListener('change', function() {
+        if (selectedElement) {
+            const props = elementProperties.get(selectedElement.id);
+            props.cornerStyle = this.value;
+            applyElementProperties(selectedElement, props);
+        }
+    });
+    
+    elementOpacity.addEventListener('input', function() {
+        if (selectedElement) {
+            const props = elementProperties.get(selectedElement.id);
+            props.opacity = parseInt(this.value);
+            elementOpacityValue.textContent = this.value + '%';
+            applyElementProperties(selectedElement, props);
+        }
+    });
+    
+    elementSize.addEventListener('input', function() {
+        if (selectedElement) {
+            const props = elementProperties.get(selectedElement.id);
+            props.size = parseInt(this.value);
+            elementSizeValue.textContent = this.value + 'px';
+            applyElementProperties(selectedElement, props);
+        }
+    });
+    
+    elementRotation.addEventListener('input', function() {
+        if (selectedElement) {
+            const props = elementProperties.get(selectedElement.id);
+            props.rotation = parseInt(this.value);
+            elementRotationValue.textContent = this.value + '°';
+            applyElementProperties(selectedElement, props);
+        }
+    });
+    
+    elementOpacityLogo.addEventListener('input', function() {
+        if (selectedElement) {
+            const props = elementProperties.get(selectedElement.id);
+            props.opacity = parseInt(this.value);
+            elementOpacityLogoValue.textContent = this.value + '%';
+            applyElementProperties(selectedElement, props);
+        }
+    });
+
     // Initialize
     updateSlide();
     updateLogoType();
@@ -431,6 +926,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateDecorativeIcons();
     updateTheme();
     initializeDragAndDrop();
+    initializeElementSelection();
     
     // Initialize slider values
     logoSizeValue.textContent = `${logoSizeSlider.value}px`;
