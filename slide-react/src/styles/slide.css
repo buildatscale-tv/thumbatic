@@ -5,9 +5,21 @@
   box-sizing: border-box;
 }
 
+/* Disable transitions on draggable elements for immediate response */
+.selectable-element {
+  transition: none !important;
+}
+
+/* Ensure dragging elements move instantly with cursor */
+.selectable-element[data-element-type="logo"],
+.selectable-element[data-element-type="icon"],
+.selectable-element[data-element-type="text"] {
+  /* Performance optimizations removed for export compatibility */
+}
+
 /* Container and layout */
 .slide-generator {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Montserrat', sans-serif;
   background: #f5f5f5;
   min-height: 100vh;
   display: flex;
@@ -73,21 +85,17 @@
 .selectable-element {
   cursor: pointer;
   position: relative;
-  transition: all 0.2s ease;
   min-height: 1em;
   min-width: 1em;
 }
 
 .selectable-element:hover {
-  outline: 2px dashed #007bff;
-  outline-offset: 2px;
+  box-shadow: 0 0 0 2px #007bff;
   background-color: rgba(0, 123, 255, 0.1) !important;
 }
 
 .selectable-element.selected {
-  outline: 2px solid #007bff;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+  box-shadow: 0 0 0 2px #007bff, 0 0 0 6px rgba(0, 123, 255, 0.25);
 }
 
 .selectable-element.selected::before {
@@ -109,52 +117,61 @@
 .bg-style-highlight {
   background-color: var(--element-bg-color, #ff6b35) !important;
   color: var(--element-text-color, white) !important;
-  padding: 8px 16px;
-  border-radius: 8px;
   box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+  padding: 8px 12px;
 }
 
 .bg-style-drop-shadow {
   background-color: var(--element-bg-color, #ff6b35) !important;
   color: var(--element-text-color, white) !important;
-  padding: 8px 16px;
-  border-radius: 8px;
-  box-shadow: -5px 5px 0px var(--element-shadow-color, rgba(0, 0, 0, 0.8));
+  box-shadow: -7px 7px 0px var(--element-shadow-color, rgba(0, 0, 0, 0.8));
+  padding: 8px 12px;
 }
 
-/* Override theme-specific subtitle styling when custom background is applied */
-.subtitle-wrapper.bg-style-highlight,
-.subtitle-wrapper.bg-style-drop-shadow {
-  background: var(--element-bg-color, #ff6b35) !important;
-  color: var(--element-text-color, white) !important;
+
+/* Ensure all text elements have white color when background style is none */
+.selectable-element:not(.bg-style-highlight):not(.bg-style-drop-shadow) {
+  color: white;
 }
 
-.subtitle-wrapper.bg-style-highlight .subtitle-text,
-.subtitle-wrapper.bg-style-drop-shadow .subtitle-text {
-  color: var(--element-text-color, white) !important;
+/* Subtitle elements - match theme specificity */
+.subtitle-text,
+.subtitle,
+.selectable-element.subtitle {
+  font-family: 'Geist', sans-serif;
+  font-weight: 800;
 }
 
-/* Override theme defaults when backgroundStyle is 'none' - remove all theme backgrounds */
-.subtitle-wrapper:not(.bg-style-highlight):not(.bg-style-drop-shadow) {
-  background: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-  transform: none !important;
+/* Title and accent elements - match theme specificity */
+.title,
+.selectable-element.title {
+  letter-spacing: 6px;
+  font-weight: 800;
+  font-family: 'Montserrat', sans-serif;
 }
 
-.subtitle-wrapper:not(.bg-style-highlight):not(.bg-style-drop-shadow) .subtitle-text {
-  color: white !important;
-  transform: none !important;
-  font-size: inherit !important;
+.accent-label,
+.selectable-element.accent-label {
+  font-weight: 800;
+  font-family: 'Montserrat', sans-serif;
 }
 
-/* Corner Style Classes */
-.corner-style-rounded {
-  border-radius: 8px !important;
+/* Corner Style Classes - Higher specificity to override theme and global styles */
+.selectable-element.corner-style-rounded,
+.selectable-element.corner-style-rounded.bg-style-highlight,
+.selectable-element.corner-style-rounded.bg-style-drop-shadow,
+.sharp-corners .selectable-element.corner-style-rounded,
+.sharp-corners .selectable-element.corner-style-rounded.bg-style-highlight,
+.sharp-corners .selectable-element.corner-style-rounded.bg-style-drop-shadow {
+  border-radius: 4px !important;
 }
 
-.corner-style-sharp {
+.selectable-element.corner-style-sharp,
+.selectable-element.corner-style-sharp.bg-style-highlight,
+.selectable-element.corner-style-sharp.bg-style-drop-shadow,
+.sharp-corners .selectable-element.corner-style-sharp,
+.sharp-corners .selectable-element.corner-style-sharp.bg-style-highlight,
+.sharp-corners .selectable-element.corner-style-sharp.bg-style-drop-shadow {
   border-radius: 0 !important;
 }
 
@@ -220,8 +237,6 @@
   position: relative;
   border-radius: 0;
   overflow: hidden;
-  transform: scale(0.5);
-  transform-origin: center;
 }
 
 .slide-content {
@@ -238,7 +253,7 @@
 
 /* Claude Theme */
 .claude-theme {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: #1b1c1f;
 }
 
 .claude-theme .logo-section {
@@ -270,6 +285,7 @@
 
 .title-before, .title-after {
   color: white;
+  font-family: 'Montserrat', sans-serif;
   font-size: 72px;
   font-weight: 800;
   text-transform: uppercase;
@@ -281,6 +297,7 @@
 .title-highlight {
   background: rgba(255, 107, 53, 0.95);
   color: white;
+  font-family: 'Montserrat', sans-serif;
   font-size: 72px;
   font-weight: 800;
   text-transform: uppercase;
@@ -292,23 +309,7 @@
   box-shadow: 0 8px 32px rgba(255, 107, 53, 0.4);
 }
 
-.accent-label {
-  background: rgba(255, 255, 255, 0.95);
-  color: #1a1a2e;
-  font-size: 48px;
-  font-weight: 800;
-  padding: 16px 32px;
-  border-radius: 16px;
-  margin-top: 40px;
-  display: inline-block;
-  transform: skew(-2deg);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  width: fit-content;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%) skew(-2deg);
-  bottom: 120px;
-}
+/* .accent-label styles now handled dynamically by React components */
 
 .claude-theme .title-wrapper {
   background: rgba(255, 107, 53, 0.95);
@@ -321,6 +322,7 @@
 
 .claude-theme .title-text {
   color: white;
+  font-family: 'Montserrat', sans-serif;
   font-size: 32px;
   font-weight: 800;
   text-transform: uppercase;
@@ -329,22 +331,7 @@
   display: inline-block;
 }
 
-.claude-theme .subtitle-wrapper {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 16px 40px;
-  border-radius: 12px;
-  transform: skew(2deg);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  display: inline-block;
-}
 
-.claude-theme .subtitle-text {
-  color: #1a1a2e;
-  font-size: 48px;
-  font-weight: 600;
-  transform: skew(-2deg);
-  display: inline-block;
-}
 
 .claude-theme .accent-shapes {
   position: absolute;
@@ -410,6 +397,7 @@
 
 .tech-theme .title-text {
   color: white;
+  font-family: 'Montserrat', sans-serif;
   font-size: 32px;
   font-weight: 800;
   text-transform: uppercase;
@@ -418,22 +406,7 @@
   display: inline-block;
 }
 
-.tech-theme .subtitle-wrapper {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 16px 40px;
-  border-radius: 12px;
-  transform: skew(2deg);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  display: inline-block;
-}
 
-.tech-theme .subtitle-text {
-  color: #0f172a;
-  font-size: 48px;
-  font-weight: 600;
-  transform: skew(-2deg);
-  display: inline-block;
-}
 
 /* Dark Theme */
 .dark-theme {
@@ -456,6 +429,7 @@
 
 .dark-theme .title-text {
   color: white;
+  font-family: 'Montserrat', sans-serif;
   font-size: 32px;
   font-weight: 800;
   text-transform: uppercase;
@@ -464,22 +438,7 @@
   display: inline-block;
 }
 
-.dark-theme .subtitle-wrapper {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 16px 40px;
-  border-radius: 12px;
-  transform: skew(2deg);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  display: inline-block;
-}
 
-.dark-theme .subtitle-text {
-  color: #111827;
-  font-size: 48px;
-  font-weight: 600;
-  transform: skew(-2deg);
-  display: inline-block;
-}
 
 /* Blueprint Theme */
 .blueprint-theme {
@@ -540,12 +499,7 @@
   letter-spacing: 3px;
 }
 
-.blueprint-theme .accent-label {
-  background: rgba(255, 255, 255, 0.95);
-  color: #1a1a2e;
-  border-radius: 0;
-  transform: translateX(-50%) skew(0deg);
-}
+/* .blueprint-theme .accent-label styles now handled dynamically */
 
 .blueprint-theme .title-wrapper {
   background: rgba(255, 255, 255, 0.95);
@@ -558,6 +512,7 @@
 
 .blueprint-theme .title-text {
   color: #1a1a2e;
+  font-family: 'Montserrat', sans-serif;
   font-size: 32px;
   font-weight: 800;
   text-transform: uppercase;
@@ -566,22 +521,7 @@
   display: inline-block;
 }
 
-.blueprint-theme .subtitle-wrapper {
-  background: rgba(251, 191, 36, 0.95);
-  padding: 16px 40px;
-  border-radius: 0;
-  transform: skew(0deg);
-  box-shadow: 0 8px 24px rgba(251, 191, 36, 0.4);
-  display: inline-block;
-}
 
-.blueprint-theme .subtitle-text {
-  color: #1a1a2e;
-  font-size: 48px;
-  font-weight: 600;
-  transform: skew(0deg);
-  display: inline-block;
-}
 
 /* Sharp Corners */
 .sharp-corners .title-wrapper {
@@ -592,13 +532,8 @@
   border-radius: 0 !important;
 }
 
-.sharp-corners .subtitle-wrapper {
-  border-radius: 0 !important;
-}
 
-.sharp-corners .accent-label {
-  border-radius: 0 !important;
-}
+/* .sharp-corners .accent-label styles now handled dynamically */
 
 .sharp-corners .custom-logo img {
   border-radius: 0 !important;
@@ -848,7 +783,7 @@
     flex-direction: column;
     gap: 20px;
   }
-  
+
   .slide {
     width: 100%;
     max-width: 480px;
@@ -856,3 +791,4 @@
     aspect-ratio: 16/9;
   }
 }
+

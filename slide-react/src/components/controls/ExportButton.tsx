@@ -4,7 +4,7 @@ import { domToCanvas } from 'modern-screenshot';
 
 export const ExportButton: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const { content } = useSlideStore();
+  const { elements } = useSlideStore();
 
   const handleExport = async () => {
     try {
@@ -56,7 +56,11 @@ export const ExportButton: React.FC = () => {
       
       // Create download link
       const link = document.createElement('a');
-      const filename = `${content.titleBefore}${content.titleHighlight}${content.titleAfter}`.replace(/[^a-zA-Z0-9]/g, '-') || 'slide';
+      // Generate filename from text elements
+      const textElements = elements.filter(el => el.type === 'text');
+      const titleElements = textElements.filter(el => (el.properties as any).textType === 'title');
+      const titleText = titleElements.map(el => (el.properties as any).content).join(' ');
+      const filename = titleText.replace(/[^a-zA-Z0-9]/g, '-') || 'slide';
       link.download = `${filename}-intro-slide.png`;
       link.href = targetCanvas.toDataURL('image/png', 1.0);
       link.click();
@@ -72,7 +76,11 @@ export const ExportButton: React.FC = () => {
           const canvas = await domToCanvas(slideElement);
           
           const link = document.createElement('a');
-          const filename = `${content.titleBefore}${content.titleHighlight}${content.titleAfter}`.replace(/[^a-zA-Z0-9]/g, '-') || 'slide';
+          // Generate filename from text elements
+          const textElements = elements.filter(el => el.type === 'text');
+          const titleElements = textElements.filter(el => (el.properties as any).textType === 'title');
+          const titleText = titleElements.map(el => (el.properties as any).content).join(' ');
+          const filename = titleText.replace(/[^a-zA-Z0-9]/g, '-') || 'slide';
           link.download = `${filename}-intro-slide.png`;
           link.href = canvas.toDataURL('image/png', 1.0);
           link.click();

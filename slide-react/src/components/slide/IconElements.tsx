@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import { useSlideStore } from '../../store/slideStore';
 import { ICON_LIBRARY } from '../../constants/icons';
 import type { LogoIconElementProperties, SlideElement } from '../../types';
@@ -25,14 +26,13 @@ const DraggableIcon: React.FC<{ element: any }> = ({ element }) => {
   };
 
   const style = {
-    left: `${element.position.x}%`,
-    top: `${element.position.y}%`,
+    position: 'absolute' as const,
+    left: element.position.x,
+    top: element.position.y,
     width: `${props.size}px`,
     height: `${props.size}px`,
     opacity: props.opacity / 100,
-    transform: `translate(-50%, -50%) rotate(${props.rotation}deg)${
-      transform ? ` translate3d(${transform.x}px, ${transform.y}px, 0)` : ''
-    }`,
+    transform: `translate(-50%, -50%) rotate(${props.rotation}deg) ${CSS.Translate.toString(transform)}`,
     zIndex: isDragging ? 1000 : 'auto',
     cursor: isDragging ? 'grabbing' : 'grab',
   };
@@ -43,6 +43,7 @@ const DraggableIcon: React.FC<{ element: any }> = ({ element }) => {
       className="decorative-icon random-icon selectable-element"
       data-element-type="icon"
       data-element-name={element.name}
+      data-element-id={element.id}
       style={style}
       onClick={handleIconClick}
       {...listeners}
@@ -81,8 +82,8 @@ export const IconElements: React.FC = () => {
     
     for (let i = 0; i < numIcons; i++) {
       const randomIcon = iconsToUse[Math.floor(Math.random() * iconsToUse.length)];
-      const x = Math.random() * 90 + 5; // 5-95%
-      const y = Math.random() * 90 + 5; // 5-95%
+      const x = Math.random() * (1280 * 0.9) + (1280 * 0.05); // 5-95% of slide width
+      const y = Math.random() * (720 * 0.9) + (720 * 0.05); // 5-95% of slide height
       const rotation = Math.random() * 360; // 0-360 degrees
       const scale = Math.random() * 0.6 + 0.4; // 0.4 to 1.0
       const size = iconSize + Math.floor(Math.random() * 16) - 8; // ±8px variation
@@ -95,7 +96,7 @@ export const IconElements: React.FC = () => {
         properties: {
           size: size,
           rotation: rotation,
-          opacity: 40, // 0.4 opacity for decorative icons
+          opacity: 50, // 0.5 opacity for decorative icons
           src: randomIcon,
         }
       };
