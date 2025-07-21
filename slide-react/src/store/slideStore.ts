@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import type { SlideState, SlideElement, ElementProperties, SlideContent } from '../types';
+import type { SlideState, SlideElement, ElementProperties, TextElementType, TextLayoutMode } from '../types';
 
-// Helper function to generate safe positions outside center exclusion zone
+// Helper function to generate safe positions outside center exclusion zone (pixel-based)
 const generateSafePosition = (): { x: number; y: number } => {
   const slideWidth = 1280;
   const slideHeight = 720;
@@ -18,14 +18,12 @@ const generateSafePosition = (): { x: number; y: number } => {
   const maxAttempts = 50;
   
   do {
-    x = Math.random() * 80 + 10; // 10-90%
-    y = Math.random() * 80 + 10; // 10-90%
+    // Generate pixel positions directly
+    x = Math.random() * (slideWidth * 0.8) + (slideWidth * 0.1); // 10-90% of slide width
+    y = Math.random() * (slideHeight * 0.8) + (slideHeight * 0.1); // 10-90% of slide height
     
-    const pixelX = (x / 100) * slideWidth;
-    const pixelY = (y / 100) * slideHeight;
-    
-    const isInExclusion = pixelX >= exclusionLeft && pixelX <= exclusionRight && 
-                         pixelY >= exclusionTop && pixelY <= exclusionBottom;
+    const isInExclusion = x >= exclusionLeft && x <= exclusionRight && 
+                         y >= exclusionTop && y <= exclusionBottom;
     
     if (!isInExclusion) break;
     attempts++;
@@ -34,87 +32,58 @@ const generateSafePosition = (): { x: number; y: number } => {
   return { x, y };
 };
 
-// Create initial text elements
+// Create initial text elements with simplified structure
 const createInitialTextElements = (): SlideElement[] => {
   return [
     {
-      id: 'text-title-before',
+      id: 'text-title',
       type: 'text',
-      name: 'Title Before',
-      position: { x: 50, y: 40 },
+      name: 'Title',
+      position: { x: 640, y: 288 },
       properties: {
-        fontSize: 72,
+        fontSize: 96,
         backgroundColor: '#ff6b35',
         backgroundStyle: 'none',
         cornerStyle: 'rounded',
         opacity: 100,
-      }
-    },
-    {
-      id: 'text-title-highlight',
-      type: 'text',
-      name: 'Title Highlight',
-      position: { x: 50, y: 40 },
-      properties: {
-        fontSize: 72,
-        backgroundColor: '#ff6b35',
-        backgroundStyle: 'highlight',
-        cornerStyle: 'rounded',
-        opacity: 100,
-      }
-    },
-    {
-      id: 'text-title-after',
-      type: 'text',
-      name: 'Title After',
-      position: { x: 50, y: 40 },
-      properties: {
-        fontSize: 72,
-        backgroundColor: '#ff6b35',
-        backgroundStyle: 'none',
-        cornerStyle: 'rounded',
-        opacity: 100,
+        content: 'CLAUDE CODE',
+        textType: 'title' as TextElementType,
       }
     },
     {
       id: 'text-subtitle',
       type: 'text',
       name: 'Subtitle',
-      position: { x: 50, y: 55 },
+      position: { x: 640, y: 396 },
       properties: {
-        fontSize: 48,
-        backgroundColor: '#ff6b35',
-        backgroundStyle: 'none',
-        cornerStyle: 'rounded',
+        fontSize: 64,
+        backgroundColor: '#FFD700',
+        backgroundStyle: 'drop-shadow',
+        cornerStyle: 'sharp',
         opacity: 100,
+        content: 'AGENT',
+        textType: 'subtitle' as TextElementType,
       }
     },
     {
       id: 'text-accent-label',
       type: 'text',
       name: 'Accent Label',
-      position: { x: 50, y: 80 },
+      position: { x: 640, y: 576 },
       properties: {
         fontSize: 48,
         backgroundColor: '#ffffff',
-        backgroundStyle: 'highlight',
+        backgroundStyle: 'none',
         cornerStyle: 'rounded',
         opacity: 100,
+        content: '2.0',
+        textType: 'accent-label' as TextElementType,
       }
     }
   ];
 };
 
 export const useSlideStore = create<SlideState>((set, get) => ({
-  // Initial content
-  content: {
-    titleBefore: 'CLAUDE',
-    titleHighlight: 'CODE',
-    titleAfter: '',
-    subtitle: 'AI-Powered Development Tool',
-    accentLabel: '',
-  },
-  
   // Initial theme and styling
   theme: 'claude',
   cornerStyle: 'sharp',
@@ -126,19 +95,18 @@ export const useSlideStore = create<SlideState>((set, get) => ({
   logoSize: 128,
   
   // Initial decorative icons
-  iconType: 'mixed',
-  iconSize: 96,
+  iconType: 'none',
+  iconSize: 48,
+  
+  // Initial text layout system
+  textLayoutMode: 'lines',
+  gridElementsPerRow: 3,
   
   // Initial element management - include text elements
   elements: createInitialTextElements(),
   selectedElement: null,
   
   // Actions
-  updateContent: (newContent: Partial<SlideContent>) =>
-    set((state) => ({
-      content: { ...state.content, ...newContent },
-    })),
-  
   setTheme: (theme) => set({ theme }),
   
   setCornerStyle: (cornerStyle) => set({ cornerStyle }),
@@ -174,7 +142,7 @@ export const useSlideStore = create<SlideState>((set, get) => ({
           properties: {
             size: state.logoSize,
             rotation: Math.random() * 30 - 15, // -15 to 15 degrees
-            opacity: 80,
+            opacity: 100,
             src: url,
           },
         };
@@ -209,6 +177,10 @@ export const useSlideStore = create<SlideState>((set, get) => ({
     
     set({ iconSize, elements: updatedElements });
   },
+  
+  setTextLayoutMode: (textLayoutMode: TextLayoutMode) => set({ textLayoutMode }),
+  
+  setGridElementsPerRow: (gridElementsPerRow: number) => set({ gridElementsPerRow }),
   
   selectElement: (selectedElement) => set({ selectedElement }),
   
@@ -250,12 +222,61 @@ export const useSlideStore = create<SlideState>((set, get) => ({
     set((state) => ({
       elements: [...state.elements, element],
     })),
+
+  addTextElement: (textType: TextElementType, content: string, position?: { x: number; y: number }) => {
+    const defaultPositions = {
+      title: { x: 640, y: 288 },
+      subtitle: { x: 640, y: 396 },
+      'accent-label': { x: 640, y: 576 },
+      custom: { x: 640, y: 360 },
+    };
+
+    const defaultStyles = {
+      title: { fontSize: 96, backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'rounded' as const },
+      subtitle: { fontSize: 64, backgroundStyle: 'drop-shadow' as const, backgroundColor: '#FFD700', cornerStyle: 'sharp' as const },
+      'accent-label': { fontSize: 36, backgroundStyle: 'none' as const, backgroundColor: '#ffffff', cornerStyle: 'rounded' as const },
+      custom: { fontSize: 48, backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'rounded' as const },
+    };
+
+    const newElement: SlideElement = {
+      id: `text-${textType}-${Date.now()}`,
+      type: 'text',
+      name: `${textType.charAt(0).toUpperCase() + textType.slice(1).replace('-', ' ')}`,
+      position: position || defaultPositions[textType],
+      properties: {
+        fontSize: defaultStyles[textType].fontSize,
+        backgroundColor: defaultStyles[textType].backgroundColor,
+        backgroundStyle: defaultStyles[textType].backgroundStyle,
+        cornerStyle: defaultStyles[textType].cornerStyle,
+        opacity: 100,
+        content,
+        textType,
+      },
+    };
+
+    set((state) => ({
+      elements: [...state.elements, newElement],
+    }));
+  },
   
   removeElement: (elementId) =>
     set((state) => ({
       elements: state.elements.filter(el => el.id !== elementId),
       selectedElement: state.selectedElement?.id === elementId ? null : state.selectedElement,
     })),
+
+  reorderElements: (elementIds: string[]) =>
+    set((state) => {
+      const elementMap = new Map(state.elements.map(el => [el.id, el]));
+      const reorderedElements = elementIds.map(id => elementMap.get(id)).filter(Boolean) as SlideElement[];
+      
+      // Add any elements that weren't in the reorder list (shouldn't happen, but safety)
+      const missingElements = state.elements.filter(el => !elementIds.includes(el.id));
+      
+      return {
+        elements: [...reorderedElements, ...missingElements],
+      };
+    }),
   
   randomizeLogoPositions: () => {
     const state = get();
@@ -282,8 +303,8 @@ export const useSlideStore = create<SlideState>((set, get) => ({
         ? { 
             ...element, 
             position: { 
-              x: Math.random() * 90 + 5, 
-              y: Math.random() * 90 + 5 
+              x: Math.random() * (1280 * 0.9) + (1280 * 0.05), 
+              y: Math.random() * (720 * 0.9) + (720 * 0.05) 
             },
             properties: { 
               ...element.properties, 

@@ -25,6 +25,19 @@ export const ElementPropertiesPanel: React.FC = () => {
 
       {isTextElement && (
         <div className="text-element-properties">
+          <div className="input-group">
+            <label htmlFor="elementContent">Content:</label>
+            <input
+              type="text"
+              id="elementContent"
+              value={(selectedElement.properties as TextElementProperties).content || ''}
+              placeholder="Enter text content"
+              onChange={(e) => updateElementProperties(selectedElement.id, { 
+                content: e.target.value 
+              })}
+            />
+          </div>
+
           <div className="slider-group">
             <label htmlFor="elementFontSize">Font Size:</label>
             <input

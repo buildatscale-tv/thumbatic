@@ -1,188 +1,286 @@
 import React from 'react';
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import { useSlideStore } from '../../store/slideStore';
-import type { TextElementProperties } from '../../types';
+import type { TextElementProperties, SlideElement } from '../../types';
 
 // Color brightness detection - for contrasting text colors
 const getContrastingColor = (hexColor: string): string => {
   // Remove # if present
   const color = hexColor.replace('#', '');
-  
+
   // Parse RGB values
   const r = parseInt(color.substr(0, 2), 16);
   const g = parseInt(color.substr(2, 2), 16);
   const b = parseInt(color.substr(4, 2), 16);
-  
+
   // Calculate brightness
   const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
-  
+
   // Return opposing color
   return brightness > 186 ? '#000000' : '#ffffff';
 };
 
-export const TextElements: React.FC = () => {
-  const { content, selectElement, selectedElement, elements } = useSlideStore();
+// Calculate darkened color for drop shadow (50% darker)
+const getDarkenedColor = (hexColor: string): string => {
+  // Remove # if present
+  const color = hexColor.replace('#', '');
 
-  const handleElementClick = (elementId: string, event: React.MouseEvent) => {
+  // Parse RGB values
+  const r = parseInt(color.substr(0, 2), 16);
+  const g = parseInt(color.substr(2, 2), 16);
+  const b = parseInt(color.substr(4, 2), 16);
+
+  // Darken by 50% (multiply by 0.5)
+  const darkenedR = Math.round(r * 0.5);
+  const darkenedG = Math.round(g * 0.5);
+  const darkenedB = Math.round(b * 0.5);
+
+  // Convert back to hex
+  const toHex = (n: number) => n.toString(16).padStart(2, '0');
+  return `#${toHex(darkenedR)}${toHex(darkenedG)}${toHex(darkenedB)}`;
+};
+
+// Draggable Text Component (for manual positioning)
+const DraggableText: React.FC<{ element: SlideElement }> = ({ element }) => {
+  const { selectElement, selectedElement } = useSlideStore();
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    isDragging,
+  } = useDraggable({
+    id: element.id,
+    data: element,
+  });
+
+  const handleElementClick = (event: React.MouseEvent) => {
     event.stopPropagation();
-    const element = elements.find(el => el.id === elementId);
-    if (element) {
-      selectElement(element);
-    }
+    selectElement(element);
   };
 
-  // Get text elements from store
-  const getTextElement = (id: string) => elements.find(el => el.id === id);
-  
-  const titleBeforeElement = getTextElement('text-title-before');
-  const titleHighlightElement = getTextElement('text-title-highlight');
-  const titleAfterElement = getTextElement('text-title-after');
-  const subtitleElement = getTextElement('text-subtitle');
-  const accentLabelElement = getTextElement('text-accent-label');
+  const props = element.properties as TextElementProperties;
+  const content = props.content || '';
+  const isSelected = selectedElement?.id === element.id;
 
-  const getElementStyle = (element: any) => {
-    if (!element) return {};
-    
-    const props = element.properties as TextElementProperties;
-    const isSelected = selectedElement?.id === element.id;
-    
-    // Special handling for subtitle - don't apply fontSize to wrapper
-    const isSubtitle = element.id === 'text-subtitle';
-    
-    // Calculate contrasting text color
-    const textColor = props.backgroundStyle !== 'none' ? getContrastingColor(props.backgroundColor) : undefined;
-    
-    return {
-      ...(!isSubtitle && { fontSize: `${props.fontSize}px` }),
-      opacity: props.opacity / 100,
-      ...(props.backgroundStyle !== 'none' && {
-        '--element-bg-color': props.backgroundColor,
-        '--element-text-color': textColor,
-        backgroundColor: `${props.backgroundColor} !important`,
-        color: `${textColor} !important`,
-      }),
-      ...(isSelected && {
-        outline: '2px solid #007bff',
-        outlineOffset: '2px',
-      })
-    };
+  // Calculate contrasting text color and shadow color
+  const textColor = props.backgroundStyle !== 'none' ? getContrastingColor(props.backgroundColor) : undefined;
+  const shadowColor = props.backgroundStyle === 'drop-shadow' ? getDarkenedColor(props.backgroundColor) : undefined;
+
+  const style = {
+    position: 'absolute' as const,
+    left: `${element.position.x}%`,
+    top: `${element.position.y}%`,
+    transform: `translate(-50%, -50%) ${CSS.Translate.toString(transform)}`,
+    fontSize: `${props.fontSize}px`,
+    opacity: props.opacity / 100,
+    zIndex: isDragging ? 1000 : 'auto',
+    cursor: isDragging ? 'grabbing' : 'grab',
+    minHeight: content ? undefined : '20px',
+    minWidth: content ? undefined : '50px',
+    display: 'inline-block',
+    padding: props.backgroundStyle !== 'none' ? '8px 12px' : '4px',
+    userSelect: 'none' as const,
+    ...(props.backgroundStyle !== 'none' && {
+      '--element-bg-color': props.backgroundColor,
+      '--element-text-color': textColor,
+      '--element-shadow-color': shadowColor,
+    }),
   };
 
-  const getSubtitleTextStyle = (element: any) => {
-    if (!element) return {};
-    
-    const props = element.properties as TextElementProperties;
-    
-    // Calculate contrasting text color for subtitle
-    const textColor = props.backgroundStyle !== 'none' ? getContrastingColor(props.backgroundColor) : 'white';
-    
-    return {
-      fontSize: `${props.fontSize}px !important`,
-      color: `${textColor} !important`,
-      fontWeight: '600',
-      display: 'inline-block',
-    };
-  };
+  // Get base class from textType
+  const baseClass = props.textType === 'accent-label' ? 'accent-label' :
+                   props.textType === 'subtitle' ? 'subtitle' :
+                   props.textType === 'title' ? 'title' : 'text-element';
 
-  const getElementClasses = (element: any, baseClass: string) => {
-    if (!element) return baseClass;
-    
-    const props = element.properties as TextElementProperties;
-    const isSelected = selectedElement?.id === element.id;
-    
-    // Debug log for subtitle
-    if (element.id === 'text-subtitle') {
-      console.log('Subtitle element props:', props);
-    }
-    
-    let classes = `${baseClass} selectable-element`;
-    
-    if (props.backgroundStyle !== 'none') {
-      classes += ` bg-style-${props.backgroundStyle}`;
-    }
-    
-    if (props.cornerStyle === 'sharp') {
-      classes += ' corner-style-sharp';
-    } else {
-      classes += ' corner-style-rounded';
-    }
-    
-    if (isSelected) {
-      classes += ' selected';
-    }
-    
-    return classes;
-  };
+  let classes = `${baseClass} selectable-element`;
+
+  if (props.backgroundStyle !== 'none') {
+    classes += ` bg-style-${props.backgroundStyle}`;
+  }
+
+  if (props.cornerStyle === 'sharp') {
+    classes += ' corner-style-sharp';
+  } else {
+    classes += ' corner-style-rounded';
+  }
+
+  if (isSelected) {
+    classes += ' selected';
+  }
+
+  if (isDragging) {
+    classes += ' dragging';
+  }
 
   return (
-    <div className="text-section">
-      <div className="title-section">
-        <span 
-          className={getElementClasses(titleBeforeElement, 'title-before')}
-          data-element-type="text" 
-          data-element-name="Title Before"
-          onClick={(e) => handleElementClick('text-title-before', e)}
-          style={{
-            ...getElementStyle(titleBeforeElement),
-            minHeight: content.titleBefore ? undefined : '20px',
-            minWidth: content.titleBefore ? undefined : '20px',
-            display: content.titleBefore ? undefined : 'inline-block'
-          }}
-        >
-          {content.titleBefore}
-        </span>
-        
-        <span 
-          className={getElementClasses(titleHighlightElement, 'title-highlight')}
-          data-element-type="text" 
-          data-element-name="Title Highlight"
-          onClick={(e) => handleElementClick('text-title-highlight', e)}
-          style={getElementStyle(titleHighlightElement)}
-        >
-          {content.titleHighlight}
-        </span>
-        
-        <span 
-          className={getElementClasses(titleAfterElement, 'title-after')}
-          data-element-type="text" 
-          data-element-name="Title After"
-          onClick={(e) => handleElementClick('text-title-after', e)}
-          style={{
-            ...getElementStyle(titleAfterElement),
-            minHeight: content.titleAfter ? undefined : '20px',
-            minWidth: content.titleAfter ? undefined : '20px',
-            display: content.titleAfter ? undefined : 'inline-block'
-          }}
-        >
-          {content.titleAfter}
-        </span>
-      </div>
-      
-      <div 
-        className={getElementClasses(subtitleElement, 'subtitle-wrapper')}
-        data-element-type="text" 
-        data-element-name="Subtitle"
-        onClick={(e) => handleElementClick('text-subtitle', e)}
-        style={getElementStyle(subtitleElement)}
-      >
-        <span 
-          className="subtitle-text"
-          style={getSubtitleTextStyle(subtitleElement)}
-        >
-          {content.subtitle || 'AI-Powered Development Tool'}
-        </span>
-      </div>
-      
-      {content.accentLabel && (
-        <div 
-          className={getElementClasses(accentLabelElement, 'accent-label')}
-          data-element-type="text" 
-          data-element-name="Accent Label"
-          onClick={(e) => handleElementClick('text-accent-label', e)}
-          style={getElementStyle(accentLabelElement)}
-        >
-          {content.accentLabel}
-        </div>
-      )}
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      className={classes}
+      data-element-type="text"
+      data-element-name={element.name}
+      data-element-id={element.id}
+      onClick={handleElementClick}
+      style={style}
+    >
+      {content || `[${element.name}]`}
     </div>
   );
+};
+
+// Static Text Component (for layout modes)
+const StaticText: React.FC<{ element: SlideElement }> = ({ element }) => {
+  const { selectElement, selectedElement } = useSlideStore();
+
+  const handleElementClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    selectElement(element);
+  };
+
+  const props = element.properties as TextElementProperties;
+  const content = props.content || '';
+  const isSelected = selectedElement?.id === element.id;
+
+  // Calculate contrasting text color and shadow color
+  const textColor = props.backgroundStyle !== 'none' ? getContrastingColor(props.backgroundColor) : undefined;
+  const shadowColor = props.backgroundStyle === 'drop-shadow' ? getDarkenedColor(props.backgroundColor) : undefined;
+
+  const style = {
+    fontSize: `${props.fontSize}px`,
+    opacity: props.opacity / 100,
+    cursor: 'pointer',
+    minHeight: content ? undefined : '20px',
+    minWidth: content ? undefined : '50px',
+    display: 'inline-block',
+    padding: props.backgroundStyle !== 'none' ? '8px 12px' : '4px',
+    userSelect: 'none' as const,
+    ...(props.backgroundStyle !== 'none' && {
+      '--element-bg-color': props.backgroundColor,
+      '--element-text-color': textColor,
+      '--element-shadow-color': shadowColor,
+    }),
+  };
+
+  // Get base class from textType
+  const baseClass = props.textType === 'accent-label' ? 'accent-label' :
+                   props.textType === 'subtitle' ? 'subtitle' :
+                   props.textType === 'title' ? 'title' : 'text-element';
+
+  let classes = `${baseClass} selectable-element`;
+
+  if (props.backgroundStyle !== 'none') {
+    classes += ` bg-style-${props.backgroundStyle}`;
+  }
+
+  if (props.cornerStyle === 'sharp') {
+    classes += ' corner-style-sharp';
+  } else {
+    classes += ' corner-style-rounded';
+  }
+
+  if (isSelected) {
+    classes += ' selected';
+  }
+
+  return (
+    <span
+      className={classes}
+      data-element-type="text"
+      data-element-name={element.name}
+      onClick={handleElementClick}
+      style={style}
+    >
+      {content || `[${element.name}]`}
+    </span>
+  );
+};
+
+export const TextElements: React.FC = () => {
+  const { elements, textLayoutMode, gridElementsPerRow } = useSlideStore();
+
+  // Get all text elements from store
+  const textElements = elements.filter(el => el.type === 'text');
+
+  // If no layout mode is set, use the old drag-and-drop system
+  if (!textLayoutMode) {
+    return (
+      <>
+        {textElements.map((element) => (
+          <DraggableText key={element.id} element={element} />
+        ))}
+      </>
+    );
+  }
+
+  // Render based on layout mode
+  switch (textLayoutMode) {
+    case 'inline':
+      return (
+        <div className="text-section" style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '16px',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'absolute',
+          maxWidth: '50%'
+        }}>
+          {textElements.map((element) => (
+            <StaticText key={element.id} element={element} />
+          ))}
+        </div>
+      );
+
+    case 'lines':
+      return (
+        <div className="text-section" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'absolute',
+          maxWidth: '95%'
+        }}>
+          {textElements.map((element) => (
+            <div key={element.id} style={{ textAlign: 'center' }}>
+              <StaticText element={element} />
+            </div>
+          ))}
+        </div>
+      );
+
+    case 'grid':
+      return (
+        <div className="text-section" style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${gridElementsPerRow}, 1fr)`,
+          gap: '16px',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'absolute',
+          maxWidth: '95%'
+        }}>
+          {textElements.map((element) => (
+            <div key={element.id} style={{ textAlign: 'center' }}>
+              <StaticText element={element} />
+            </div>
+          ))}
+        </div>
+      );
+
+    default:
+      // Fallback to drag-and-drop
+      return (
+        <>
+          {textElements.map((element) => (
+            <DraggableText key={element.id} element={element} />
+          ))}
+        </>
+      );
+  }
 };

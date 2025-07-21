@@ -1,3 +1,6 @@
+// Text element types
+export type TextElementType = 'title' | 'subtitle' | 'accent-label' | 'custom';
+
 // Element property interfaces
 export interface TextElementProperties {
   fontSize: number;
@@ -5,7 +8,8 @@ export interface TextElementProperties {
   backgroundStyle: 'none' | 'highlight' | 'drop-shadow';
   cornerStyle: 'rounded' | 'sharp';
   opacity: number;
-  content?: string;
+  content: string;
+  textType: TextElementType;
 }
 
 export interface LogoIconElementProperties {
@@ -45,20 +49,10 @@ export type Theme = 'claude' | 'tech' | 'dark' | 'blueprint';
 export type CornerStyle = 'rounded' | 'sharp';
 export type LogoType = 'url' | 'library';
 export type IconType = 'none' | 'tech' | 'shapes' | 'arrows' | 'mixed';
-
-// Slide content interface
-export interface SlideContent {
-  titleBefore: string;
-  titleHighlight: string;
-  titleAfter: string;
-  subtitle: string;
-  accentLabel: string;
-}
+export type TextLayoutMode = 'inline' | 'lines' | 'grid';
 
 // Main store state interface
 export interface SlideState {
-  // Content
-  content: SlideContent;
   
   // Theme and styling
   theme: Theme;
@@ -74,12 +68,15 @@ export interface SlideState {
   iconType: IconType;
   iconSize: number;
   
+  // Text layout system
+  textLayoutMode: TextLayoutMode;
+  gridElementsPerRow: number;
+  
   // Element management
   elements: SlideElement[];
   selectedElement: SlideElement | null;
   
   // Actions
-  updateContent: (content: Partial<SlideContent>) => void;
   setTheme: (theme: Theme) => void;
   setCornerStyle: (style: CornerStyle) => void;
   setLogoType: (type: LogoType) => void;
@@ -88,11 +85,15 @@ export interface SlideState {
   setLogoSize: (size: number) => void;
   setIconType: (type: IconType) => void;
   setIconSize: (size: number) => void;
+  setTextLayoutMode: (mode: TextLayoutMode) => void;
+  setGridElementsPerRow: (count: number) => void;
   selectElement: (element: SlideElement | null) => void;
   updateElementProperties: (elementId: string, properties: Partial<ElementProperties>) => void;
   updateElementPosition: (elementId: string, position: { x: number; y: number }) => void;
   addElement: (element: SlideElement) => void;
+  addTextElement: (textType: TextElementType, content: string, position?: { x: number; y: number }) => void;
   removeElement: (elementId: string) => void;
+  reorderElements: (elementIds: string[]) => void;
   randomizeLogoPositions: () => void;
   randomizeIconPositions: () => void;
 }
