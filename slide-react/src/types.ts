@@ -67,11 +67,6 @@ export interface SlideState {
   iconType: IconType;
   iconSize: number;
   
-  // Grid system
-  gridRows: number;
-  gridCols: number;
-  showGrid: boolean;
-  
   // Element management
   elements: SlideElement[];
   selectedElement: SlideElement | null;
@@ -85,9 +80,6 @@ export interface SlideState {
   setLogoSize: (size: number) => void;
   setIconType: (type: IconType) => void;
   setIconSize: (size: number) => void;
-  setGridRows: (rows: number) => void;
-  setGridCols: (cols: number) => void;
-  setShowGrid: (show: boolean) => void;
   selectElement: (element: SlideElement | null) => void;
   updateElementProperties: (elementId: string, properties: Partial<ElementProperties>) => void;
   updateElementPosition: (elementId: string, position: { x: number; y: number }) => void;
