@@ -142,6 +142,42 @@
   font-weight: 800;
 }
 
+/* Claude Theme - Subtitle */
+.claude-theme .subtitle-text,
+.claude-theme .subtitle,
+.claude-theme .selectable-element.subtitle {
+  color: #ffffff;
+  font-size: 42px;
+  padding: 0 40px;
+}
+
+/* Tech Theme - Subtitle */
+.tech-theme .subtitle-text,
+.tech-theme .subtitle,
+.tech-theme .selectable-element.subtitle {
+  color: #ffffff;
+  font-size: 42px;
+  padding: 0 40px;
+}
+
+/* Dark Theme - Subtitle */
+.dark-theme .subtitle-text,
+.dark-theme .subtitle,
+.dark-theme .selectable-element.subtitle {
+  color: #ffffff;
+  font-size: 42px;
+  padding: 0 40px;
+}
+
+/* Blueprint Theme - Subtitle */
+.blueprint-theme .subtitle-text,
+.blueprint-theme .subtitle,
+.blueprint-theme .selectable-element.subtitle {
+  color: #ffffff;
+  font-size: 42px;
+  padding: 0 40px;
+}
+
 /* Title and accent elements - match theme specificity */
 .title,
 .selectable-element.title {

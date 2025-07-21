@@ -223,7 +223,7 @@ export const TextElements: React.FC = () => {
         <div className="text-section" style={{
           display: 'flex',
           flexWrap: 'wrap',
-          gap: '16px',
+          gap: '24px',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'absolute',
@@ -240,7 +240,7 @@ export const TextElements: React.FC = () => {
         <div className="text-section" style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px',
+          gap: '24px',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'absolute',
@@ -259,7 +259,7 @@ export const TextElements: React.FC = () => {
         <div className="text-section" style={{
           display: 'grid',
           gridTemplateColumns: `repeat(${gridElementsPerRow}, 1fr)`,
-          gap: '16px',
+          gap: '24px',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'absolute',
