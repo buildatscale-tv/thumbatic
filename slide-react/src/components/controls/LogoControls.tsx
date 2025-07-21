@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSlideStore } from '../../store/slideStore';
 import { LOGO_LIBRARY } from '../../constants/logos';
 
@@ -14,6 +14,17 @@ export const LogoControls: React.FC = () => {
     setLogoSize,
     randomizeLogoPositions 
   } = useSlideStore();
+
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredLogos = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return LOGO_LIBRARY;
+    }
+    return LOGO_LIBRARY.filter(logo => 
+      logo.label.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm]);
 
   const handleLogoSelection = (logoValue: string, checked: boolean) => {
     if (checked) {
@@ -52,19 +63,44 @@ export const LogoControls: React.FC = () => {
 
       {logoType === 'library' && (
         <div className="input-group">
-          <label htmlFor="logoLibrary">Select Logos:</label>
+          <label htmlFor="logoLibrary">
+            Select Logos: 
+            <span style={{ fontSize: '12px', color: '#666', fontWeight: 'normal' }}>
+              {selectedLogos.length} selected, {filteredLogos.length} shown
+            </span>
+          </label>
+          <input
+            type="text"
+            placeholder="Search logos..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '8px',
+              marginBottom: '12px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}
+          />
           <div className="logo-checkboxes">
-            {LOGO_LIBRARY.map((logo) => (
-              <label key={logo.value}>
-                <input
-                  type="checkbox"
-                  value={logo.value}
-                  checked={selectedLogos.includes(logo.value)}
-                  onChange={(e) => handleLogoSelection(logo.value, e.target.checked)}
-                />
-                {logo.label}
-              </label>
-            ))}
+            {filteredLogos.length > 0 ? (
+              filteredLogos.map((logo) => (
+                <label key={logo.value}>
+                  <input
+                    type="checkbox"
+                    value={logo.value}
+                    checked={selectedLogos.includes(logo.value)}
+                    onChange={(e) => handleLogoSelection(logo.value, e.target.checked)}
+                  />
+                  {logo.label}
+                </label>
+              ))
+            ) : (
+              <div style={{ padding: '12px', color: '#666', fontStyle: 'italic' }}>
+                No logos found matching "{searchTerm}"
+              </div>
+            )}
           </div>
           <button 
             type="button" 
