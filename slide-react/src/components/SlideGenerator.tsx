@@ -2,12 +2,19 @@ import React from 'react';
 import { ControlPanel } from './ControlPanel';
 import { SlideCanvas } from './SlideCanvas';
 
-export const SlideGenerator: React.FC = () => {
+interface SlideGeneratorProps {
+  dragState?: {
+    isDragging: boolean;
+    position?: { x: number; y: number };
+  };
+}
+
+export const SlideGenerator: React.FC<SlideGeneratorProps> = ({ dragState }) => {
   return (
     <div className="container">
       <ControlPanel />
       <div className="preview">
-        <SlideCanvas />
+        <SlideCanvas dragState={dragState} />
       </div>
     </div>
   );
