@@ -49,7 +49,6 @@ export type Theme = 'claude' | 'tech' | 'dark' | 'blueprint';
 export type CornerStyle = 'rounded' | 'sharp';
 export type LogoType = 'url' | 'library';
 export type IconType = 'none' | 'tech' | 'shapes' | 'arrows' | 'mixed';
-export type TextLayoutMode = 'inline' | 'lines' | 'grid';
 
 // Main store state interface
 export interface SlideState {
@@ -68,9 +67,10 @@ export interface SlideState {
   iconType: IconType;
   iconSize: number;
   
-  // Text layout system
-  textLayoutMode: TextLayoutMode;
-  gridElementsPerRow: number;
+  // Grid system
+  gridRows: number;
+  gridCols: number;
+  showGrid: boolean;
   
   // Element management
   elements: SlideElement[];
@@ -85,8 +85,9 @@ export interface SlideState {
   setLogoSize: (size: number) => void;
   setIconType: (type: IconType) => void;
   setIconSize: (size: number) => void;
-  setTextLayoutMode: (mode: TextLayoutMode) => void;
-  setGridElementsPerRow: (count: number) => void;
+  setGridRows: (rows: number) => void;
+  setGridCols: (cols: number) => void;
+  setShowGrid: (show: boolean) => void;
   selectElement: (element: SlideElement | null) => void;
   updateElementProperties: (elementId: string, properties: Partial<ElementProperties>) => void;
   updateElementPosition: (elementId: string, position: { x: number; y: number }) => void;

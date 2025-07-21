@@ -1,5 +1,18 @@
 import { create } from 'zustand';
-import type { SlideState, SlideElement, ElementProperties, TextElementType, TextLayoutMode } from '../types';
+import type { SlideState, SlideElement, ElementProperties, TextElementType, LogoIconElementProperties } from '../types';
+
+// Grid utility function for initial positioning
+const gridToPixel = (gridX: number, gridY: number, gridCols: number, gridRows: number): { x: number; y: number } => {
+  const SLIDE_WIDTH = 1280;
+  const SLIDE_HEIGHT = 720;
+  const cellWidth = SLIDE_WIDTH / gridCols;
+  const cellHeight = SLIDE_HEIGHT / gridRows;
+  
+  return {
+    x: gridX * cellWidth, // Grid intersection point
+    y: gridY * cellHeight
+  };
+};
 
 // Helper function to generate safe positions outside center exclusion zone (pixel-based)
 const generateSafePosition = (): { x: number; y: number } => {
@@ -32,14 +45,20 @@ const generateSafePosition = (): { x: number; y: number } => {
   return { x, y };
 };
 
-// Create initial text elements with simplified structure
+// Create initial text elements positioned on grid (center-aligned vertically)
 const createInitialTextElements = (): SlideElement[] => {
+  const gridCols = 4;
+  const gridRows = 3;
+  
+  // Calculate center column positions
+  const centerCol = Math.floor(gridCols / 2);
+  
   return [
     {
       id: 'text-title',
       type: 'text',
       name: 'Title',
-      position: { x: 640, y: 288 },
+      position: gridToPixel(centerCol, 0, gridCols, gridRows), // Top center
       properties: {
         fontSize: 96,
         backgroundColor: '#ff6b35',
@@ -54,7 +73,7 @@ const createInitialTextElements = (): SlideElement[] => {
       id: 'text-subtitle',
       type: 'text',
       name: 'Subtitle',
-      position: { x: 640, y: 396 },
+      position: gridToPixel(centerCol, 1, gridCols, gridRows), // Middle center
       properties: {
         fontSize: 64,
         backgroundColor: '#FFD700',
@@ -69,7 +88,7 @@ const createInitialTextElements = (): SlideElement[] => {
       id: 'text-accent-label',
       type: 'text',
       name: 'Accent Label',
-      position: { x: 640, y: 576 },
+      position: gridToPixel(centerCol, 2, gridCols, gridRows), // Bottom center
       properties: {
         fontSize: 48,
         backgroundColor: '#ffffff',
@@ -98,9 +117,10 @@ export const useSlideStore = create<SlideState>((set, get) => ({
   iconType: 'none',
   iconSize: 48,
   
-  // Initial text layout system
-  textLayoutMode: 'lines',
-  gridElementsPerRow: 3,
+  // Initial grid system
+  gridRows: 3,
+  gridCols: 4,
+  showGrid: false,
   
   // Initial element management - include text elements
   elements: createInitialTextElements(),
@@ -121,14 +141,14 @@ export const useSlideStore = create<SlideState>((set, get) => ({
     // Remove logos that are no longer selected
     const updatedElements = state.elements.filter(element => 
       element.type !== 'logo' || selectedLogos.some(url => 
-        element.properties.src === url
+        (element.properties as LogoIconElementProperties).src === url
       )
     );
     
     // Add new logo elements for newly selected logos
     const existingLogoUrls = state.elements
       .filter(el => el.type === 'logo')
-      .map(el => (el.properties as any).src);
+      .map(el => (el.properties as LogoIconElementProperties).src);
     
     const newLogoElements: SlideElement[] = selectedLogos
       .filter(url => !existingLogoUrls.includes(url))
@@ -178,9 +198,11 @@ export const useSlideStore = create<SlideState>((set, get) => ({
     set({ iconSize, elements: updatedElements });
   },
   
-  setTextLayoutMode: (textLayoutMode: TextLayoutMode) => set({ textLayoutMode }),
+  setGridRows: (gridRows: number) => set({ gridRows }),
   
-  setGridElementsPerRow: (gridElementsPerRow: number) => set({ gridElementsPerRow }),
+  setGridCols: (gridCols: number) => set({ gridCols }),
+  
+  setShowGrid: (showGrid: boolean) => set({ showGrid }),
   
   selectElement: (selectedElement) => set({ selectedElement }),
   
@@ -203,6 +225,8 @@ export const useSlideStore = create<SlideState>((set, get) => ({
   
   updateElementPosition: (elementId, position) => {
     const state = get();
+    
+    // Position is used directly (snapping handled in App component for text elements)
     const updatedElements = state.elements.map(element =>
       element.id === elementId
         ? { ...element, position }

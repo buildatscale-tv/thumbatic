@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSlideStore } from '../../store/slideStore';
-import type { TextElementType, TextElementProperties, TextLayoutMode } from '../../types';
+import type { TextElementType, TextElementProperties } from '../../types';
 
 export const ContentControls: React.FC = () => {
   const {
@@ -9,10 +9,12 @@ export const ContentControls: React.FC = () => {
     addTextElement,
     removeElement,
     selectElement,
-    textLayoutMode,
-    gridElementsPerRow,
-    setTextLayoutMode,
-    setGridElementsPerRow
+    gridRows,
+    gridCols,
+    showGrid,
+    setGridRows,
+    setGridCols,
+    setShowGrid
   } = useSlideStore();
   const [newElementType, setNewElementType] = useState<TextElementType>('title');
   const [newElementContent, setNewElementContent] = useState('');
@@ -48,71 +50,46 @@ export const ContentControls: React.FC = () => {
         <h3>Text Elements</h3>
       </div>
 
-      {/* Layout Mode Controls */}
+      {/* Grid Configuration Controls */}
       <div className="input-group">
-        <label>Layout Mode:</label>
-        <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-          <button
-            onClick={() => setTextLayoutMode('inline')}
-            style={{
-              flex: 1,
-              padding: '8px',
-              backgroundColor: textLayoutMode === 'inline' ? '#007bff' : '#f8f9fa',
-              color: textLayoutMode === 'inline' ? 'white' : '#495057',
-              border: '1px solid #dee2e6',
-              borderRadius: '4px',
-              fontSize: '12px'
-            }}
-          >
-            Inline
-          </button>
-          <button
-            onClick={() => setTextLayoutMode('lines')}
-            style={{
-              flex: 1,
-              padding: '8px',
-              backgroundColor: textLayoutMode === 'lines' ? '#007bff' : '#f8f9fa',
-              color: textLayoutMode === 'lines' ? 'white' : '#495057',
-              border: '1px solid #dee2e6',
-              borderRadius: '4px',
-              fontSize: '12px'
-            }}
-          >
-            Lines
-          </button>
-          <button
-            onClick={() => setTextLayoutMode('grid')}
-            style={{
-              flex: 1,
-              padding: '8px',
-              backgroundColor: textLayoutMode === 'grid' ? '#007bff' : '#f8f9fa',
-              color: textLayoutMode === 'grid' ? 'white' : '#495057',
-              border: '1px solid #dee2e6',
-              borderRadius: '4px',
-              fontSize: '12px'
-            }}
-          >
-            Grid
-          </button>
-        </div>
+        <label htmlFor="gridRows">Grid Rows: {gridRows}</label>
+        <input
+          type="range"
+          id="gridRows"
+          min="2"
+          max="10"
+          step="1"
+          value={gridRows}
+          onChange={(e) => setGridRows(parseInt(e.target.value))}
+          style={{ width: '100%' }}
+        />
       </div>
 
-      {/* Grid Elements Per Row Control */}
-      {textLayoutMode === 'grid' && (
-        <div className="input-group">
-          <label htmlFor="gridElementsPerRow">Elements Per Row: {gridElementsPerRow}</label>
+      <div className="input-group">
+        <label htmlFor="gridCols">Grid Columns: {gridCols}</label>
+        <input
+          type="range"
+          id="gridCols"
+          min="2"
+          max="10"
+          step="1"
+          value={gridCols}
+          onChange={(e) => setGridCols(parseInt(e.target.value))}
+          style={{ width: '100%' }}
+        />
+      </div>
+
+      <div className="input-group">
+        <label>
           <input
-            type="range"
-            id="gridElementsPerRow"
-            min="1"
-            max="10"
-            step="1"
-            value={gridElementsPerRow}
-            onChange={(e) => setGridElementsPerRow(parseInt(e.target.value))}
-            style={{ width: '100%' }}
+            type="checkbox"
+            checked={showGrid}
+            onChange={(e) => setShowGrid(e.target.checked)}
+            style={{ marginRight: '8px' }}
           />
-        </div>
-      )}
+          Show Grid Lines
+        </label>
+      </div>
 
       {/* Add new text element */}
       <div className="input-group">
