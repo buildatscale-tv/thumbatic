@@ -54,6 +54,7 @@ const DraggableLogo: React.FC<{ element: any }> = ({ element }) => {
           height: '100%',
           objectFit: 'contain',
           pointerEvents: 'none',
+          transform: `rotate(${props.rotation}deg)`,
         }}
       />
     </div>
