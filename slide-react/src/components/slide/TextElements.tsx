@@ -44,6 +44,7 @@ const getDarkenedColor = (hexColor: string): string => {
 // Draggable Text Component (for manual positioning)
 const DraggableText: React.FC<{ element: SlideElement }> = ({ element }) => {
   const { selectElement, selectedElement } = useSlideStore();
+  const elementRef = React.useRef<HTMLDivElement>(null);
 
   const {
     attributes,
@@ -64,6 +65,13 @@ const DraggableText: React.FC<{ element: SlideElement }> = ({ element }) => {
   const props = element.properties as TextElementProperties;
   const content = props.content || '';
   const isSelected = selectedElement?.id === element.id;
+  
+  // Debug logging for position (reduced frequency)
+  React.useEffect(() => {
+    if (content && element.position.x !== 0 && element.position.y !== 0) {
+      console.log(`Text element "${content}" positioned at:`, element.position);
+    }
+  }, [element.position.x, element.position.y, content]);
 
   // Calculate contrasting text color and shadow color
   const textColor = props.backgroundStyle !== 'none' ? getContrastingColor(props.backgroundColor) : undefined;
@@ -71,8 +79,8 @@ const DraggableText: React.FC<{ element: SlideElement }> = ({ element }) => {
 
   const style = {
     position: 'absolute' as const,
-    left: `${element.position.x}%`,
-    top: `${element.position.y}%`,
+    left: `${element.position.x}px`,
+    top: `${element.position.y}px`,
     transform: `translate(-50%, -50%) ${CSS.Translate.toString(transform)}`,
     fontSize: `${props.fontSize}px`,
     opacity: props.opacity / 100,
@@ -117,7 +125,10 @@ const DraggableText: React.FC<{ element: SlideElement }> = ({ element }) => {
 
   return (
     <div
-      ref={setNodeRef}
+      ref={(node) => {
+        setNodeRef(node);
+        elementRef.current = node;
+      }}
       {...listeners}
       {...attributes}
       className={classes}
@@ -132,155 +143,19 @@ const DraggableText: React.FC<{ element: SlideElement }> = ({ element }) => {
   );
 };
 
-// Static Text Component (for layout modes)
-const StaticText: React.FC<{ element: SlideElement }> = ({ element }) => {
-  const { selectElement, selectedElement } = useSlideStore();
-
-  const handleElementClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    selectElement(element);
-  };
-
-  const props = element.properties as TextElementProperties;
-  const content = props.content || '';
-  const isSelected = selectedElement?.id === element.id;
-
-  // Calculate contrasting text color and shadow color
-  const textColor = props.backgroundStyle !== 'none' ? getContrastingColor(props.backgroundColor) : undefined;
-  const shadowColor = props.backgroundStyle === 'drop-shadow' ? getDarkenedColor(props.backgroundColor) : undefined;
-
-  const style = {
-    fontSize: `${props.fontSize}px`,
-    opacity: props.opacity / 100,
-    cursor: 'pointer',
-    minHeight: content ? undefined : '20px',
-    minWidth: content ? undefined : '50px',
-    display: 'inline-block',
-    padding: props.backgroundStyle !== 'none' ? '8px 12px' : '4px',
-    userSelect: 'none' as const,
-    ...(props.backgroundStyle !== 'none' && {
-      '--element-bg-color': props.backgroundColor,
-      '--element-text-color': textColor,
-      '--element-shadow-color': shadowColor,
-    }),
-  };
-
-  // Get base class from textType
-  const baseClass = props.textType === 'accent-label' ? 'accent-label' :
-                   props.textType === 'subtitle' ? 'subtitle' :
-                   props.textType === 'title' ? 'title' : 'text-element';
-
-  let classes = `${baseClass} selectable-element`;
-
-  if (props.backgroundStyle !== 'none') {
-    classes += ` bg-style-${props.backgroundStyle}`;
-  }
-
-  if (props.cornerStyle === 'sharp') {
-    classes += ' corner-style-sharp';
-  } else {
-    classes += ' corner-style-rounded';
-  }
-
-  if (isSelected) {
-    classes += ' selected';
-  }
-
-  return (
-    <span
-      className={classes}
-      data-element-type="text"
-      data-element-name={element.name}
-      onClick={handleElementClick}
-      style={style}
-    >
-      {content || `[${element.name}]`}
-    </span>
-  );
-};
 
 export const TextElements: React.FC = () => {
-  const { elements, textLayoutMode, gridElementsPerRow } = useSlideStore();
+  const { elements } = useSlideStore();
 
   // Get all text elements from store
   const textElements = elements.filter(el => el.type === 'text');
 
-  // If no layout mode is set, use the old drag-and-drop system
-  if (!textLayoutMode) {
-    return (
-      <>
-        {textElements.map((element) => (
-          <DraggableText key={element.id} element={element} />
-        ))}
-      </>
-    );
-  }
-
-  // Render based on layout mode
-  switch (textLayoutMode) {
-    case 'inline':
-      return (
-        <div className="text-section" style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '24px',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'absolute',
-          maxWidth: '50%'
-        }}>
-          {textElements.map((element) => (
-            <StaticText key={element.id} element={element} />
-          ))}
-        </div>
-      );
-
-    case 'lines':
-      return (
-        <div className="text-section" style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '24px',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'absolute',
-          maxWidth: '95%'
-        }}>
-          {textElements.map((element) => (
-            <div key={element.id} style={{ textAlign: 'center' }}>
-              <StaticText element={element} />
-            </div>
-          ))}
-        </div>
-      );
-
-    case 'grid':
-      return (
-        <div className="text-section" style={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(${gridElementsPerRow}, 1fr)`,
-          gap: '24px',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'absolute',
-          maxWidth: '95%'
-        }}>
-          {textElements.map((element) => (
-            <div key={element.id} style={{ textAlign: 'center' }}>
-              <StaticText element={element} />
-            </div>
-          ))}
-        </div>
-      );
-
-    default:
-      // Fallback to drag-and-drop
-      return (
-        <>
-          {textElements.map((element) => (
-            <DraggableText key={element.id} element={element} />
-          ))}
-        </>
-      );
-  }
+  // Always use draggable text elements with grid snapping
+  return (
+    <>
+      {textElements.map((element) => (
+        <DraggableText key={element.id} element={element} />
+      ))}
+    </>
+  );
 };
