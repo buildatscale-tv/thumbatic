@@ -8,13 +8,7 @@ export const ContentControls: React.FC = () => {
     updateElementProperties,
     addTextElement,
     removeElement,
-    selectElement,
-    gridRows,
-    gridCols,
-    showGrid,
-    setGridRows,
-    setGridCols,
-    setShowGrid
+    selectElement
   } = useSlideStore();
   const [newElementType, setNewElementType] = useState<TextElementType>('title');
   const [newElementContent, setNewElementContent] = useState('');
@@ -48,47 +42,6 @@ export const ContentControls: React.FC = () => {
     <>
       <div className="section-header">
         <h3>Text Elements</h3>
-      </div>
-
-      {/* Grid Configuration Controls */}
-      <div className="input-group">
-        <label htmlFor="gridRows">Grid Rows: {gridRows}</label>
-        <input
-          type="range"
-          id="gridRows"
-          min="2"
-          max="10"
-          step="1"
-          value={gridRows}
-          onChange={(e) => setGridRows(parseInt(e.target.value))}
-          style={{ width: '100%' }}
-        />
-      </div>
-
-      <div className="input-group">
-        <label htmlFor="gridCols">Grid Columns: {gridCols}</label>
-        <input
-          type="range"
-          id="gridCols"
-          min="2"
-          max="10"
-          step="1"
-          value={gridCols}
-          onChange={(e) => setGridCols(parseInt(e.target.value))}
-          style={{ width: '100%' }}
-        />
-      </div>
-
-      <div className="input-group">
-        <label>
-          <input
-            type="checkbox"
-            checked={showGrid}
-            onChange={(e) => setShowGrid(e.target.checked)}
-            style={{ marginRight: '8px' }}
-          />
-          Show Grid Lines
-        </label>
       </div>
 
       {/* Add new text element */}

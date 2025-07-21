@@ -1,5 +1,4 @@
 import React from 'react';
-import { useSlideStore } from '../store/slideStore';
 import { ContentControls } from './controls/ContentControls';
 import { LogoControls } from './controls/LogoControls';
 import { ThemeControls } from './controls/ThemeControls';

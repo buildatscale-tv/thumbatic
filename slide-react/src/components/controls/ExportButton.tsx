@@ -112,10 +112,7 @@ export const ExportButton: React.FC = () => {
       const canvas = await domToCanvas(slideElement, {
         scale: 4,
         backgroundColor: null,
-        debug: false, // Disable debug to reduce noise
-        font: {
-          embedFonts: true
-        }
+        debug: false // Disable debug to reduce noise
       });
       
       // Restore original styles (removed font cleanup)
@@ -165,11 +162,7 @@ export const ExportButton: React.FC = () => {
         
         const slideElement = document.getElementById('slide');
         if (slideElement) {
-          const canvas = await domToCanvas(slideElement, {
-            font: {
-              embedFonts: true
-            }
-          });
+          const canvas = await domToCanvas(slideElement, {});
           
           const link = document.createElement('a');
           // Generate filename from text elements

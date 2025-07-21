@@ -10,7 +10,9 @@
       "WebFetch(domain:commons.wikimedia.org)",
       "WebFetch(domain:pip.pypa.io)",
       "WebFetch(domain:cdn.jsdelivr.net)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(mkdir:*)",
+      "Bash(git rm:*)"
     ],
     "deny": []
   }
