@@ -1,67 +1,64 @@
 import React from 'react';
-import { useDraggable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
 import { useSlideStore } from '../../store/slideStore';
-import type { LogoIconElementProperties } from '../../types';
+import { DraggableElement } from '../DraggableElement';
+import type { LogoIconElementProperties, SlideElement } from '../../types';
 
-const DraggableLogo: React.FC<{ element: any }> = ({ element }) => {
+interface DragCallbacks {
+  onDragStart: (elementId: string, position: { x: number; y: number }) => void;
+  onDragMove: (elementId: string, position: { x: number; y: number }) => void;
+  onDragEnd: (elementId: string, position: { x: number; y: number }) => void;
+}
+
+const DraggableLogo: React.FC<{ element: SlideElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
   const { selectElement } = useSlideStore();
   const props = element.properties as LogoIconElementProperties;
-
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    isDragging,
-  } = useDraggable({
-    id: element.id,
-  });
 
   const handleLogoClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     selectElement(element);
   };
 
+  const logoSize = props.size || 64;
+
   return (
-    <div
-      ref={setNodeRef}
+    <DraggableElement
+      id={element.id}
+      position={element.position}
+      dragCallbacks={dragCallbacks}
       className="random-logo selectable-element"
-      data-element-type="logo"
-      data-element-name={element.name}
-      data-element-id={element.id}
       style={{
-        position: 'absolute',
-        left: element.position.x || 0,
-        top: element.position.y || 0,
-        width: `${props.size}px`,
-        height: `${props.size}px`,
-        opacity: isDragging ? 0.5 : props.opacity / 100,
-        transform: CSS.Translate.toString(transform),
-        cursor: isDragging ? 'grabbing' : 'grab',
-        zIndex: isDragging ? 1000 : 1,
+        width: `${logoSize}px`,
+        height: `${logoSize}px`,
+        opacity: props.opacity / 100,
         touchAction: 'none',
       }}
-      onClick={handleLogoClick}
-      {...listeners}
-      {...attributes}
     >
-      <img
-        src={props.src}
-        alt={element.name}
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-          pointerEvents: 'none',
-          transform: `rotate(${props.rotation}deg)`,
-        }}
-      />
-    </div>
+      <div
+        data-element-type="logo"
+        data-element-name={element.name}
+        onClick={handleLogoClick}
+      >
+        <img
+          src={props.src}
+          alt={element.name}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            pointerEvents: 'none',
+            transform: `rotate(${props.rotation}deg)`,
+          }}
+        />
+      </div>
+    </DraggableElement>
   );
 };
 
-export const LogoElements: React.FC = () => {
+interface LogoElementsProps {
+  dragCallbacks: DragCallbacks;
+}
+
+export const LogoElements: React.FC<LogoElementsProps> = ({ dragCallbacks }) => {
   const { logoType, logoUrl, elements } = useSlideStore();
   const logoElements = elements.filter(el => el.type === 'logo');
 
@@ -89,6 +86,7 @@ export const LogoElements: React.FC = () => {
             <DraggableLogo 
               key={element.id} 
               element={element}
+              dragCallbacks={dragCallbacks}
             />
           ))}
         </div>

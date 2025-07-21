@@ -1,60 +1,57 @@
 import React, { useEffect } from 'react';
-import { useDraggable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
 import { useSlideStore } from '../../store/slideStore';
+import { DraggableElement } from '../DraggableElement';
 import { ICON_LIBRARY } from '../../constants/icons';
 import type { LogoIconElementProperties, SlideElement } from '../../types';
 
-const DraggableIcon: React.FC<{ element: any }> = ({ element }) => {
+interface DragCallbacks {
+  onDragStart: (elementId: string, position: { x: number; y: number }) => void;
+  onDragMove: (elementId: string, position: { x: number; y: number }) => void;
+  onDragEnd: (elementId: string, position: { x: number; y: number }) => void;
+}
+
+const DraggableIcon: React.FC<{ element: SlideElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
   const { selectElement } = useSlideStore();
   const props = element.properties as LogoIconElementProperties;
-
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    isDragging,
-  } = useDraggable({
-    id: element.id,
-    data: element,
-  });
 
   const handleIconClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     selectElement(element);
   };
 
-  const style = {
-    position: 'absolute' as const,
-    left: element.position.x,
-    top: element.position.y,
-    width: `${props.size}px`,
-    height: `${props.size}px`,
-    opacity: props.opacity / 100,
-    transform: `translate(-50%, -50%) rotate(${props.rotation}deg) ${CSS.Translate.toString(transform)}`,
-    zIndex: isDragging ? 1000 : 'auto',
-    cursor: isDragging ? 'grabbing' : 'grab',
-  };
-
+  const iconSize = props.size || 48;
+  
   return (
-    <div
-      ref={setNodeRef}
+    <DraggableElement
+      id={element.id}
+      position={element.position}
+      dragCallbacks={dragCallbacks}
       className="decorative-icon random-icon selectable-element"
-      data-element-type="icon"
-      data-element-name={element.name}
-      data-element-id={element.id}
-      style={style}
-      onClick={handleIconClick}
-      {...listeners}
-      {...attributes}
-      dangerouslySetInnerHTML={{ __html: props.src || '' }}
-    />
+      style={{
+        width: `${iconSize}px`,
+        height: `${iconSize}px`,
+        opacity: props.opacity / 100,
+        // Apply rotation only, no translate transforms
+        transform: `rotate(${props.rotation}deg)`,
+        transformOrigin: '50% 50%', // Rotate around center
+      }}
+    >
+      <div
+        data-element-type="icon"
+        data-element-name={element.name}
+        onClick={handleIconClick}
+        dangerouslySetInnerHTML={{ __html: props.src || '' }}
+      />
+    </DraggableElement>
   );
 };
 
-export const IconElements: React.FC = () => {
-  const { iconType, iconSize, elements, selectElement, addElement, removeElement } = useSlideStore();
+interface IconElementsProps {
+  dragCallbacks: DragCallbacks;
+}
+
+export const IconElements: React.FC<IconElementsProps> = ({ dragCallbacks }) => {
+  const { iconType, iconSize, elements, addElement, removeElement } = useSlideStore();
 
   const iconElements = elements.filter(el => el.type === 'icon');
 
@@ -85,7 +82,6 @@ export const IconElements: React.FC = () => {
       const x = Math.random() * (1280 * 0.9) + (1280 * 0.05); // 5-95% of slide width
       const y = Math.random() * (720 * 0.9) + (720 * 0.05); // 5-95% of slide height
       const rotation = Math.random() * 360; // 0-360 degrees
-      const scale = Math.random() * 0.6 + 0.4; // 0.4 to 1.0
       const size = iconSize + Math.floor(Math.random() * 16) - 8; // ±8px variation
 
       const iconElement: SlideElement = {
@@ -108,7 +104,7 @@ export const IconElements: React.FC = () => {
   return (
     <div className="decorative-icons">
       {iconElements.map((element) => (
-        <DraggableIcon key={element.id} element={element} />
+        <DraggableIcon key={element.id} element={element} dragCallbacks={dragCallbacks} />
       ))}
     </div>
   );

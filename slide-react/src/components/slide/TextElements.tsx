@@ -1,7 +1,6 @@
 import React from 'react';
-import { useDraggable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
 import { useSlideStore } from '../../store/slideStore';
+import { DraggableElement } from '../DraggableElement';
 import type { TextElementProperties, SlideElement } from '../../types';
 
 // Color brightness detection - for contrasting text colors
@@ -41,21 +40,15 @@ const getDarkenedColor = (hexColor: string): string => {
   return `#${toHex(darkenedR)}${toHex(darkenedG)}${toHex(darkenedB)}`;
 };
 
-// Draggable Text Component (for manual positioning)
-const DraggableText: React.FC<{ element: SlideElement }> = ({ element }) => {
-  const { selectElement, selectedElement } = useSlideStore();
-  const elementRef = React.useRef<HTMLDivElement>(null);
+interface DragCallbacks {
+  onDragStart: (elementId: string, position: { x: number; y: number }) => void;
+  onDragMove: (elementId: string, position: { x: number; y: number }) => void;
+  onDragEnd: (elementId: string, position: { x: number; y: number }) => void;
+}
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    isDragging,
-  } = useDraggable({
-    id: element.id,
-    data: element,
-  });
+// Draggable Text Component (for manual positioning)
+const DraggableText: React.FC<{ element: SlideElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
+  const { selectElement, selectedElement } = useSlideStore();
 
   const handleElementClick = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -66,31 +59,17 @@ const DraggableText: React.FC<{ element: SlideElement }> = ({ element }) => {
   const content = props.content || '';
   const isSelected = selectedElement?.id === element.id;
   
-  // Debug logging for position (reduced frequency)
-  React.useEffect(() => {
-    if (content && element.position.x !== 0 && element.position.y !== 0) {
-      console.log(`Text element "${content}" positioned at:`, element.position);
-    }
-  }, [element.position.x, element.position.y, content]);
-
   // Calculate contrasting text color and shadow color
   const textColor = props.backgroundStyle !== 'none' ? getContrastingColor(props.backgroundColor) : undefined;
   const shadowColor = props.backgroundStyle === 'drop-shadow' ? getDarkenedColor(props.backgroundColor) : undefined;
 
   const style = {
-    position: 'absolute' as const,
-    left: `${element.position.x}px`,
-    top: `${element.position.y}px`,
-    transform: `translate(-50%, -50%) ${CSS.Translate.toString(transform)}`,
     fontSize: `${props.fontSize}px`,
     opacity: props.opacity / 100,
-    zIndex: isDragging ? 1000 : 'auto',
-    cursor: isDragging ? 'grabbing' : 'grab',
     minHeight: content ? undefined : '20px',
     minWidth: content ? undefined : '50px',
     display: 'inline-block',
     padding: props.backgroundStyle !== 'none' ? '8px 12px' : '4px',
-    userSelect: 'none' as const,
     ...(props.backgroundStyle !== 'none' && {
       '--element-bg-color': props.backgroundColor,
       '--element-text-color': textColor,
@@ -119,32 +98,31 @@ const DraggableText: React.FC<{ element: SlideElement }> = ({ element }) => {
     classes += ' selected';
   }
 
-  if (isDragging) {
-    classes += ' dragging';
-  }
-
   return (
-    <div
-      ref={(node) => {
-        setNodeRef(node);
-        elementRef.current = node;
-      }}
-      {...listeners}
-      {...attributes}
+    <DraggableElement
+      id={element.id}
+      position={element.position}
+      dragCallbacks={dragCallbacks}
       className={classes}
-      data-element-type="text"
-      data-element-name={element.name}
-      data-element-id={element.id}
-      onClick={handleElementClick}
       style={style}
     >
-      {content || `[${element.name}]`}
-    </div>
+      <div
+        data-element-type="text"
+        data-element-name={element.name}
+        onClick={handleElementClick}
+      >
+        {content || `[${element.name}]`}
+      </div>
+    </DraggableElement>
   );
 };
 
 
-export const TextElements: React.FC = () => {
+interface TextElementsProps {
+  dragCallbacks: DragCallbacks;
+}
+
+export const TextElements: React.FC<TextElementsProps> = ({ dragCallbacks }) => {
   const { elements } = useSlideStore();
 
   // Get all text elements from store
@@ -154,7 +132,7 @@ export const TextElements: React.FC = () => {
   return (
     <>
       {textElements.map((element) => (
-        <DraggableText key={element.id} element={element} />
+        <DraggableText key={element.id} element={element} dragCallbacks={dragCallbacks} />
       ))}
     </>
   );
