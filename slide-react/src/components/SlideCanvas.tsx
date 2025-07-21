@@ -4,17 +4,25 @@ import { TextElements } from './slide/TextElements';
 import { LogoElements } from './slide/LogoElements';
 import { IconElements } from './slide/IconElements';
 import { AccentShapes } from './slide/AccentShapes';
-import { DroppableArea } from './slide/DroppableArea';
-import { GridOverlay } from './slide/GridOverlay';
+import { AlignmentGuides } from './slide/AlignmentGuides';
+import type { ActiveSnap } from '../types/snapping';
+
+interface DragCallbacks {
+  onDragStart: (elementId: string, position: { x: number; y: number }) => void;
+  onDragMove: (elementId: string, position: { x: number; y: number }) => void;
+  onDragEnd: (elementId: string, position: { x: number; y: number }) => void;
+}
 
 interface SlideCanvasProps {
   dragState?: {
     isDragging: boolean;
     position?: { x: number; y: number };
+    activeSnaps: ActiveSnap[];
   };
+  dragCallbacks: DragCallbacks;
 }
 
-export const SlideCanvas: React.FC<SlideCanvasProps> = ({ dragState }) => {
+export const SlideCanvas: React.FC<SlideCanvasProps> = ({ dragState, dragCallbacks }) => {
   const { theme, cornerStyle, selectElement } = useSlideStore();
 
   const themeClass = `${theme}-theme`;
@@ -33,17 +41,23 @@ export const SlideCanvas: React.FC<SlideCanvasProps> = ({ dragState }) => {
       id="slide"
       className={`slide ${themeClass} ${cornerClass}`.trim()}
       onClick={handleSlideClick}
+      style={{ 
+        position: 'relative',
+        width: '1280px',
+        height: '720px',
+        overflow: 'visible'
+      }}
     >
-      <DroppableArea id="slide-canvas" />
-      <GridOverlay 
-        isDragging={dragState?.isDragging || false}
+      <AlignmentGuides 
+        activeSnaps={dragState?.activeSnaps || []}
+        isVisible={dragState?.isDragging || false}
         dragPosition={dragState?.position}
       />
       <div className="slide-content" onClick={handleSlideClick}>
-        <LogoElements />
-        <TextElements />
+        <LogoElements dragCallbacks={dragCallbacks} />
+        <TextElements dragCallbacks={dragCallbacks} />
         <AccentShapes />
-        <IconElements />
+        <IconElements dragCallbacks={dragCallbacks} />
       </div>
     </div>
   );
