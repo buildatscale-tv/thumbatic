@@ -57,6 +57,286 @@ document.addEventListener('DOMContentLoaded', function() {
     // Element properties storage
     const elementProperties = new Map();
     
+    // Text Elements System
+    let textElements = [
+        { id: 'title-before', text: 'CLAUDE', type: 'title', order: 0 },
+        { id: 'title-highlight', text: 'CODE', type: 'highlight', order: 1 },
+        { id: 'title-after', text: '', type: 'title', order: 2 },
+        { id: 'subtitle', text: 'AI-Powered Development Tool', type: 'subtitle', order: 3 },
+        { id: 'accent-label', text: '', type: 'accent-label', order: 4 }
+    ];
+    
+    let layoutMode = 'inline'; // 'inline', 'lines', 'grid'
+    let gridElementsPerRow = 3;
+    let nextElementId = 5;
+    
+    // Text element type defaults
+    const textElementDefaults = {
+        title: {
+            fontSize: 72,
+            backgroundColor: 'transparent',
+            backgroundStyle: 'none',
+            cornerStyle: 'rounded',
+            opacity: 100,
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '4px'
+        },
+        subtitle: {
+            fontSize: 48,
+            backgroundColor: 'transparent',
+            backgroundStyle: 'none',
+            cornerStyle: 'rounded',
+            opacity: 100,
+            fontWeight: 600,
+            textTransform: 'none',
+            letterSpacing: '0px'
+        },
+        highlight: {
+            fontSize: 72,
+            backgroundColor: '#ff6b35',
+            backgroundStyle: 'highlight',
+            cornerStyle: 'rounded',
+            opacity: 100,
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '4px'
+        },
+        'accent-label': {
+            fontSize: 48,
+            backgroundColor: '#ffffff',
+            backgroundStyle: 'highlight',
+            cornerStyle: 'rounded',
+            opacity: 100,
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '2px'
+        },
+        custom: {
+            fontSize: 48,
+            backgroundColor: 'transparent',
+            backgroundStyle: 'none',
+            cornerStyle: 'rounded',
+            opacity: 100,
+            fontWeight: 400,
+            textTransform: 'none',
+            letterSpacing: '0px'
+        }
+    };
+    
+    // Text Elements Management Functions
+    function addTextElement(text = '', type = 'custom') {
+        const newElement = {
+            id: `text-element-${nextElementId++}`,
+            text: text,
+            type: type,
+            order: textElements.length
+        };
+        textElements.push(newElement);
+        
+        // Initialize element properties with defaults
+        const defaults = textElementDefaults[type] || textElementDefaults.custom;
+        elementProperties.set(newElement.id, { ...defaults });
+        
+        updateTextElementsUI();
+        renderTextElements();
+        return newElement;
+    }
+    
+    function removeTextElement(elementId) {
+        const index = textElements.findIndex(el => el.id === elementId);
+        if (index !== -1) {
+            textElements.splice(index, 1);
+            elementProperties.delete(elementId);
+            
+            // Update order for remaining elements
+            textElements.forEach((el, i) => el.order = i);
+            
+            updateTextElementsUI();
+            renderTextElements();
+        }
+    }
+    
+    function updateTextElement(elementId, updates) {
+        const element = textElements.find(el => el.id === elementId);
+        if (element) {
+            Object.assign(element, updates);
+            updateTextElementsUI();
+            renderTextElements();
+        }
+    }
+    
+    function reorderTextElements(fromIndex, toIndex) {
+        const [removed] = textElements.splice(fromIndex, 1);
+        textElements.splice(toIndex, 0, removed);
+        
+        // Update order
+        textElements.forEach((el, i) => el.order = i);
+        
+        updateTextElementsUI();
+        renderTextElements();
+    }
+    
+    function setLayoutMode(mode) {
+        layoutMode = mode;
+        renderTextElements();
+    }
+    
+    function setGridElementsPerRow(count) {
+        gridElementsPerRow = count;
+        if (layoutMode === 'grid') {
+            renderTextElements();
+        }
+    }
+    
+    // UI Management Functions
+    function updateTextElementsUI() {
+        const textElementsList = document.getElementById('textElementsList');
+        textElementsList.innerHTML = '';
+        
+        textElements.sort((a, b) => a.order - b.order).forEach((element, index) => {
+            const elementDiv = document.createElement('div');
+            elementDiv.className = 'text-element-item';
+            elementDiv.draggable = true;
+            elementDiv.dataset.elementId = element.id;
+            elementDiv.dataset.index = index;
+            
+            elementDiv.innerHTML = `
+                <span class="element-drag-handle">☰</span>
+                <input type="text" class="element-text-input" value="${element.text}" 
+                       placeholder="Enter text" data-element-id="${element.id}">
+                <select class="element-type-select" data-element-id="${element.id}">
+                    <option value="title" ${element.type === 'title' ? 'selected' : ''}>Title</option>
+                    <option value="subtitle" ${element.type === 'subtitle' ? 'selected' : ''}>Subtitle</option>
+                    <option value="highlight" ${element.type === 'highlight' ? 'selected' : ''}>Highlight</option>
+                    <option value="accent-label" ${element.type === 'accent-label' ? 'selected' : ''}>Accent Label</option>
+                    <option value="custom" ${element.type === 'custom' ? 'selected' : ''}>Custom</option>
+                </select>
+                <button type="button" class="element-delete-btn" data-element-id="${element.id}">×</button>
+            `;
+            
+            textElementsList.appendChild(elementDiv);
+        });
+        
+        // Add event listeners
+        addTextElementsEventListeners();
+    }
+    
+    function addTextElementsEventListeners() {
+        // Text input changes
+        document.querySelectorAll('.element-text-input').forEach(input => {
+            input.addEventListener('input', function() {
+                updateTextElement(this.dataset.elementId, { text: this.value });
+            });
+        });
+        
+        // Type changes
+        document.querySelectorAll('.element-type-select').forEach(select => {
+            select.addEventListener('change', function() {
+                const element = textElements.find(el => el.id === this.dataset.elementId);
+                if (element) {
+                    element.type = this.value;
+                    // Apply new type defaults
+                    const defaults = textElementDefaults[this.value] || textElementDefaults.custom;
+                    elementProperties.set(element.id, { ...defaults });
+                    renderTextElements();
+                }
+            });
+        });
+        
+        // Delete buttons
+        document.querySelectorAll('.element-delete-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                removeTextElement(this.dataset.elementId);
+            });
+        });
+        
+        // Drag and drop for reordering
+        const items = document.querySelectorAll('.text-element-item');
+        items.forEach(item => {
+            item.addEventListener('dragstart', handleDragStart);
+            item.addEventListener('dragover', handleDragOver);
+            item.addEventListener('drop', handleDrop);
+            item.addEventListener('dragend', handleDragEnd);
+        });
+    }
+    
+    // Drag and Drop Functions
+    let draggedElement = null;
+    
+    function handleDragStart(e) {
+        draggedElement = this;
+        this.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', this.outerHTML);
+    }
+    
+    function handleDragOver(e) {
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+    
+    function handleDrop(e) {
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
+        
+        if (draggedElement !== this) {
+            const fromIndex = parseInt(draggedElement.dataset.index);
+            const toIndex = parseInt(this.dataset.index);
+            reorderTextElements(fromIndex, toIndex);
+        }
+        
+        return false;
+    }
+    
+    function handleDragEnd(e) {
+        this.classList.remove('dragging');
+        draggedElement = null;
+    }
+    
+    // Text Elements Rendering
+    function renderTextElements() {
+        const container = document.getElementById('textElementsContainer');
+        container.innerHTML = '';
+        
+        // Set layout class
+        container.className = `text-section text-elements-${layoutMode}`;
+        
+        // Set grid columns if in grid mode
+        if (layoutMode === 'grid') {
+            container.style.setProperty('--grid-columns', gridElementsPerRow);
+        }
+        
+        // Sort elements by order
+        const sortedElements = [...textElements].sort((a, b) => a.order - b.order);
+        
+        sortedElements.forEach(element => {
+            if (element.text.trim()) {  // Only render non-empty elements
+                const elementDiv = document.createElement('div');
+                elementDiv.id = element.id;
+                elementDiv.className = `text-element selectable-element text-element-${element.type}`;
+                elementDiv.dataset.elementType = 'text';
+                elementDiv.dataset.elementName = `${element.type.charAt(0).toUpperCase() + element.type.slice(1)} Element`;
+                elementDiv.textContent = element.text;
+                
+                // Apply stored properties
+                const props = elementProperties.get(element.id);
+                if (props) {
+                    applyElementProperties(elementDiv, props);
+                }
+                
+                container.appendChild(elementDiv);
+            }
+        });
+        
+        // Re-initialize element selection for new elements
+        initializeElementSelection();
+    }
+    
     // Element Selection System
     function initializeElementSelection() {
         // Add click listeners to all selectable elements
@@ -755,11 +1035,43 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Event listeners
-    titleBeforeInput.addEventListener('input', updateSlide);
-    titleHighlightInput.addEventListener('input', updateSlide);
-    titleAfterInput.addEventListener('input', updateSlide);
-    subtitleInput.addEventListener('input', updateSlide);
-    versionInput.addEventListener('input', updateSlide);
+    // Text Elements Management
+    const layoutModeSelect = document.getElementById('layoutMode');
+    const gridElementsPerRowSlider = document.getElementById('gridElementsPerRow');
+    const gridElementsPerRowValue = document.getElementById('gridElementsPerRowValue');
+    const newElementTypeSelect = document.getElementById('newElementType');
+    const newElementTextInput = document.getElementById('newElementText');
+    const addTextElementBtn = document.getElementById('addTextElement');
+    const gridControls = document.getElementById('gridControls');
+    
+    layoutModeSelect.addEventListener('change', function() {
+        layoutMode = this.value;
+        gridControls.style.display = this.value === 'grid' ? 'block' : 'none';
+        renderTextElements();
+    });
+    
+    gridElementsPerRowSlider.addEventListener('input', function() {
+        gridElementsPerRow = parseInt(this.value);
+        gridElementsPerRowValue.textContent = this.value;
+        if (layoutMode === 'grid') {
+            renderTextElements();
+        }
+    });
+    
+    addTextElementBtn.addEventListener('click', function() {
+        const text = newElementTextInput.value.trim();
+        const type = newElementTypeSelect.value;
+        if (text) {
+            addTextElement(text, type);
+            newElementTextInput.value = '';
+        }
+    });
+    
+    newElementTextInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            addTextElementBtn.click();
+        }
+    });
     logoTypeSelect.addEventListener('change', updateLogoType);
     logoUrlInput.addEventListener('input', updateLogo);
     logoLibraryCheckboxes.forEach(checkbox => {

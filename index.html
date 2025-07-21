@@ -11,25 +11,40 @@
     <div class="container">
         <div class="controls">
             <h1>YouTube Intro Slide Generator</h1>
+            <!-- Text Elements Management -->
             <div class="input-group">
-                <label for="titleBefore">Title Before:</label>
-                <input type="text" id="titleBefore" value="CLAUDE" placeholder="Text before highlight">
-            </div>
-            <div class="input-group">
-                <label for="titleHighlight">Title Highlight:</label>
-                <input type="text" id="titleHighlight" value="CODE" placeholder="Highlighted text">
-            </div>
-            <div class="input-group">
-                <label for="titleAfter">Title After:</label>
-                <input type="text" id="titleAfter" value="" placeholder="Text after highlight">
-            </div>
-            <div class="input-group">
-                <label for="subtitle">Subtitle:</label>
-                <input type="text" id="subtitle" value="AI-Powered Development Tool" placeholder="Enter subtitle">
-            </div>
-            <div class="input-group">
-                <label for="version">Accent Label:</label>
-                <input type="text" id="version" value="" placeholder="e.g., NEW, v2.1, BETA">
+                <label>Text Elements:</label>
+                <div class="text-elements-controls">
+                    <div class="layout-controls">
+                        <label for="layoutMode">Layout:</label>
+                        <select id="layoutMode">
+                            <option value="inline">Inline</option>
+                            <option value="lines">Lines</option>
+                            <option value="grid">Grid</option>
+                        </select>
+                        <div id="gridControls" style="display: none;">
+                            <label for="gridElementsPerRow">Elements per row:</label>
+                            <input type="range" id="gridElementsPerRow" min="1" max="10" value="3" step="1">
+                            <span id="gridElementsPerRowValue">3</span>
+                        </div>
+                    </div>
+                    
+                    <div class="add-element-controls">
+                        <select id="newElementType">
+                            <option value="title">Title</option>
+                            <option value="subtitle">Subtitle</option>
+                            <option value="highlight">Highlight</option>
+                            <option value="accent-label">Accent Label</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                        <input type="text" id="newElementText" placeholder="Enter text">
+                        <button type="button" id="addTextElement">Add</button>
+                    </div>
+                    
+                    <div class="text-elements-list" id="textElementsList">
+                        <!-- Dynamic text elements will be inserted here -->
+                    </div>
+                </div>
             </div>
             <div class="input-group">
                 <label for="logoType">Logo Type:</label>
@@ -213,16 +228,8 @@
                         </div>
                     </div>
                     <div class="multiple-logos" id="multipleLogosContainer"></div>
-                    <div class="text-section">
-                        <div class="title-section">
-                            <span class="title-before selectable-element" id="slideTitleBefore" data-element-type="text" data-element-name="Title Before">CLAUDE</span>
-                            <span class="title-highlight selectable-element" id="slideTitleHighlight" data-element-type="text" data-element-name="Title Highlight">CODE</span>
-                            <span class="title-after selectable-element" id="slideTitleAfter" data-element-type="text" data-element-name="Title After"></span>
-                        </div>
-                        <div class="subtitle-wrapper selectable-element" id="slideSubtitle" data-element-type="text" data-element-name="Subtitle">
-                            <span class="subtitle-text">AI-Powered Development Tool</span>
-                        </div>
-                        <div class="accent-label selectable-element" id="slideAccentLabel" data-element-type="text" data-element-name="Accent Label" style="display: none;"></div>
+                    <div class="text-section" id="textElementsContainer">
+                        <!-- Dynamic text elements will be rendered here -->
                     </div>
                     <div class="accent-shapes">
                         <div class="shape shape-1"></div>

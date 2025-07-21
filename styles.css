@@ -130,6 +130,274 @@ body {
     border-radius: 0 !important;
 }
 
+/* Text Elements Management */
+.text-elements-controls {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.layout-controls {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.layout-controls label {
+    font-size: 14px;
+    margin-bottom: 5px;
+    margin-right: 10px;
+}
+
+.layout-controls select {
+    width: auto;
+    padding: 6px 12px;
+    margin-right: 15px;
+}
+
+#gridControls {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#gridControls label {
+    font-size: 12px;
+    margin: 0;
+}
+
+#gridControls input[type="range"] {
+    width: 100px;
+    padding: 0;
+}
+
+#gridControls span {
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 20px;
+}
+
+.add-element-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.add-element-controls select {
+    width: auto;
+    padding: 6px 12px;
+}
+
+.add-element-controls input {
+    flex: 1;
+    padding: 6px 12px;
+}
+
+.add-element-controls button {
+    padding: 6px 16px;
+    background: #FF6B35;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.add-element-controls button:hover {
+    background: #e55a2b;
+}
+
+.text-elements-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.text-element-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    background: #fafafa;
+}
+
+.text-element-item:hover {
+    background: #f0f0f0;
+}
+
+.text-element-item.dragging {
+    opacity: 0.5;
+}
+
+.element-drag-handle {
+    cursor: grab;
+    color: #999;
+    font-size: 14px;
+    padding: 2px;
+}
+
+.element-drag-handle:hover {
+    color: #666;
+}
+
+.element-text-input {
+    flex: 1;
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.element-type-select {
+    width: 100px;
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.element-delete-btn {
+    padding: 4px 8px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.element-delete-btn:hover {
+    background: #c82333;
+}
+
+/* Text Elements Layout System */
+.text-elements-inline {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+}
+
+.text-elements-lines {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.text-elements-grid {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    grid-template-columns: repeat(var(--grid-columns, 3), auto);
+}
+
+/* Text Element Types */
+.text-element {
+    display: inline-block;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.text-element-title {
+    color: white;
+    font-size: 72px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+}
+
+.text-element-subtitle {
+    color: white;
+    font-size: 48px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0px;
+}
+
+.text-element-highlight {
+    background: rgba(255, 107, 53, 0.95);
+    color: white;
+    font-size: 72px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    padding: 24px 48px;
+    border-radius: 16px;
+    transform: skew(-2deg);
+    box-shadow: 0 8px 32px rgba(255, 107, 53, 0.4);
+}
+
+.text-element-accent-label {
+    background: rgba(255, 255, 255, 0.95);
+    color: #1a1a2e;
+    font-size: 48px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 16px 32px;
+    border-radius: 16px;
+    transform: skew(-2deg);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.text-element-custom {
+    color: white;
+    font-size: 48px;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0px;
+}
+
+/* Theme-specific text element overrides */
+.tech-theme .text-element-highlight {
+    background: rgba(59, 130, 246, 0.95);
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+}
+
+.dark-theme .text-element-highlight {
+    background: rgba(34, 197, 94, 0.95);
+    box-shadow: 0 8px 32px rgba(34, 197, 94, 0.4);
+}
+
+.blueprint-theme .text-element-highlight {
+    background: rgba(251, 191, 36, 0.95);
+    color: #1a1a2e;
+    border-radius: 0;
+    transform: skew(0deg);
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+}
+
+.blueprint-theme .text-element-title {
+    letter-spacing: 3px;
+}
+
+.blueprint-theme .text-element-accent-label {
+    background: rgba(255, 255, 255, 0.95);
+    color: #1a1a2e;
+    border-radius: 0;
+    transform: skew(0deg);
+}
+
+/* Sharp corners override for text elements */
+.sharp-corners .text-element-highlight {
+    border-radius: 0 !important;
+}
+
+.sharp-corners .text-element-accent-label {
+    border-radius: 0 !important;
+}
+
 .input-group {
     margin-bottom: 20px;
 }
