@@ -46,20 +46,14 @@ const generateSafePosition = (): { x: number; y: number } => {
   return { x, y };
 };
 
-// Create initial text elements positioned on grid (center-aligned vertically)
+// Create initial text elements positioned at (0,0)
 const createInitialTextElements = (): SlideElement[] => {
-  const gridCols = 4;
-  const gridRows = 3;
-  
-  // Calculate center column positions
-  const centerCol = Math.floor(gridCols / 2);
-  
   return [
     {
       id: 'text-title',
       type: 'text',
       name: 'Title',
-      position: gridToPixel(centerCol, 0, gridCols, gridRows), // Top center
+      position: { x: 0, y: 0 },
       properties: {
         fontSize: 96,
         backgroundColor: '#ff6b35',
@@ -74,7 +68,7 @@ const createInitialTextElements = (): SlideElement[] => {
       id: 'text-subtitle',
       type: 'text',
       name: 'Subtitle',
-      position: gridToPixel(centerCol, 1, gridCols, gridRows), // Middle center
+      position: { x: 0, y: 100 },
       properties: {
         fontSize: 64,
         backgroundColor: '#FFD700',
@@ -89,7 +83,7 @@ const createInitialTextElements = (): SlideElement[] => {
       id: 'text-accent-label',
       type: 'text',
       name: 'Accent Label',
-      position: gridToPixel(centerCol, 2, gridCols, gridRows), // Bottom center
+      position: { x: 0, y: 200 },
       properties: {
         fontSize: 48,
         backgroundColor: '#ffffff',

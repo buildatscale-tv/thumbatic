@@ -10,8 +10,8 @@ function App() {
   const snapping = useSnapping({
     config: {
       enabled: true,
-      proximityThreshold: 100,
-      snapThreshold: 50,
+      proximityThreshold: 200,
+      snapThreshold: 100,
       showGuides: true,
       canvasCenter: {
         enabled: true,
@@ -99,6 +99,7 @@ function App() {
           activeSnaps: dragState.activeSnaps
         }}
         dragCallbacks={dragCallbacks}
+        snapThreshold={snapping.config.snapThreshold}
       />
     </div>
   );

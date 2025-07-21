@@ -6,12 +6,14 @@ interface AlignmentGuidesProps {
   activeSnaps: ActiveSnap[];
   isVisible?: boolean;
   dragPosition?: { x: number; y: number };
+  snapThreshold?: number;
 }
 
 export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({ 
   activeSnaps, 
   isVisible = true,
-  dragPosition
+  dragPosition,
+  snapThreshold = 100
 }) => {
   if (!isVisible || activeSnaps.length === 0) {
     return null;
@@ -40,7 +42,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
       preserveAspectRatio="none"
     >
       <defs>
-        {/* Gradient for guide lines to make them more visually appealing */}
+        {/* Pink gradient for proximity guides */}
         <linearGradient id="verticalGuideGradient" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="rgba(255, 59, 148, 0.1)" />
           <stop offset="20%" stopColor="rgba(255, 59, 148, 0.8)" />
@@ -54,11 +56,30 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
           <stop offset="80%" stopColor="rgba(255, 59, 148, 0.8)" />
           <stop offset="100%" stopColor="rgba(255, 59, 148, 0.1)" />
         </linearGradient>
+
+        {/* Green gradient for snap-ready guides */}
+        <linearGradient id="verticalSnapGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="rgba(34, 197, 94, 0.1)" />
+          <stop offset="20%" stopColor="rgba(34, 197, 94, 0.8)" />
+          <stop offset="80%" stopColor="rgba(34, 197, 94, 0.8)" />
+          <stop offset="100%" stopColor="rgba(34, 197, 94, 0.1)" />
+        </linearGradient>
+        
+        <linearGradient id="horizontalSnapGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="rgba(34, 197, 94, 0.1)" />
+          <stop offset="20%" stopColor="rgba(34, 197, 94, 0.8)" />
+          <stop offset="80%" stopColor="rgba(34, 197, 94, 0.8)" />
+          <stop offset="100%" stopColor="rgba(34, 197, 94, 0.1)" />
+        </linearGradient>
       </defs>
 
       {/* Vertical alignment guides */}
       {verticalSnaps.map((snap, index) => {
         const x = snap.target.position.x!;
+        const isSnapReady = snap.distance <= snapThreshold;
+        const gradientId = isSnapReady ? 'url(#verticalSnapGradient)' : 'url(#verticalGuideGradient)';
+        const solidColor = isSnapReady ? '#22c55e' : '#ff3b94';
+        
         return (
           <g key={`vertical-${snap.target.id}-${index}`}>
             {/* Main guide line */}
@@ -67,7 +88,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               y1={0}
               x2={x}
               y2={CANVAS_HEIGHT}
-              stroke="url(#verticalGuideGradient)"
+              stroke={gradientId}
               strokeWidth="1.5"
               opacity="0.9"
             >
@@ -87,7 +108,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               y1={CANVAS_HEIGHT * 0.3}
               x2={x}
               y2={CANVAS_HEIGHT * 0.7}
-              stroke="#ff3b94"
+              stroke={solidColor}
               strokeWidth="2"
               opacity="1"
             >
@@ -105,7 +126,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               cx={x}
               cy={CANVAS_HEIGHT / 2}
               r="3"
-              fill="#ff3b94"
+              fill={solidColor}
               opacity="1"
             >
               <animate
@@ -129,6 +150,10 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
       {/* Horizontal alignment guides */}
       {horizontalSnaps.map((snap, index) => {
         const y = snap.target.position.y!;
+        const isSnapReady = snap.distance <= snapThreshold;
+        const gradientId = isSnapReady ? 'url(#horizontalSnapGradient)' : 'url(#horizontalGuideGradient)';
+        const solidColor = isSnapReady ? '#22c55e' : '#ff3b94';
+        
         return (
           <g key={`horizontal-${snap.target.id}-${index}`}>
             {/* Main guide line */}
@@ -137,7 +162,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               y1={y}
               x2={CANVAS_WIDTH}
               y2={y}
-              stroke="url(#horizontalGuideGradient)"
+              stroke={gradientId}
               strokeWidth="1.5"
               opacity="0.9"
             >
@@ -157,7 +182,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               y1={y}
               x2={CANVAS_WIDTH * 0.7}
               y2={y}
-              stroke="#ff3b94"
+              stroke={solidColor}
               strokeWidth="2"
               opacity="1"
             >
@@ -175,7 +200,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               cx={CANVAS_WIDTH / 2}
               cy={y}
               r="3"
-              fill="#ff3b94"
+              fill={solidColor}
               opacity="1"
             >
               <animate

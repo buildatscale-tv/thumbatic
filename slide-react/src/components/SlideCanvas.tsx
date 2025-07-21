@@ -20,9 +20,10 @@ interface SlideCanvasProps {
     activeSnaps: ActiveSnap[];
   };
   dragCallbacks: DragCallbacks;
+  snapThreshold?: number;
 }
 
-export const SlideCanvas: React.FC<SlideCanvasProps> = ({ dragState, dragCallbacks }) => {
+export const SlideCanvas: React.FC<SlideCanvasProps> = ({ dragState, dragCallbacks, snapThreshold = 100 }) => {
   const { theme, cornerStyle, selectElement } = useSlideStore();
 
   const themeClass = `${theme}-theme`;
@@ -52,6 +53,7 @@ export const SlideCanvas: React.FC<SlideCanvasProps> = ({ dragState, dragCallbac
         activeSnaps={dragState?.activeSnaps || []}
         isVisible={dragState?.isDragging || false}
         dragPosition={dragState?.position}
+        snapThreshold={snapThreshold}
       />
       <div className="slide-content" onClick={handleSlideClick}>
         <LogoElements dragCallbacks={dragCallbacks} />

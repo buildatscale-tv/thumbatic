@@ -16,14 +16,15 @@ interface SlideGeneratorProps {
     activeSnaps: ActiveSnap[];
   };
   dragCallbacks: DragCallbacks;
+  snapThreshold?: number;
 }
 
-export const SlideGenerator: React.FC<SlideGeneratorProps> = ({ dragState, dragCallbacks }) => {
+export const SlideGenerator: React.FC<SlideGeneratorProps> = ({ dragState, dragCallbacks, snapThreshold }) => {
   return (
     <div className="container">
       <ControlPanel />
       <div className="preview">
-        <SlideCanvas dragState={dragState} dragCallbacks={dragCallbacks} />
+        <SlideCanvas dragState={dragState} dragCallbacks={dragCallbacks} snapThreshold={snapThreshold} />
       </div>
     </div>
   );
