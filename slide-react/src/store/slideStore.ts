@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import type { SlideState, SlideElement, ElementProperties, TextElementType, LogoIconElementProperties } from '../types';
+import type { SlideState, SlideElement, TextElementType, LogoIconElementProperties } from '../types';
 
 // Grid utility function for initial positioning
+// Now returns center coordinates that will be converted to top-left for rendering
 const gridToPixel = (gridX: number, gridY: number, gridCols: number, gridRows: number): { x: number; y: number } => {
   const SLIDE_WIDTH = 1280;
   const SLIDE_HEIGHT = 720;
@@ -9,8 +10,8 @@ const gridToPixel = (gridX: number, gridY: number, gridCols: number, gridRows: n
   const cellHeight = SLIDE_HEIGHT / gridRows;
   
   return {
-    x: gridX * cellWidth, // Grid intersection point
-    y: gridY * cellHeight
+    x: gridX * cellWidth + cellWidth / 2, // Center of grid cell
+    y: gridY * cellHeight + cellHeight / 2 // Center of grid cell
   };
 };
 
@@ -117,10 +118,6 @@ export const useSlideStore = create<SlideState>((set, get) => ({
   iconType: 'none',
   iconSize: 48,
   
-  // Initial grid system
-  gridRows: 3,
-  gridCols: 4,
-  showGrid: false,
   
   // Initial element management - include text elements
   elements: createInitialTextElements(),
@@ -197,12 +194,6 @@ export const useSlideStore = create<SlideState>((set, get) => ({
     
     set({ iconSize, elements: updatedElements });
   },
-  
-  setGridRows: (gridRows: number) => set({ gridRows }),
-  
-  setGridCols: (gridCols: number) => set({ gridCols }),
-  
-  setShowGrid: (showGrid: boolean) => set({ showGrid }),
   
   selectElement: (selectedElement) => set({ selectedElement }),
   
