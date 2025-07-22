@@ -28,15 +28,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
     snap.orientation === 'horizontal' && snap.target.position.y !== undefined
   );
 
-  // Get the highest priority for each orientation (for coloring)
-  const highestPriorityVertical = verticalSnaps.length > 0 
-    ? Math.max(...verticalSnaps.map(snap => snap.target.priority))
-    : -1;
-  const highestPriorityHorizontal = horizontalSnaps.length > 0
-    ? Math.max(...horizontalSnaps.map(snap => snap.target.priority))
-    : -1;
-
-  // Show ALL proximity-based snaps, but color them based on priority
+  // Show ALL proximity-based snaps, coloring will be based on isGlobalWinner
   const filteredVerticalSnaps = verticalSnaps;
   const filteredHorizontalSnaps = horizontalSnaps;
 
@@ -86,10 +78,10 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
         </linearGradient>
       </defs>
 
-      {/* Vertical alignment guides - all proximity snaps with priority coloring */}
+      {/* Vertical alignment guides - all proximity snaps with global winner coloring */}
       {filteredVerticalSnaps.map((snap, index) => {
         const x = snap.target.position.x!;
-        const willSnap = snap.target.priority === highestPriorityVertical;
+        const willSnap = snap.isGlobalWinner;
         const gradientId = willSnap ? 'url(#verticalGuideGradient)' : 'url(#verticalSnapGradient)';
         const solidColor = willSnap ? '#ff3b94' : '#22c55e';
 
@@ -257,10 +249,10 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
         );
       })}
 
-      {/* Horizontal alignment guides - all proximity snaps with priority coloring */}
+      {/* Horizontal alignment guides - all proximity snaps with global winner coloring */}
       {filteredHorizontalSnaps.map((snap, index) => {
         const y = snap.target.position.y!;
-        const willSnap = snap.target.priority === highestPriorityHorizontal;
+        const willSnap = snap.isGlobalWinner;
         const gradientId = willSnap ? 'url(#horizontalGuideGradient)' : 'url(#horizontalSnapGradient)';
         const solidColor = willSnap ? '#ff3b94' : '#22c55e';
 
@@ -445,21 +437,24 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
             </text>
           )}
 
-          {/* Filtered Snaps Info */}
+          {/* Global Winners Info */}
           {(filteredVerticalSnaps.length > 0 || filteredHorizontalSnaps.length > 0) && (
             <text
               x={10}
               y={50}
-              fill="#22c55e"
+              fill="#ff3b94"
               fontSize="14"
               fontFamily="monospace"
               opacity="0.8"
             >
-              {`Will Snap To: ${[...filteredVerticalSnaps, ...filteredHorizontalSnaps].map(snap => snap.target.type).join(', ')}`}
+              {`Will Snap To: ${[...filteredVerticalSnaps, ...filteredHorizontalSnaps]
+                .filter(snap => snap.isGlobalWinner)
+                .map(snap => snap.target.type)
+                .join(', ') || 'None (ties or no clear winner)'}`}
             </text>
           )}
 
-          {/* Priority Information */}
+          {/* Guide Count Information */}
           {(filteredVerticalSnaps.length > 0 || filteredHorizontalSnaps.length > 0) && (
             <text
               x={10}
@@ -469,7 +464,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               fontFamily="monospace"
               opacity="0.8"
             >
-              {`Priorities: V=${highestPriorityVertical >= 0 ? highestPriorityVertical : 'none'} | H=${highestPriorityHorizontal >= 0 ? highestPriorityHorizontal : 'none'}`}
+              {`Guides: V=${filteredVerticalSnaps.length} | H=${filteredHorizontalSnaps.length} | Winners: ${[...filteredVerticalSnaps, ...filteredHorizontalSnaps].filter(snap => snap.isGlobalWinner).length}`}
             </text>
           )}
 

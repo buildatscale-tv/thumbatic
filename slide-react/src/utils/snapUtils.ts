@@ -81,7 +81,7 @@ export const createCanvasCenterTargets = (
       orientation: 'vertical',
       position: { x: CANVAS_CENTER_X },
       proximityThreshold: config.proximityThreshold,
-      priority: 8,
+      priority: 6,
       label: 'Canvas Vertical Center',
     });
   }
@@ -94,7 +94,7 @@ export const createCanvasCenterTargets = (
       orientation: 'horizontal',
       position: { y: CANVAS_CENTER_Y },
       proximityThreshold: config.proximityThreshold,
-      priority: 8,
+      priority: 6,
       label: 'Canvas Horizontal Center',
     });
   }
@@ -137,7 +137,7 @@ export const createTextElementSnapTargets = (
         orientation: 'horizontal',
         position: { y: elementDimensions.top },
         proximityThreshold,
-        priority: 6, // Medium priority, below canvas center but above custom
+        priority: 8, // Higher priority than canvas center
         elementId: element.id,
         label: `${element.name} Top Edge`,
       });
@@ -149,7 +149,7 @@ export const createTextElementSnapTargets = (
         orientation: 'horizontal', 
         position: { y: elementDimensions.bottom },
         proximityThreshold,
-        priority: 6,
+        priority: 8,
         elementId: element.id,
         label: `${element.name} Bottom Edge`,
       });
@@ -164,7 +164,7 @@ export const createTextElementSnapTargets = (
         orientation: 'vertical',
         position: { x: elementDimensions.left },
         proximityThreshold,
-        priority: 6,
+        priority: 8,
         elementId: element.id,
         label: `${element.name} Left Edge`,
       });
@@ -176,7 +176,7 @@ export const createTextElementSnapTargets = (
         orientation: 'vertical',
         position: { x: elementDimensions.right },
         proximityThreshold,
-        priority: 6,
+        priority: 8,
         elementId: element.id,
         label: `${element.name} Right Edge`,
       });
@@ -376,15 +376,53 @@ export const findActiveSnaps = (
         distance,
         snapPosition,
         orientation: target.orientation,
+        isGlobalWinner: false, // Will be calculated after all snaps are collected
       });
+    }
+  }
+
+  // Calculate global winners for each orientation (handling ties)
+  const verticalSnaps = activeSnaps.filter(snap => snap.orientation === 'vertical');
+  const horizontalSnaps = activeSnaps.filter(snap => snap.orientation === 'horizontal');
+
+  // Find global highest priorities
+  const globalVerticalPriority = verticalSnaps.length > 0 
+    ? Math.max(...verticalSnaps.map(snap => snap.target.priority))
+    : -1;
+  const globalHorizontalPriority = horizontalSnaps.length > 0
+    ? Math.max(...horizontalSnaps.map(snap => snap.target.priority))
+    : -1;
+
+  // Find candidates for each orientation
+  const verticalWinnerCandidates = verticalSnaps.filter(snap => 
+    snap.target.priority === globalVerticalPriority
+  );
+  const horizontalWinnerCandidates = horizontalSnaps.filter(snap => 
+    snap.target.priority === globalHorizontalPriority
+  );
+
+  // Determine if there are ties (multiple candidates = tie = no winner)
+  const hasVerticalWinner = verticalWinnerCandidates.length === 1;
+  const hasHorizontalWinner = horizontalWinnerCandidates.length === 1;
+
+  // Mark global winners (only if no ties)
+  for (const snap of activeSnaps) {
+    if (snap.orientation === 'vertical') {
+      snap.isGlobalWinner = hasVerticalWinner && 
+        snap.target.priority === globalVerticalPriority;
+    } else if (snap.orientation === 'horizontal') {
+      snap.isGlobalWinner = hasHorizontalWinner && 
+        snap.target.priority === globalHorizontalPriority;
+    } else {
+      snap.isGlobalWinner = false;
     }
   }
 
   // Sort by priority (higher priority first), then by distance (closer first)
   // Priority hierarchy: 
   // 9: Text element centers (highest priority, tight threshold)
-  // 8: Canvas center lines  
-  // 6: Text element edges (lower priority, wider threshold)
+  // 8: Text element edges (high priority, wider threshold)  
+  // 6: Canvas center lines (lower priority)
   return activeSnaps.sort((a, b) => {
     if (a.target.priority !== b.target.priority) {
       return b.target.priority - a.target.priority;
@@ -399,6 +437,7 @@ export const findActiveSnaps = (
 export const calculateSnapPosition = (
   currentPosition: { x: number; y: number },
   activeSnaps: ActiveSnap[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _snapThreshold: number = DEFAULT_SNAP_CONFIG.snapThreshold
 ): { x: number; y: number } => {
   const finalPosition = { ...currentPosition };
@@ -409,30 +448,15 @@ export const calculateSnapPosition = (
     return finalPosition;
   }
 
-  // Apply the highest priority snap for each orientation separately
-  // Find the highest priority vertical and horizontal snaps
-  const verticalSnaps = activeSnaps.filter(snap => 
-    snap.orientation === 'vertical' && snap.snapPosition.x !== undefined
-  );
-  const horizontalSnaps = activeSnaps.filter(snap => 
-    snap.orientation === 'horizontal' && snap.snapPosition.y !== undefined
-  );
-
-  // Apply highest priority vertical snap
-  if (verticalSnaps.length > 0) {
-    const highestVerticalPriority = Math.max(...verticalSnaps.map(snap => snap.target.priority));
-    const topVerticalSnap = verticalSnaps.find(snap => snap.target.priority === highestVerticalPriority);
-    if (topVerticalSnap && topVerticalSnap.snapPosition.x !== undefined) {
-      finalPosition.x = topVerticalSnap.snapPosition.x;
-    }
-  }
-
-  // Apply highest priority horizontal snap
-  if (horizontalSnaps.length > 0) {
-    const highestHorizontalPriority = Math.max(...horizontalSnaps.map(snap => snap.target.priority));
-    const topHorizontalSnap = horizontalSnaps.find(snap => snap.target.priority === highestHorizontalPriority);
-    if (topHorizontalSnap && topHorizontalSnap.snapPosition.y !== undefined) {
-      finalPosition.y = topHorizontalSnap.snapPosition.y;
+  // Apply only global winners (no ties allowed)
+  for (const activeSnap of activeSnaps) {
+    if (activeSnap.isGlobalWinner) {
+      if (activeSnap.snapPosition.x !== undefined) {
+        finalPosition.x = activeSnap.snapPosition.x;
+      }
+      if (activeSnap.snapPosition.y !== undefined) {
+        finalPosition.y = activeSnap.snapPosition.y;
+      }
     }
   }
 

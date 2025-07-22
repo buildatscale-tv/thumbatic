@@ -36,6 +36,7 @@ export interface ActiveSnap {
     y?: number; // Final y position if snapping horizontally
   };
   orientation: SnapOrientation;
+  isGlobalWinner: boolean; // True if this is the global highest priority snap for its orientation (no ties)
 }
 
 export interface SnapState {
