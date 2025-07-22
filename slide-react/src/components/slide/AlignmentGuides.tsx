@@ -1,12 +1,13 @@
 import React from 'react';
 import type { ActiveSnap } from '../../types/snapping';
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../../utils/snapUtils';
+import { CANVAS_WIDTH, CANVAS_HEIGHT, CANVAS_CENTER_X, CANVAS_CENTER_Y } from '../../utils/snapUtils';
 
 interface AlignmentGuidesProps {
   activeSnaps: ActiveSnap[];
   isVisible?: boolean;
   dragPosition?: { x: number; y: number };
   snapThreshold?: number;
+  showDebugInfo?: boolean;
 }
 
 export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
@@ -14,7 +15,8 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
   isVisible = true,
   dragPosition,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  snapThreshold: _snapThreshold = 100
+  snapThreshold: _snapThreshold = 100,
+  showDebugInfo = false
 }) => {
   if (!isVisible || activeSnaps.length === 0) {
     return null;
@@ -83,11 +85,11 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
         const x = snap.target.position.x!;
         const willSnap = snap.isGlobalWinner;
         const gradientId = willSnap ? 'url(#verticalGuideGradient)' : 'url(#verticalSnapGradient)';
-        const solidColor = willSnap ? '#ff3b94' : '#22c55e';
+        const solidColor = willSnap ? '#ff3b94' : '#027BFF';
 
         // Different rendering for text edge guides vs canvas center guides
         const isTextEdge = snap.target.type === 'text-edge';
-        
+
         if (isTextEdge) {
           // For text edge guides, get the source text element bounds
           const sourceElement = document.querySelector(`[data-element-id="${snap.target.elementId}"]`) as HTMLElement;
@@ -95,10 +97,10 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
           let elementBottom = CANVAS_HEIGHT * 0.8;
           let elementHeight = elementBottom - elementTop;
           let elementCenterY = elementTop + elementHeight / 2;
-          
+
           if (sourceElement) {
             const rect = sourceElement.getBoundingClientRect();
-            const slideRect = sourceElement.closest('.slide-canvas')?.getBoundingClientRect();
+            const slideRect = sourceElement.closest('.slide')?.getBoundingClientRect();
             if (slideRect) {
               const scale = CANVAS_WIDTH / slideRect.width;
               elementTop = (rect.top - slideRect.top) * scale;
@@ -153,7 +155,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
                   fill="freeze"
                 />
               </rect>
-              
+
               {/* Edge type indicator */}
               <circle
                 cx={x}
@@ -176,12 +178,36 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
                   repeatCount="indefinite"
                 />
               </circle>
-              
+
             </g>
           );
         }
 
-        // Canvas center or text center guides - full width
+        // Position the center dot at the vertical center of the source element
+        let dotCenterY: number;
+
+        if (snap.target.elementId) {
+          // For text element guides, get the source element's center
+          const sourceElement = document.querySelector(`[data-element-id="${snap.target.elementId}"]`) as HTMLElement;
+          if (sourceElement) {
+            const rect = sourceElement.getBoundingClientRect();
+            const slideRect = sourceElement.closest('.slide')?.getBoundingClientRect();
+            if (slideRect) {
+              const scale = CANVAS_WIDTH / slideRect.width;
+              const elementTop = (rect.top - slideRect.top) * scale;
+              const elementHeight = rect.height * scale;
+              dotCenterY = elementTop + elementHeight / 2;
+            } else {
+              dotCenterY = CANVAS_CENTER_Y;
+            }
+          } else {
+            dotCenterY = CANVAS_CENTER_Y;
+          }
+        } else {
+          // Canvas center guides - dot should be at canvas center
+          dotCenterY = CANVAS_CENTER_Y;
+        }
+
         return (
           <g key={`vertical-${snap.target.id}-${index}`}>
             {/* Main guide line */}
@@ -223,10 +249,10 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               />
             </line>
 
-            {/* Center indicator dot */}
+            {/* Center indicator dot - positioned at element center for text guides */}
             <circle
               cx={x}
-              cy={CANVAS_HEIGHT / 2}
+              cy={dotCenterY}
               r="3"
               fill={solidColor}
               opacity="1"
@@ -254,11 +280,11 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
         const y = snap.target.position.y!;
         const willSnap = snap.isGlobalWinner;
         const gradientId = willSnap ? 'url(#horizontalGuideGradient)' : 'url(#horizontalSnapGradient)';
-        const solidColor = willSnap ? '#ff3b94' : '#22c55e';
+        const solidColor = willSnap ? '#ff3b94' : '#027BFF';
 
         // Different rendering for text edge guides vs canvas center guides
         const isTextEdge = snap.target.type === 'text-edge';
-        
+
         if (isTextEdge) {
           // For text edge guides, get the source text element bounds
           const sourceElement = document.querySelector(`[data-element-id="${snap.target.elementId}"]`) as HTMLElement;
@@ -266,10 +292,10 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
           let elementRight = CANVAS_WIDTH * 0.8;
           let elementWidth = elementRight - elementLeft;
           let elementCenterX = elementLeft + elementWidth / 2;
-          
+
           if (sourceElement) {
             const rect = sourceElement.getBoundingClientRect();
-            const slideRect = sourceElement.closest('.slide-canvas')?.getBoundingClientRect();
+            const slideRect = sourceElement.closest('.slide')?.getBoundingClientRect();
             if (slideRect) {
               const scale = CANVAS_WIDTH / slideRect.width;
               elementLeft = (rect.left - slideRect.left) * scale;
@@ -324,7 +350,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
                   fill="freeze"
                 />
               </rect>
-              
+
               {/* Edge type indicator */}
               <circle
                 cx={elementCenterX}
@@ -347,12 +373,36 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
                   repeatCount="indefinite"
                 />
               </circle>
-              
+
             </g>
           );
         }
 
-        // Canvas center or text center guides - full width
+        // Position the center dot at the horizontal center of the source element
+        let dotCenterX: number;
+
+        if (snap.target.elementId) {
+          // For text element guides, get the source element's center
+          const sourceElement = document.querySelector(`[data-element-id="${snap.target.elementId}"]`) as HTMLElement;
+          if (sourceElement) {
+            const rect = sourceElement.getBoundingClientRect();
+            const slideRect = sourceElement.closest('.slide')?.getBoundingClientRect();
+            if (slideRect) {
+              const scale = CANVAS_WIDTH / slideRect.width;
+              const elementLeft = (rect.left - slideRect.left) * scale;
+              const elementWidth = rect.width * scale;
+              dotCenterX = elementLeft + elementWidth / 2;
+            } else {
+              dotCenterX = CANVAS_CENTER_X;
+            }
+          } else {
+            dotCenterX = CANVAS_CENTER_X;
+          }
+        } else {
+          // Canvas center guides - dot should be at canvas center
+          dotCenterX = CANVAS_CENTER_X;
+        }
+
         return (
           <g key={`horizontal-${snap.target.id}-${index}`}>
             {/* Main guide line */}
@@ -394,9 +444,9 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               />
             </line>
 
-            {/* Center indicator dot */}
+            {/* Center indicator dot - positioned at element center for text guides */}
             <circle
-              cx={CANVAS_WIDTH / 2}
+              cx={dotCenterX}
               cy={y}
               r="3"
               fill={solidColor}
@@ -421,7 +471,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
       })}
 
       {/* Debug information */}
-      {(dragPosition || filteredVerticalSnaps.length > 0 || filteredHorizontalSnaps.length > 0) && (
+      {(showDebugInfo && (dragPosition || filteredVerticalSnaps.length > 0 || filteredHorizontalSnaps.length > 0)) && (
         <g>
           {/* Element Center Position */}
           {dragPosition && (
