@@ -19,7 +19,7 @@
 
 /* Container and layout */
 .thumbnail-generator {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Inter', sans-serif;
   background: #f5f5f5;
   min-height: 100vh;
   display: flex;
@@ -125,7 +125,7 @@
 .subtitle,
 .selectable-element.subtitle {
   font-family: 'Geist', sans-serif;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 /* Claude Theme - Subtitle */
@@ -167,15 +167,15 @@
 /* Title and accent elements - match theme specificity */
 .title,
 .selectable-element.title {
-  letter-spacing: 6px;
+  letter-spacing: 1px;
   font-weight: 800;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .accent-label,
 .selectable-element.accent-label {
   font-weight: 800;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Corner Style Classes - Higher specificity to override theme and global styles */
@@ -303,21 +303,10 @@
   margin-bottom: 32px;
 }
 
-.title-before, .title-after {
-  color: white;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 72px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 4px;
-  margin: 0;
-  display: inline-block;
-}
-
 .title-highlight {
   background: rgba(255, 107, 53, 0.95);
   color: white;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 72px;
   font-weight: 800;
   text-transform: uppercase;
@@ -342,7 +331,7 @@
 
 .claude-theme .title-text {
   color: white;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 32px;
   font-weight: 800;
   text-transform: uppercase;
@@ -350,8 +339,6 @@
   transform: skew(2deg);
   display: inline-block;
 }
-
-
 
 .claude-theme .accent-shapes {
   position: absolute;
@@ -417,7 +404,7 @@
 
 .tech-theme .title-text {
   color: white;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 32px;
   font-weight: 800;
   text-transform: uppercase;
@@ -449,7 +436,7 @@
 
 .dark-theme .title-text {
   color: white;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 32px;
   font-weight: 800;
   text-transform: uppercase;
@@ -532,7 +519,7 @@
 
 .blueprint-theme .title-text {
   color: #1a1a2e;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 32px;
   font-weight: 800;
   text-transform: uppercase;

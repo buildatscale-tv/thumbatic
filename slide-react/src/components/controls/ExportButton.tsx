@@ -13,10 +13,10 @@ const ensureFontsLoaded = async (): Promise<void> => {
     { family: 'Geist', weight: '500' },
     { family: 'Geist', weight: '600' },
     { family: 'Geist', weight: '800' },
-    { family: 'Montserrat', weight: '400' },
-    { family: 'Montserrat', weight: '500' },
-    { family: 'Montserrat', weight: '600' },
-    { family: 'Montserrat', weight: '800' }
+    { family: 'Inter', weight: '400' },
+    { family: 'Inter', weight: '500' },
+    { family: 'Inter', weight: '600' },
+    { family: 'Inter', weight: '800' }
   ];
 
   const fontChecks = fontTests.map(({ family, weight }) => {
