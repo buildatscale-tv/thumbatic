@@ -123,9 +123,9 @@ export const createTextElementSnapTargets = (
 
     // Get DOM element to calculate actual dimensions
     const domElement = document.querySelector(`[data-element-id="${element.id}"]`) as HTMLElement;
-    
+
     if (!domElement) continue;
-    
+
     const elementDimensions = calculateElementDimensions(domElement, element.position);
 
     // Create horizontal alignment guides (top and bottom edges)
@@ -142,11 +142,11 @@ export const createTextElementSnapTargets = (
         label: `${element.name} Top Edge`,
       });
 
-      // Bottom edge horizontal line  
+      // Bottom edge horizontal line
       targets.push({
         id: `text-edge-bottom-${element.id}`,
         type: 'text-edge',
-        orientation: 'horizontal', 
+        orientation: 'horizontal',
         position: { y: elementDimensions.bottom },
         proximityThreshold,
         priority: 8,
@@ -207,9 +207,9 @@ export const createTextElementCenterTargets = (
 
     // Get DOM element to calculate actual dimensions
     const domElement = document.querySelector(`[data-element-id="${element.id}"]`) as HTMLElement;
-    
+
     if (!domElement) continue;
-    
+
     const elementDimensions = calculateElementDimensions(domElement, element.position);
 
     // Create horizontal center line (for vertical alignment)
@@ -337,7 +337,7 @@ export const findActiveSnaps = (
           const { left, right, width } = elementDimensions;
           const leftDistance = Math.abs(left - target.position.x);
           const rightDistance = Math.abs(right - target.position.x);
-          
+
           if (leftDistance <= rightDistance) {
             // Snap left edge to target
             snapPosition.x = target.position.x + width / 2;
@@ -351,7 +351,7 @@ export const findActiveSnaps = (
           const { top, bottom, height } = elementDimensions;
           const topDistance = Math.abs(top - target.position.y);
           const bottomDistance = Math.abs(bottom - target.position.y);
-          
+
           if (topDistance <= bottomDistance) {
             // Snap top edge to target
             snapPosition.y = target.position.y + height / 2;
@@ -386,7 +386,7 @@ export const findActiveSnaps = (
   const horizontalSnaps = activeSnaps.filter(snap => snap.orientation === 'horizontal');
 
   // Find global highest priorities
-  const globalVerticalPriority = verticalSnaps.length > 0 
+  const globalVerticalPriority = verticalSnaps.length > 0
     ? Math.max(...verticalSnaps.map(snap => snap.target.priority))
     : -1;
   const globalHorizontalPriority = horizontalSnaps.length > 0
@@ -394,10 +394,10 @@ export const findActiveSnaps = (
     : -1;
 
   // Find candidates for each orientation
-  const verticalWinnerCandidates = verticalSnaps.filter(snap => 
+  const verticalWinnerCandidates = verticalSnaps.filter(snap =>
     snap.target.priority === globalVerticalPriority
   );
-  const horizontalWinnerCandidates = horizontalSnaps.filter(snap => 
+  const horizontalWinnerCandidates = horizontalSnaps.filter(snap =>
     snap.target.priority === globalHorizontalPriority
   );
 
@@ -408,10 +408,10 @@ export const findActiveSnaps = (
   // Mark global winners (only if no ties)
   for (const snap of activeSnaps) {
     if (snap.orientation === 'vertical') {
-      snap.isGlobalWinner = hasVerticalWinner && 
+      snap.isGlobalWinner = hasVerticalWinner &&
         snap.target.priority === globalVerticalPriority;
     } else if (snap.orientation === 'horizontal') {
-      snap.isGlobalWinner = hasHorizontalWinner && 
+      snap.isGlobalWinner = hasHorizontalWinner &&
         snap.target.priority === globalHorizontalPriority;
     } else {
       snap.isGlobalWinner = false;
@@ -419,9 +419,9 @@ export const findActiveSnaps = (
   }
 
   // Sort by priority (higher priority first), then by distance (closer first)
-  // Priority hierarchy: 
+  // Priority hierarchy:
   // 9: Text element centers (highest priority, tight threshold)
-  // 8: Text element edges (high priority, wider threshold)  
+  // 8: Text element edges (high priority, wider threshold)
   // 6: Canvas center lines (lower priority)
   return activeSnaps.sort((a, b) => {
     if (a.target.priority !== b.target.priority) {
@@ -479,8 +479,8 @@ export const getAllSnapTargets = (
     proximityThreshold: 50 // Reduce center snap proximity to 50px
   };
 
-  // Add canvas center targets with reduced proximity
-  targets.push(...createCanvasCenterTargets(centerConfig));
+  // Canvas center targets disabled for now - implementing centering differently
+  // targets.push(...createCanvasCenterTargets(centerConfig));
 
   // Add text element edge targets (excluding the dragged element)
   targets.push(...createTextElementSnapTargets(textElements, config, excludeElementId));
