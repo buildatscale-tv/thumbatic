@@ -30,14 +30,22 @@ const getDarkenedColor = (hexColor: string): string => {
   const g = parseInt(color.substr(2, 2), 16);
   const b = parseInt(color.substr(4, 2), 16);
 
-  // Darken by 50% (multiply by 0.5)
-  const darkenedR = Math.round(r * 0.5);
-  const darkenedG = Math.round(g * 0.5);
-  const darkenedB = Math.round(b * 0.5);
+  // Darken by 60% (multiply by 0.4)
+  const darkenedR = Math.round(r * 0.4);
+  const darkenedG = Math.round(g * 0.4);
+  const darkenedB = Math.round(b * 0.4);
+
+  // Convert to grayscale using luminance formula
+  const gray = Math.round(0.299 * darkenedR + 0.587 * darkenedG + 0.114 * darkenedB);
+
+  // Blend original color with gray (25% desaturation = 75% original, 25% gray)
+  const desaturatedR = Math.round(darkenedR * 0.75 + gray * 0.25);
+  const desaturatedG = Math.round(darkenedG * 0.75 + gray * 0.25);
+  const desaturatedB = Math.round(darkenedB * 0.75 + gray * 0.25);
 
   // Convert back to hex
   const toHex = (n: number) => n.toString(16).padStart(2, '0');
-  return `#${toHex(darkenedR)}${toHex(darkenedG)}${toHex(darkenedB)}`;
+  return `#${toHex(desaturatedR)}${toHex(desaturatedG)}${toHex(desaturatedB)}`;
 };
 
 interface DragCallbacks {
