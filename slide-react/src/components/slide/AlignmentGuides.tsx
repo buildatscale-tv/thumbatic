@@ -9,8 +9,8 @@ interface AlignmentGuidesProps {
   snapThreshold?: number;
 }
 
-export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({ 
-  activeSnaps, 
+export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
+  activeSnaps,
   isVisible = true,
   dragPosition,
   snapThreshold = 100
@@ -20,10 +20,10 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
   }
 
   // Group snaps by orientation for rendering
-  const verticalSnaps = activeSnaps.filter(snap => 
+  const verticalSnaps = activeSnaps.filter(snap =>
     snap.orientation === 'vertical' && snap.target.position.x !== undefined
   );
-  const horizontalSnaps = activeSnaps.filter(snap => 
+  const horizontalSnaps = activeSnaps.filter(snap =>
     snap.orientation === 'horizontal' && snap.target.position.y !== undefined
   );
 
@@ -49,7 +49,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
           <stop offset="80%" stopColor="rgba(255, 59, 148, 0.8)" />
           <stop offset="100%" stopColor="rgba(255, 59, 148, 0.1)" />
         </linearGradient>
-        
+
         <linearGradient id="horizontalGuideGradient" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="rgba(255, 59, 148, 0.1)" />
           <stop offset="20%" stopColor="rgba(255, 59, 148, 0.8)" />
@@ -64,7 +64,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
           <stop offset="80%" stopColor="rgba(34, 197, 94, 0.8)" />
           <stop offset="100%" stopColor="rgba(34, 197, 94, 0.1)" />
         </linearGradient>
-        
+
         <linearGradient id="horizontalSnapGradient" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="rgba(34, 197, 94, 0.1)" />
           <stop offset="20%" stopColor="rgba(34, 197, 94, 0.8)" />
@@ -79,7 +79,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
         const isSnapReady = snap.distance <= snapThreshold;
         const gradientId = isSnapReady ? 'url(#verticalSnapGradient)' : 'url(#verticalGuideGradient)';
         const solidColor = isSnapReady ? '#22c55e' : '#ff3b94';
-        
+
         return (
           <g key={`vertical-${snap.target.id}-${index}`}>
             {/* Main guide line */}
@@ -101,7 +101,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
                 fill="freeze"
               />
             </line>
-            
+
             {/* Central highlight section */}
             <line
               x1={x}
@@ -153,7 +153,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
         const isSnapReady = snap.distance <= snapThreshold;
         const gradientId = isSnapReady ? 'url(#horizontalSnapGradient)' : 'url(#horizontalGuideGradient)';
         const solidColor = isSnapReady ? '#22c55e' : '#ff3b94';
-        
+
         return (
           <g key={`horizontal-${snap.target.id}-${index}`}>
             {/* Main guide line */}
@@ -237,7 +237,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               {`Element Center: (${Math.round(dragPosition.x)}, ${Math.round(dragPosition.y)})`}
             </text>
           )}
-          
+
           {/* Active Snaps Count */}
           {activeSnaps.length > 0 && (
             <text
@@ -251,7 +251,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               {`Active Snaps: ${activeSnaps.length}`}
             </text>
           )}
-          
+
           {/* Active Snap Coordinates */}
           {activeSnaps.length > 0 && (
             <text
@@ -272,7 +272,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               }).filter(coord => coord).join(', ')}`}
             </text>
           )}
-          
+
           {/* Direct Pixel Mode */}
           <text
             x={10}

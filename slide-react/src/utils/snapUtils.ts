@@ -11,8 +11,8 @@ export const CANVAS_CENTER_Y = CANVAS_HEIGHT / 2; // 360
 // Default configuration
 export const DEFAULT_SNAP_CONFIG: SnapConfiguration = {
   enabled: true,
-  proximityThreshold: 100,
-  snapThreshold: 50, // Snap if released within 50px of guide
+  proximityThreshold: 50,
+  snapThreshold: 25, // Snap if released within 50px of guide
   showGuides: true,
   canvasCenter: {
     enabled: true,
@@ -30,11 +30,11 @@ export const calculateElementDimensions = (
   currentPosition: { x: number; y: number }
 ): ElementDimensions => {
   const rect = element.getBoundingClientRect();
-  
+
   // Use direct DOM dimensions (no scaling)
   const width = rect.width;
   const height = rect.height;
-  
+
   // currentPosition is already in pixel coordinates
   return {
     width,
@@ -76,7 +76,7 @@ export const createCanvasCenterTargets = (
   // Horizontal center line (for vertical alignment)
   if (config.canvasCenter.horizontal) {
     targets.push({
-      id: 'canvas-center-horizontal', 
+      id: 'canvas-center-horizontal',
       type: 'canvas-center',
       orientation: 'horizontal',
       position: { y: CANVAS_CENTER_Y },
@@ -101,7 +101,7 @@ export const calculateDistanceToTarget = (
   if (target.orientation === 'vertical' && target.position.x !== undefined) {
     return Math.abs(centerX - target.position.x);
   }
-  
+
   if (target.orientation === 'horizontal' && target.position.y !== undefined) {
     return Math.abs(centerY - target.position.y);
   }
@@ -126,15 +126,15 @@ export const findActiveSnaps = (
 
   for (const target of snapTargets) {
     const distance = calculateDistanceToTarget(elementDimensions, target);
-    
+
     if (distance <= target.proximityThreshold) {
       const snapPosition: { x?: number; y?: number } = {};
-      
+
       // Calculate final snap position
       if (target.orientation === 'vertical' && target.position.x !== undefined) {
         snapPosition.x = target.position.x;
       }
-      
+
       if (target.orientation === 'horizontal' && target.position.y !== undefined) {
         snapPosition.y = target.position.y;
       }
@@ -194,12 +194,12 @@ export const getAllSnapTargets = (
   config: SnapConfiguration = DEFAULT_SNAP_CONFIG
 ): SnapTarget[] => {
   const targets: SnapTarget[] = [];
-  
+
   // Add canvas center targets
   targets.push(...createCanvasCenterTargets(config));
-  
+
   // Future: Add element-based targets here
   // targets.push(...createElementSnapTargets(elements, config));
-  
+
   return targets;
 };

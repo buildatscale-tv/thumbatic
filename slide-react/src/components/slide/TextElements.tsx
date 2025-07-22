@@ -58,7 +58,7 @@ const DraggableText: React.FC<{ element: SlideElement; dragCallbacks: DragCallba
   const props = element.properties as TextElementProperties;
   const content = props.content || '';
   const isSelected = selectedElement?.id === element.id;
-  
+
   // Calculate contrasting text color and shadow color
   const textColor = props.backgroundStyle !== 'none' ? getContrastingColor(props.backgroundColor) : undefined;
   const shadowColor = props.backgroundStyle === 'drop-shadow' ? getDarkenedColor(props.backgroundColor) : undefined;

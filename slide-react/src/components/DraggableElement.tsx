@@ -16,14 +16,7 @@ interface DraggableElementProps {
 }
 
 // Helper function to convert center coordinates to top-left coordinates
-const centerToTopLeft = (centerPos: { x: number; y: number }, element: HTMLElement | null): { x: number; y: number } => {
-  if (!element) {
-    // Fallback: assume element is roughly centered, return position offset by estimated size
-    return {
-      x: Math.max(0, centerPos.x - 50), // rough estimate for half-width
-      y: Math.max(0, centerPos.y - 25), // rough estimate for half-height
-    };
-  }
+const centerToTopLeft = (centerPos: { x: number; y: number }, element: HTMLElement): { x: number; y: number } => {
   const rect = element.getBoundingClientRect();
   return {
     x: centerPos.x - rect.width / 2,
@@ -32,10 +25,10 @@ const centerToTopLeft = (centerPos: { x: number; y: number }, element: HTMLEleme
 };
 
 
-export function DraggableElement({ 
-  id, 
-  position, 
-  children, 
+export function DraggableElement({
+  id,
+  position,
+  children,
   dragCallbacks,
   className = '',
   style = {}
@@ -43,17 +36,26 @@ export function DraggableElement({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [initialCenterPosition, setInitialCenterPosition] = useState({ x: 0, y: 0 });
+  const [topLeftPosition, setTopLeftPosition] = useState({ x: 0, y: 0 });
   const currentPositionRef = useRef({ x: 0, y: 0 });
   const elementRef = useRef<HTMLDivElement>(null);
+
+  // Update positioning after element is mounted and when position changes
+  React.useLayoutEffect(() => {
+    if (elementRef.current) {
+      const newTopLeft = centerToTopLeft(position, elementRef.current);
+      setTopLeftPosition(newTopLeft);
+    }
+  }, [position]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
     setInitialCenterPosition(position); // position is stored as center coordinates
-    
+
     // Prevent text selection while dragging
     e.preventDefault();
-    
+
     // Call the drag start callback with center coordinates
     dragCallbacks.onDragStart(id, position);
   };
@@ -68,7 +70,7 @@ export function DraggableElement({
     const element = elementRef.current;
     let elementWidth = 100; // fallback
     let elementHeight = 50; // fallback
-    
+
     if (element) {
       const rect = element.getBoundingClientRect();
       elementWidth = rect.width;
@@ -96,7 +98,7 @@ export function DraggableElement({
   const handleMouseUp = useCallback(() => {
     if (isDragging) {
       setIsDragging(false);
-      
+
       // Use the last position from mousemove
       dragCallbacks.onDragEnd(id, currentPositionRef.current);
     }
@@ -106,16 +108,13 @@ export function DraggableElement({
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
-      
+
       return () => {
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
   }, [isDragging, handleMouseMove, handleMouseUp]);
-
-  // Convert center position to top-left for CSS positioning
-  const topLeftPosition = centerToTopLeft(position, elementRef.current);
 
   const combinedStyle: React.CSSProperties = {
     position: 'absolute',

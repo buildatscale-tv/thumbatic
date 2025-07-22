@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a React TypeScript application that generates professional YouTube intro slides with flat design, rectangular highlights, and theme-based styling. The project is built with Vite, React 19, TypeScript, and uses Zustand for state management, @dnd-kit for drag-and-drop functionality, and modern-screenshot for image export.
+This is a React TypeScript application that generates professional YouTube intro slides with flat design, rectangular highlights, and theme-based styling. The project is built with Vite, React 19, TypeScript, and uses Zustand for state management, modern-screenshot for image export, and a custom snapping system for element positioning.
 
 ## Development Commands
 
@@ -20,78 +20,117 @@ The application uses Zustand for centralized state management in `src/store/slid
 - Theme and styling configuration (themes, corner styles)
 - Logo and icon management (library selection, custom URLs, positioning)
 - Element management (text, logos, icons) with drag-and-drop positioning
-- Text layout modes (inline, lines, grid)
+- Text layout modes and element properties
 
-### Component Structure
-- **App.tsx**: Root component with DndContext for drag-and-drop functionality
-- **SlideGenerator.tsx**: Main layout container with ControlPanel and SlideCanvas
-- **SlideCanvas.tsx**: 1280x720 slide preview with theme classes and element rendering
-- **ControlPanel.tsx**: Left sidebar with all slide configuration controls
+### Core Architecture Patterns
 
-### Key Components
-- **controls/**: Form controls for content, themes, logos, icons, and element properties
-- **slide/**: Slide rendering components (TextElements, LogoElements, IconElements, AccentShapes)
-- **DroppableArea**: Drag-and-drop target zone using @dnd-kit
-
-### Drag-and-Drop System
-Uses @dnd-kit with:
-- PointerSensor with 8px activation distance
-- Position updates via store's `updateElementPosition` action
-- Restricted to slide canvas boundaries with `restrictToWindowEdges`
-
-### Element System
-All slide elements follow a unified structure:
+#### Element System
+All slide elements follow a unified structure defined in `src/types.ts`:
 ```typescript
 interface SlideElement {
   id: string;
   type: 'text' | 'logo' | 'icon';
   name: string;
-  position: { x: number; y: number };
+  position: { x: number; y: number }; // Center-based coordinates
   properties: ElementProperties;
 }
 ```
 
+Elements use center-based positioning (x, y coordinates represent the center) but are rendered using top-left positioning. The store handles this conversion automatically.
+
+#### Drag and Drop System
+Uses a custom implementation built around React state and DOM events:
+- **App.tsx**: Contains drag callbacks and snapping logic
+- **DraggableElement.tsx**: Wrapper component for draggable functionality
+- **useSnapping hook**: Provides intelligent snapping to canvas center and other elements
+- Only text elements participate in snapping; logos and icons have free positioning
+
+#### Safe Positioning Algorithm
+The `generateSafePosition()` function in slideStore ensures logos/icons don't overlap with the text center zone:
+- Defines an 900x400px exclusion zone in the slide center
+- Uses up to 50 attempts to find non-overlapping positions
+- Fallback positioning if safe position can't be found
+
+### Component Structure
+- **App.tsx**: Root component with drag handling and snapping integration
+- **SlideGenerator.tsx**: Main layout container with ControlPanel and SlideCanvas
+- **SlideCanvas.tsx**: 1280x720 slide preview with theme classes and element rendering
+- **ControlPanel.tsx**: Left sidebar with all slide configuration controls
+
+Key rendering components:
+- **controls/**: Form controls for content, themes, logos, icons, and element properties
+- **slide/**: Slide rendering components (TextElements, LogoElements, IconElements, AccentShapes)
+
 ### Theme System
 Four built-in themes with CSS class switching:
 - `claude-theme`: Orange/navy default theme
-- `tech-theme`: Blue gradient theme
+- `tech-theme`: Blue gradient theme  
 - `dark-theme`: Green/dark theme
 - `blueprint-theme`: Blue angular theme
 
+Themes are applied via CSS classes on the slide container and support both rounded and sharp corner styles.
+
 ### Export System
-Uses modern-screenshot library for PNG export at exact 1280x720 YouTube intro dimensions.
+Uses modern-screenshot library for PNG export at exact 1280x720 YouTube intro dimensions. Exports are CORS-friendly and don't require additional server configuration.
 
 ## Key Technologies
 
-- **React 19**: Latest React with new features
-- **TypeScript**: Strict typing with modern config
-- **Vite**: Fast build tool with HMR
-- **Zustand**: Lightweight state management
-- **@dnd-kit**: Accessible drag-and-drop system
-- **modern-screenshot**: CORS-friendly image export
+- **React 19**: Latest React with new features and improved performance
+- **TypeScript**: Strict typing with comprehensive type definitions
+- **Vite**: Fast build tool with HMR and optimized builds
+- **Zustand**: Lightweight state management (no providers needed)
+- **modern-screenshot**: Client-side image export without canvas security issues
 
 ## File Structure
 
 ```
 src/
-├── App.tsx                 # Root component with DndContext
+├── App.tsx                 # Root component with drag/snap logic
 ├── store/slideStore.ts     # Zustand state management
-├── types.ts               # TypeScript type definitions
+├── types.ts               # Core TypeScript type definitions
 ├── components/
 │   ├── SlideGenerator.tsx  # Main layout container
 │   ├── SlideCanvas.tsx     # 1280x720 slide preview
 │   ├── ControlPanel.tsx    # Left sidebar controls
+│   ├── DraggableElement.tsx # Drag wrapper component
 │   ├── controls/          # Form control components
 │   └── slide/             # Slide rendering components
+├── hooks/
+│   └── useSnapping.ts     # Smart snapping system
+├── utils/
+│   └── snapUtils.ts       # Snapping calculations
 ├── constants/             # Logo and icon libraries
 └── styles/               # CSS styling
 ```
 
+## Important Implementation Details
+
+### Element Positioning
+- All elements use center-based coordinates internally
+- Rendering converts center coordinates to top-left for CSS positioning  
+- Text elements snap to canvas center (640, 360) and other alignment guides
+- Logo/icon elements have free positioning with safe zone avoidance
+
+### Logo System
+- Supports both custom URL logos and curated library of 50+ tech logos
+- Library logos use devicons CDN for consistent styling
+- Automatic positioning prevents overlap with text content area
+
+### Snapping System
+- Text elements snap to canvas center lines and other text elements
+- 200px proximity threshold for showing guides, 100px threshold for snapping
+- Visual guides appear during drag operations for text elements
+- Snapping only applies to text elements; logos/icons have free movement
+
+### TypeScript Configuration
+- Strict mode enabled with comprehensive type checking
+- ESLint configured for React hooks and TypeScript best practices
+- Project uses Vite's optimized TypeScript compilation
+
 ## Development Notes
 
-- Elements use pixel-based positioning for precise 1280x720 layout
-- Safe positioning algorithm prevents logo/icon overlap with text center zone
-- TypeScript strict mode enabled with comprehensive type checking
-- ESLint configured for React hooks and TypeScript best practices
-- All themes support both rounded and sharp corner styles
-- Logo library includes 50+ tech company logos via devicons CDN
+- Elements are rendered at exact 1280x720 dimensions for YouTube compatibility
+- The application is fully client-side with no server dependencies
+- All positioning calculations account for the fixed slide dimensions
+- Theme switching preserves element positions and properties
+- Export functionality captures the exact slide canvas without UI controls
