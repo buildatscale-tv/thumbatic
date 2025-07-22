@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useSlideStore } from '../../store/slideStore';
+import { useThumbnailStore } from '../../store/thumbnailStore';
 import { LOGO_LIBRARY } from '../../constants/logos';
 
 export const LogoControls: React.FC = () => {
@@ -13,7 +13,7 @@ export const LogoControls: React.FC = () => {
     setSelectedLogos, 
     setLogoSize,
     randomizeLogoPositions 
-  } = useSlideStore();
+  } = useThumbnailStore();
 
   const [searchTerm, setSearchTerm] = useState('');
 

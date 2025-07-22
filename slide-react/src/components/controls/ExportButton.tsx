@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSlideStore } from '../../store/slideStore';
+import { useThumbnailStore } from '../../store/thumbnailStore';
 import { domToCanvas } from 'modern-screenshot';
 
 // Function to ensure fonts are loaded
@@ -59,7 +59,7 @@ const ensureFontsLoaded = async (): Promise<void> => {
 
 export const ExportButton: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const { elements } = useSlideStore();
+  const { elements } = useThumbnailStore();
 
   const handleExport = async () => {
     try {
@@ -71,14 +71,14 @@ export const ExportButton: React.FC = () => {
       // Wait for any images to load
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Get slide element
-      const slideElement = document.getElementById('slide');
-      if (!slideElement) {
-        throw new Error('Slide element not found');
+      // Get thumbnail element
+      const thumbnailElement = document.getElementById('thumbnail');
+      if (!thumbnailElement) {
+        throw new Error('Thumbnail element not found');
       }
       
       // Force apply computed font styles to all text elements before export
-      const domTextElements = slideElement.querySelectorAll('.subtitle, .title, .accent-label, .selectable-element');
+      const domTextElements = thumbnailElement.querySelectorAll('.subtitle, .title, .accent-label, .selectable-element');
       const originalStyles: Array<{element: HTMLElement, originalFontWeight: string, originalFontFamily: string}> = [];
       
       domTextElements.forEach(el => {
@@ -98,9 +98,9 @@ export const ExportButton: React.FC = () => {
       });
       
       // Temporarily remove the scale transform for capture
-      const originalTransform = slideElement.style.transform;
-      slideElement.style.transform = 'scale(1)';
-      slideElement.style.transformOrigin = 'top left';
+      const originalTransform = thumbnailElement.style.transform;
+      thumbnailElement.style.transform = 'scale(1)';
+      thumbnailElement.style.transformOrigin = 'top left';
       
       // Wait for the DOM to update
       await new Promise(resolve => setTimeout(resolve, 200));
@@ -109,7 +109,7 @@ export const ExportButton: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Use modern-screenshot with simplified options
-      const canvas = await domToCanvas(slideElement, {
+      const canvas = await domToCanvas(thumbnailElement, {
         scale: 4,
         backgroundColor: null,
         debug: false // Disable debug to reduce noise
@@ -117,7 +117,7 @@ export const ExportButton: React.FC = () => {
       
       // Restore original styles (removed font cleanup)
       
-      slideElement.style.transform = originalTransform;
+      thumbnailElement.style.transform = originalTransform;
       originalStyles.forEach(({element, originalFontWeight, originalFontFamily}) => {
         element.style.fontWeight = originalFontWeight;
         element.style.fontFamily = originalFontFamily;
@@ -146,8 +146,8 @@ export const ExportButton: React.FC = () => {
       const textElements = elements.filter(el => el.type === 'text');
       const titleElements = textElements.filter(el => (el.properties as any).textType === 'title');
       const titleText = titleElements.map(el => (el.properties as any).content).join(' ');
-      const filename = titleText.replace(/[^a-zA-Z0-9]/g, '-') || 'slide';
-      link.download = `${filename}-intro-slide.png`;
+      const filename = titleText.replace(/[^a-zA-Z0-9]/g, '-') || 'thumbnail';
+      link.download = `${filename}-intro-thumbnail.png`;
       link.href = targetCanvas.toDataURL('image/png', 1.0);
       link.click();
       
@@ -160,17 +160,17 @@ export const ExportButton: React.FC = () => {
         // Ensure fonts are ready in fallback too
         await ensureFontsLoaded();
         
-        const slideElement = document.getElementById('slide');
-        if (slideElement) {
-          const canvas = await domToCanvas(slideElement, {});
+        const thumbnailElement = document.getElementById('thumbnail');
+        if (thumbnailElement) {
+          const canvas = await domToCanvas(thumbnailElement, {});
           
           const link = document.createElement('a');
           // Generate filename from text elements
           const textElements = elements.filter(el => el.type === 'text');
           const titleElements = textElements.filter(el => (el.properties as any).textType === 'title');
           const titleText = titleElements.map(el => (el.properties as any).content).join(' ');
-          const filename = titleText.replace(/[^a-zA-Z0-9]/g, '-') || 'slide';
-          link.download = `${filename}-intro-slide.png`;
+          const filename = titleText.replace(/[^a-zA-Z0-9]/g, '-') || 'thumbnail';
+          link.download = `${filename}-intro-thumbnail.png`;
           link.href = canvas.toDataURL('image/png', 1.0);
           link.click();
         }
@@ -189,7 +189,7 @@ export const ExportButton: React.FC = () => {
       onClick={handleExport}
       disabled={isGenerating}
     >
-      {isGenerating ? 'Generating...' : 'Download Slide'}
+      {isGenerating ? 'Generating...' : 'Download Thumbnail'}
     </button>
   );
 };

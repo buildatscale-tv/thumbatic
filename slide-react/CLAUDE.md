@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a React TypeScript application that generates professional YouTube intro slides with flat design, rectangular highlights, and theme-based styling. The project is built with Vite, React 19, TypeScript, and uses Zustand for state management, modern-screenshot for image export, and a custom snapping system for element positioning.
+This is a React TypeScript application that generates professional YouTube thumbnails with flat design, rectangular highlights, and theme-based styling. The project is built with Vite, React 19, TypeScript, and uses Zustand for state management, modern-screenshot for image export, and a custom snapping system for element positioning.
 
 ## Development Commands
 
@@ -16,7 +16,7 @@ This is a React TypeScript application that generates professional YouTube intro
 ## Architecture
 
 ### State Management
-The application uses Zustand for centralized state management in `src/store/slideStore.ts`. The store manages:
+The application uses Zustand for centralized state management in `src/store/thumbnailStore.ts`. The store manages:
 - Theme and styling configuration (themes, corner styles)
 - Logo and icon management (library selection, custom URLs, positioning)
 - Element management (text, logos, icons) with drag-and-drop positioning
@@ -25,9 +25,9 @@ The application uses Zustand for centralized state management in `src/store/slid
 ### Core Architecture Patterns
 
 #### Element System
-All slide elements follow a unified structure defined in `src/types.ts`:
+All thumbnail elements follow a unified structure defined in `src/types.ts`:
 ```typescript
-interface SlideElement {
+interface ThumbnailElement {
   id: string;
   type: 'text' | 'logo' | 'icon';
   name: string;
@@ -46,20 +46,20 @@ Uses a custom implementation built around React state and DOM events:
 - Only text elements participate in snapping; logos and icons have free positioning
 
 #### Safe Positioning Algorithm
-The `generateSafePosition()` function in slideStore ensures logos/icons don't overlap with the text center zone:
-- Defines an 900x400px exclusion zone in the slide center
+The `generateSafePosition()` function in thumbnailStore ensures logos/icons don't overlap with the text center zone:
+- Defines an 900x400px exclusion zone in the thumbnail center
 - Uses up to 50 attempts to find non-overlapping positions
 - Fallback positioning if safe position can't be found
 
 ### Component Structure
 - **App.tsx**: Root component with drag handling and snapping integration
-- **SlideGenerator.tsx**: Main layout container with ControlPanel and SlideCanvas
-- **SlideCanvas.tsx**: 1280x720 slide preview with theme classes and element rendering
+- **ThumbnailGenerator.tsx**: Main layout container with ControlPanel and ThumbnailCanvas
+- **ThumbnailCanvas.tsx**: 1280x720 thumbnail preview with theme classes and element rendering
 - **ControlPanel.tsx**: Left sidebar with all slide configuration controls
 
 Key rendering components:
 - **controls/**: Form controls for content, themes, logos, icons, and element properties
-- **slide/**: Slide rendering components (TextElements, LogoElements, IconElements, AccentShapes)
+- **thumbnail/**: Thumbnail rendering components (TextElements, LogoElements, IconElements, AccentShapes)
 
 ### Theme System
 Four built-in themes with CSS class switching:
@@ -68,10 +68,10 @@ Four built-in themes with CSS class switching:
 - `dark-theme`: Green/dark theme
 - `blueprint-theme`: Blue angular theme
 
-Themes are applied via CSS classes on the slide container and support both rounded and sharp corner styles.
+Themes are applied via CSS classes on the thumbnail container and support both rounded and sharp corner styles.
 
 ### Export System
-Uses modern-screenshot library for PNG export at exact 1280x720 YouTube intro dimensions. Exports are CORS-friendly and don't require additional server configuration.
+Uses modern-screenshot library for PNG export at exact 1280x720 YouTube thumbnail dimensions. Exports are CORS-friendly and don't require additional server configuration.
 
 ## Key Technologies
 
@@ -86,15 +86,15 @@ Uses modern-screenshot library for PNG export at exact 1280x720 YouTube intro di
 ```
 src/
 ├── App.tsx                 # Root component with drag/snap logic
-├── store/slideStore.ts     # Zustand state management
+├── store/thumbnailStore.ts # Zustand state management
 ├── types.ts               # Core TypeScript type definitions
 ├── components/
-│   ├── SlideGenerator.tsx  # Main layout container
-│   ├── SlideCanvas.tsx     # 1280x720 slide preview
+│   ├── ThumbnailGenerator.tsx # Main layout container
+│   ├── ThumbnailCanvas.tsx # 1280x720 thumbnail preview
 │   ├── ControlPanel.tsx    # Left sidebar controls
 │   ├── DraggableElement.tsx # Drag wrapper component
 │   ├── controls/          # Form control components
-│   └── slide/             # Slide rendering components
+│   └── thumbnail/         # Thumbnail rendering components
 ├── hooks/
 │   └── useSnapping.ts     # Smart snapping system
 ├── utils/
@@ -131,6 +131,6 @@ src/
 
 - Elements are rendered at exact 1280x720 dimensions for YouTube compatibility
 - The application is fully client-side with no server dependencies
-- All positioning calculations account for the fixed slide dimensions
+- All positioning calculations account for the fixed thumbnail dimensions
 - Theme switching preserves element positions and properties
-- Export functionality captures the exact slide canvas without UI controls
+- Export functionality captures the exact thumbnail canvas without UI controls

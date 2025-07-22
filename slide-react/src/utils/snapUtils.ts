@@ -1,5 +1,5 @@
 import type { SnapTarget, ElementDimensions, ActiveSnap, SnapConfiguration } from '../types/snapping';
-import type { SlideElement } from '../types';
+import type { ThumbnailElement } from '../types';
 
 // Canvas constants
 export const CANVAS_WIDTH = 1280;
@@ -106,7 +106,7 @@ export const createCanvasCenterTargets = (
  * Create text element edge snap targets
  */
 export const createTextElementSnapTargets = (
-  textElements: SlideElement[],
+  textElements: ThumbnailElement[],
   config: SnapConfiguration = DEFAULT_SNAP_CONFIG,
   excludeElementId?: string // Exclude the element being dragged
 ): SnapTarget[] => {
@@ -190,7 +190,7 @@ export const createTextElementSnapTargets = (
  * Create text element center snap targets
  */
 export const createTextElementCenterTargets = (
-  textElements: SlideElement[],
+  textElements: ThumbnailElement[],
   config: SnapConfiguration = DEFAULT_SNAP_CONFIG,
   excludeElementId?: string // Exclude the element being dragged
 ): SnapTarget[] => {
@@ -468,18 +468,16 @@ export const calculateSnapPosition = (
  */
 export const getAllSnapTargets = (
   config: SnapConfiguration = DEFAULT_SNAP_CONFIG,
-  textElements: SlideElement[] = [],
+  textElements: ThumbnailElement[] = [],
   excludeElementId?: string
 ): SnapTarget[] => {
   const targets: SnapTarget[] = [];
 
-  // Create config with reduced center snap proximity
-  const centerConfig = {
-    ...config,
-    proximityThreshold: 50 // Reduce center snap proximity to 50px
-  };
-
   // Canvas center targets disabled for now - implementing centering differently
+  // const centerConfig = {
+  //   ...config,
+  //   proximityThreshold: 50 // Reduce center snap proximity to 50px
+  // };
   // targets.push(...createCanvasCenterTargets(centerConfig));
 
   // Add text element edge targets (excluding the dragged element)

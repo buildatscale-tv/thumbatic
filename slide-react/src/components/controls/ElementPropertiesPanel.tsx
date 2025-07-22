@@ -1,9 +1,9 @@
 import React from 'react';
-import { useSlideStore } from '../../store/slideStore';
+import { useThumbnailStore } from '../../store/thumbnailStore';
 import type { TextElementProperties, LogoIconElementProperties } from '../../types';
 
 export const ElementPropertiesPanel: React.FC = () => {
-  const { selectedElement, selectElement, updateElementProperties } = useSlideStore();
+  const { selectedElement, selectElement, updateElementProperties } = useThumbnailStore();
 
   if (!selectedElement) {
     return null;

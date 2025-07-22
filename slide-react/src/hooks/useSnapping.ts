@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { SnapState, ElementDimensions, ActiveSnap, SnapConfiguration } from '../types/snapping';
-import type { SlideElement } from '../types';
+import type { ThumbnailElement } from '../types';
 import {
   DEFAULT_SNAP_CONFIG,
   calculateElementDimensions,
@@ -12,7 +12,7 @@ import {
 export interface UseSnappingOptions {
   config?: Partial<SnapConfiguration>;
   elementId?: string; // ID of the element being dragged
-  textElements?: SlideElement[]; // Text elements to generate alignment guides from
+  textElements?: ThumbnailElement[]; // Text elements to generate alignment guides from
 }
 
 export interface UseSnappingReturn {

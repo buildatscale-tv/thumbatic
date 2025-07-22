@@ -1,13 +1,13 @@
 import React from 'react';
-import { SlideGenerator } from './components/SlideGenerator';
-import { useSlideStore } from './store/slideStore';
+import { ThumbnailGenerator } from './components/ThumbnailGenerator';
+import { useThumbnailStore } from './store/thumbnailStore';
 import { useSnapping } from './hooks/useSnapping';
 import type { ActiveSnap } from './types/snapping';
-import './styles/slide.css';
+import './styles/thumbnail.css';
 
 function App() {
   // Get text elements for text-edge snapping using a stable reference
-  const allElements = useSlideStore(state => state.elements);
+  const allElements = useThumbnailStore(state => state.elements);
   const textElements = React.useMemo(
     () => allElements.filter(el => el.type === 'text'),
     [allElements]
@@ -51,7 +51,7 @@ function App() {
   // Drag callbacks to be passed to draggable elements
   const dragCallbacks = {
     onDragStart: (elementId: string, position: { x: number; y: number }) => {
-      const currentElement = useSlideStore.getState().elements.find(el => el.id === elementId);
+      const currentElement = useThumbnailStore.getState().elements.find(el => el.id === elementId);
 
       if (currentElement) {
         // Start snapping session for all element types
@@ -66,11 +66,11 @@ function App() {
     },
 
     onDragMove: (elementId: string, position: { x: number; y: number }) => {
-      const currentElement = useSlideStore.getState().elements.find(el => el.id === elementId);
+      const currentElement = useThumbnailStore.getState().elements.find(el => el.id === elementId);
 
       if (currentElement) {
         // Update position in store immediately for visual feedback
-        useSlideStore.getState().updateElementPosition(elementId, position);
+        useThumbnailStore.getState().updateElementPosition(elementId, position);
 
         // Update snapping system for all element types
         if (snapping.isSnapping) {
@@ -86,7 +86,7 @@ function App() {
     },
 
     onDragEnd: (elementId: string) => {
-      const currentElement = useSlideStore.getState().elements.find(el => el.id === elementId);
+      const currentElement = useThumbnailStore.getState().elements.find(el => el.id === elementId);
 
       if (currentElement && snapping.isSnapping) {
         // Try to get snapped position from snapping system for all element types
@@ -94,7 +94,7 @@ function App() {
 
         if (snappedPosition) {
           // Snapping occurred - use snapped position
-          useSlideStore.getState().updateElementPosition(elementId, snappedPosition);
+          useThumbnailStore.getState().updateElementPosition(elementId, snappedPosition);
         }
         // If no snapping, position is already updated from onDragMove
       }
@@ -106,8 +106,8 @@ function App() {
   };
 
   return (
-    <div className="slide-generator">
-      <SlideGenerator
+    <div className="thumbnail-generator">
+      <ThumbnailGenerator
         dragState={{
           isDragging: !!dragState.activeId,
           position: dragState.position,

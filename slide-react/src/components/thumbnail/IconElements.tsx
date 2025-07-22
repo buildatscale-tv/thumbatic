@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { useSlideStore } from '../../store/slideStore';
+import { useThumbnailStore } from '../../store/thumbnailStore';
 import { DraggableElement } from '../DraggableElement';
 import { ICON_LIBRARY } from '../../constants/icons';
-import type { LogoIconElementProperties, SlideElement } from '../../types';
+import type { LogoIconElementProperties, ThumbnailElement } from '../../types';
 
 interface DragCallbacks {
   onDragStart: (elementId: string, position: { x: number; y: number }) => void;
@@ -10,8 +10,8 @@ interface DragCallbacks {
   onDragEnd: (elementId: string, position: { x: number; y: number }) => void;
 }
 
-const DraggableIcon: React.FC<{ element: SlideElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
-  const { selectElement } = useSlideStore();
+const DraggableIcon: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
+  const { selectElement } = useThumbnailStore();
   const props = element.properties as LogoIconElementProperties;
 
   const handleIconClick = (event: React.MouseEvent) => {
@@ -51,7 +51,7 @@ interface IconElementsProps {
 }
 
 export const IconElements: React.FC<IconElementsProps> = ({ dragCallbacks }) => {
-  const { iconType, iconSize, elements, addElement, removeElement } = useSlideStore();
+  const { iconType, iconSize, elements, addElement, removeElement } = useThumbnailStore();
 
   const iconElements = elements.filter(el => el.type === 'icon');
 
@@ -84,7 +84,7 @@ export const IconElements: React.FC<IconElementsProps> = ({ dragCallbacks }) => 
       const rotation = Math.random() * 360; // 0-360 degrees
       const size = iconSize + Math.floor(Math.random() * 16) - 8; // ±8px variation
 
-      const iconElement: SlideElement = {
+      const iconElement: ThumbnailElement = {
         id: `icon-${Date.now()}-${i}`,
         type: 'icon',
         name: `Icon ${i + 1}`,

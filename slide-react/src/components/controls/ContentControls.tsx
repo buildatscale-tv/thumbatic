@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSlideStore } from '../../store/slideStore';
+import { useThumbnailStore } from '../../store/thumbnailStore';
 import type { TextElementType, TextElementProperties } from '../../types';
 
 export const ContentControls: React.FC = () => {
@@ -9,7 +9,7 @@ export const ContentControls: React.FC = () => {
     addTextElement,
     removeElement,
     selectElement
-  } = useSlideStore();
+  } = useThumbnailStore();
   const [newElementType, setNewElementType] = useState<TextElementType>('title');
   const [newElementContent, setNewElementContent] = useState('');
 

@@ -1,9 +1,9 @@
 import React from 'react';
-import { useSlideStore } from '../../store/slideStore';
+import { useThumbnailStore } from '../../store/thumbnailStore';
 import type { Theme, CornerStyle } from '../../types';
 
 export const ThemeControls: React.FC = () => {
-  const { theme, cornerStyle, setTheme, setCornerStyle } = useSlideStore();
+  const { theme, cornerStyle, setTheme, setCornerStyle } = useThumbnailStore();
 
   return (
     <>

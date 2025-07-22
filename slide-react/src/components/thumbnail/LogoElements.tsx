@@ -1,7 +1,7 @@
 import React from 'react';
-import { useSlideStore } from '../../store/slideStore';
+import { useThumbnailStore } from '../../store/thumbnailStore';
 import { DraggableElement } from '../DraggableElement';
-import type { LogoIconElementProperties, SlideElement } from '../../types';
+import type { LogoIconElementProperties, ThumbnailElement } from '../../types';
 
 interface DragCallbacks {
   onDragStart: (elementId: string, position: { x: number; y: number }) => void;
@@ -9,8 +9,8 @@ interface DragCallbacks {
   onDragEnd: (elementId: string, position: { x: number; y: number }) => void;
 }
 
-const DraggableLogo: React.FC<{ element: SlideElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
-  const { selectElement } = useSlideStore();
+const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
+  const { selectElement } = useThumbnailStore();
   const props = element.properties as LogoIconElementProperties;
 
   const handleLogoClick = (event: React.MouseEvent) => {
@@ -59,7 +59,7 @@ interface LogoElementsProps {
 }
 
 export const LogoElements: React.FC<LogoElementsProps> = ({ dragCallbacks }) => {
-  const { logoType, logoUrl, elements } = useSlideStore();
+  const { logoType, logoUrl, elements } = useThumbnailStore();
   const logoElements = elements.filter(el => el.type === 'logo');
 
   return (

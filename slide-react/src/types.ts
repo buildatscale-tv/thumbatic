@@ -22,8 +22,8 @@ export interface LogoIconElementProperties {
 // Union type for element properties
 export type ElementProperties = TextElementProperties | LogoIconElementProperties;
 
-// Slide element interface
-export interface SlideElement {
+// Thumbnail element interface
+export interface ThumbnailElement {
   id: string;
   type: 'text' | 'logo' | 'icon';
   name: string;
@@ -51,7 +51,7 @@ export type LogoType = 'url' | 'library';
 export type IconType = 'none' | 'tech' | 'shapes' | 'arrows' | 'mixed';
 
 // Main store state interface
-export interface SlideState {
+export interface ThumbnailState {
   
   // Theme and styling
   theme: Theme;
@@ -68,8 +68,8 @@ export interface SlideState {
   iconSize: number;
   
   // Element management
-  elements: SlideElement[];
-  selectedElement: SlideElement | null;
+  elements: ThumbnailElement[];
+  selectedElement: ThumbnailElement | null;
   
   // Actions
   setTheme: (theme: Theme) => void;
@@ -80,10 +80,10 @@ export interface SlideState {
   setLogoSize: (size: number) => void;
   setIconType: (type: IconType) => void;
   setIconSize: (size: number) => void;
-  selectElement: (element: SlideElement | null) => void;
+  selectElement: (element: ThumbnailElement | null) => void;
   updateElementProperties: (elementId: string, properties: Partial<ElementProperties>) => void;
   updateElementPosition: (elementId: string, position: { x: number; y: number }) => void;
-  addElement: (element: SlideElement) => void;
+  addElement: (element: ThumbnailElement) => void;
   addTextElement: (textType: TextElementType, content: string, position?: { x: number; y: number }) => void;
   removeElement: (elementId: string) => void;
   reorderElements: (elementIds: string[]) => void;

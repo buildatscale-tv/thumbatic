@@ -1,6 +1,6 @@
 import React from 'react';
 import { ControlPanel } from './ControlPanel';
-import { SlideCanvas } from './SlideCanvas';
+import { ThumbnailCanvas } from './ThumbnailCanvas';
 import type { ActiveSnap } from '../types/snapping';
 
 interface DragCallbacks {
@@ -9,7 +9,7 @@ interface DragCallbacks {
   onDragEnd: (elementId: string, position: { x: number; y: number }) => void;
 }
 
-interface SlideGeneratorProps {
+interface ThumbnailGeneratorProps {
   dragState?: {
     isDragging: boolean;
     position?: { x: number; y: number };
@@ -19,12 +19,12 @@ interface SlideGeneratorProps {
   snapThreshold?: number;
 }
 
-export const SlideGenerator: React.FC<SlideGeneratorProps> = ({ dragState, dragCallbacks, snapThreshold }) => {
+export const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({ dragState, dragCallbacks, snapThreshold }) => {
   return (
     <div className="container">
       <ControlPanel />
       <div className="preview">
-        <SlideCanvas dragState={dragState} dragCallbacks={dragCallbacks} snapThreshold={snapThreshold} />
+        <ThumbnailCanvas dragState={dragState} dragCallbacks={dragCallbacks} snapThreshold={snapThreshold} />
       </div>
     </div>
   );

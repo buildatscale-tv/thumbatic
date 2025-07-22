@@ -1,7 +1,7 @@
 import React from 'react';
-import { useSlideStore } from '../../store/slideStore';
+import { useThumbnailStore } from '../../store/thumbnailStore';
 import { DraggableElement } from '../DraggableElement';
-import type { TextElementProperties, SlideElement } from '../../types';
+import type { TextElementProperties, ThumbnailElement } from '../../types';
 
 // Color brightness detection - for contrasting text colors
 const getContrastingColor = (hexColor: string): string => {
@@ -47,8 +47,8 @@ interface DragCallbacks {
 }
 
 // Draggable Text Component (for manual positioning)
-const DraggableText: React.FC<{ element: SlideElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
-  const { selectElement, selectedElement } = useSlideStore();
+const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
+  const { selectElement, selectedElement } = useThumbnailStore();
 
   const handleElementClick = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -123,7 +123,7 @@ interface TextElementsProps {
 }
 
 export const TextElements: React.FC<TextElementsProps> = ({ dragCallbacks }) => {
-  const { elements } = useSlideStore();
+  const { elements } = useThumbnailStore();
 
   // Get all text elements from store
   const textElements = elements.filter(el => el.type === 'text');

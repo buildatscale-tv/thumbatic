@@ -1,16 +1,16 @@
 import { create } from 'zustand';
-import type { SlideState, SlideElement, TextElementType, LogoIconElementProperties } from '../types';
+import type { ThumbnailState, ThumbnailElement, TextElementType, LogoIconElementProperties } from '../types';
 
 
 // Helper function to generate safe positions outside center exclusion zone (pixel-based)
 const generateSafePosition = (): { x: number; y: number } => {
-  const slideWidth = 1280;
-  const slideHeight = 720;
+  const thumbnailWidth = 1280;
+  const thumbnailHeight = 720;
   const exclusionWidth = 900;
   const exclusionHeight = 400;
 
-  const exclusionLeft = (slideWidth - exclusionWidth) / 2;
-  const exclusionTop = (slideHeight - exclusionHeight) / 2;
+  const exclusionLeft = (thumbnailWidth - exclusionWidth) / 2;
+  const exclusionTop = (thumbnailHeight - exclusionHeight) / 2;
   const exclusionRight = exclusionLeft + exclusionWidth;
   const exclusionBottom = exclusionTop + exclusionHeight;
 
@@ -20,8 +20,8 @@ const generateSafePosition = (): { x: number; y: number } => {
 
   do {
     // Generate pixel positions directly
-    x = Math.random() * (slideWidth * 0.8) + (slideWidth * 0.1); // 10-90% of slide width
-    y = Math.random() * (slideHeight * 0.8) + (slideHeight * 0.1); // 10-90% of slide height
+    x = Math.random() * (thumbnailWidth * 0.8) + (thumbnailWidth * 0.1); // 10-90% of thumbnail width
+    y = Math.random() * (thumbnailHeight * 0.8) + (thumbnailHeight * 0.1); // 10-90% of thumbnail height
 
     const isInExclusion = x >= exclusionLeft && x <= exclusionRight &&
                          y >= exclusionTop && y <= exclusionBottom;
@@ -34,7 +34,7 @@ const generateSafePosition = (): { x: number; y: number } => {
 };
 
 // Create initial text elements positioned centered on canvas
-const createInitialTextElements = (): SlideElement[] => {
+const createInitialTextElements = (): ThumbnailElement[] => {
   return [
     {
       id: 'text-title',
@@ -84,7 +84,7 @@ const createInitialTextElements = (): SlideElement[] => {
   ];
 };
 
-export const useSlideStore = create<SlideState>((set, get) => ({
+export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
   // Initial theme and styling
   theme: 'claude',
   cornerStyle: 'sharp',
@@ -128,7 +128,7 @@ export const useSlideStore = create<SlideState>((set, get) => ({
       .filter(el => el.type === 'logo')
       .map(el => (el.properties as LogoIconElementProperties).src);
 
-    const newLogoElements: SlideElement[] = selectedLogos
+    const newLogoElements: ThumbnailElement[] = selectedLogos
       .filter(url => !existingLogoUrls.includes(url))
       .map((url, index) => {
         const { x, y } = generateSafePosition();
@@ -234,7 +234,7 @@ export const useSlideStore = create<SlideState>((set, get) => ({
       custom: { fontSize: 48, backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'rounded' as const },
     };
 
-    const newElement: SlideElement = {
+    const newElement: ThumbnailElement = {
       id: `text-${textType}-${Date.now()}`,
       type: 'text',
       name: `${textType.charAt(0).toUpperCase() + textType.slice(1).replace('-', ' ')}`,
@@ -264,7 +264,7 @@ export const useSlideStore = create<SlideState>((set, get) => ({
   reorderElements: (elementIds: string[]) =>
     set((state) => {
       const elementMap = new Map(state.elements.map(el => [el.id, el]));
-      const reorderedElements = elementIds.map(id => elementMap.get(id)).filter(Boolean) as SlideElement[];
+      const reorderedElements = elementIds.map(id => elementMap.get(id)).filter(Boolean) as ThumbnailElement[];
 
       // Add any elements that weren't in the reorder list (shouldn't happen, but safety)
       const missingElements = state.elements.filter(el => !elementIds.includes(el.id));

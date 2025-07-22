@@ -9,8 +9,8 @@ import { ExportButton } from './controls/ExportButton';
 export const ControlPanel: React.FC = () => {
   return (
     <div className="controls">
-      <h1>YouTube Intro Slide Generator</h1>
-      
+      <h1>YouTube Thumbnail Generator</h1>
+
       <ContentControls />
       <LogoControls />
       <ThemeControls />

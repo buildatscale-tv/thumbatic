@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSlideStore } from '../../store/slideStore';
+import { useThumbnailStore } from '../../store/thumbnailStore';
 import type { IconType } from '../../types';
 
 export const IconControls: React.FC = () => {
@@ -9,7 +9,7 @@ export const IconControls: React.FC = () => {
     setIconType, 
     setIconSize, 
     randomizeIconPositions 
-  } = useSlideStore();
+  } = useThumbnailStore();
 
   return (
     <div className="input-group">
