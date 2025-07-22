@@ -12,7 +12,8 @@
       "WebFetch(domain:cdn.jsdelivr.net)",
       "Bash(npm run build:*)",
       "Bash(mkdir:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(npx eslint:*)"
     ],
     "deny": []
   }

@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { SnapState, ElementDimensions, ActiveSnap, SnapConfiguration } from '../types/snapping';
+import type { SlideElement } from '../types';
 import {
   DEFAULT_SNAP_CONFIG,
   calculateElementDimensions,
@@ -11,6 +12,7 @@ import {
 export interface UseSnappingOptions {
   config?: Partial<SnapConfiguration>;
   elementId?: string; // ID of the element being dragged
+  textElements?: SlideElement[]; // Text elements to generate alignment guides from
 }
 
 export interface UseSnappingReturn {
@@ -39,10 +41,13 @@ export const useSnapping = (options: UseSnappingOptions = {}): UseSnappingReturn
     elementDimensions: undefined,
   });
 
+  // Track the current dragging element ID
+  const [draggingElementId, setDraggingElementId] = useState<string | undefined>();
+
   // Get all available snap targets (memoized to avoid recalculation)
   const snapTargets = useMemo(() => 
-    getAllSnapTargets(config), 
-    [config]
+    getAllSnapTargets(config, options.textElements || [], draggingElementId), 
+    [config, options.textElements, draggingElementId]
   );
 
   /**
@@ -50,6 +55,9 @@ export const useSnapping = (options: UseSnappingOptions = {}): UseSnappingReturn
    */
   const startSnapping = useCallback((elementId: string, initialPosition: { x: number; y: number }) => {
     if (!config.enabled) return;
+
+    // Set the dragging element ID
+    setDraggingElementId(elementId);
 
     // Get the DOM element to calculate dimensions
     const domElement = document.querySelector(`[data-element-id="${elementId}"]`) as HTMLElement;
@@ -136,6 +144,7 @@ export const useSnapping = (options: UseSnappingOptions = {}): UseSnappingReturn
    * Stop snapping session
    */
   const stopSnapping = useCallback(() => {
+    setDraggingElementId(undefined);
     setSnapState({
       isActive: false,
       activeSnaps: [],

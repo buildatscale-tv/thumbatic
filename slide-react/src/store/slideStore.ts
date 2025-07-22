@@ -1,19 +1,6 @@
 import { create } from 'zustand';
 import type { SlideState, SlideElement, TextElementType, LogoIconElementProperties } from '../types';
 
-// Grid utility function for initial positioning
-// Now returns center coordinates that will be converted to top-left for rendering
-const gridToPixel = (gridX: number, gridY: number, gridCols: number, gridRows: number): { x: number; y: number } => {
-  const SLIDE_WIDTH = 1280;
-  const SLIDE_HEIGHT = 720;
-  const cellWidth = SLIDE_WIDTH / gridCols;
-  const cellHeight = SLIDE_HEIGHT / gridRows;
-
-  return {
-    x: gridX * cellWidth + cellWidth / 2, // Center of grid cell
-    y: gridY * cellHeight + cellHeight / 2 // Center of grid cell
-  };
-};
 
 // Helper function to generate safe positions outside center exclusion zone (pixel-based)
 const generateSafePosition = (): { x: number; y: number } => {

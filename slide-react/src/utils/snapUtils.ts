@@ -1,4 +1,5 @@
 import type { SnapTarget, ElementDimensions, ActiveSnap, SnapConfiguration } from '../types/snapping';
+import type { SlideElement } from '../types';
 
 // Canvas constants
 export const CANVAS_WIDTH = 1280;
@@ -18,6 +19,18 @@ export const DEFAULT_SNAP_CONFIG: SnapConfiguration = {
     enabled: true,
     vertical: true,
     horizontal: true,
+  },
+  textElementEdges: {
+    enabled: true,
+    horizontal: true,
+    vertical: true,
+    proximityThreshold: 50, // Lower priority, wider threshold
+  },
+  textElementCenters: {
+    enabled: true,
+    horizontal: true,
+    vertical: true,
+    proximityThreshold: 20, // Higher priority, tighter threshold
   },
 };
 
@@ -90,26 +103,199 @@ export const createCanvasCenterTargets = (
 };
 
 /**
+ * Create text element edge snap targets
+ */
+export const createTextElementSnapTargets = (
+  textElements: SlideElement[],
+  config: SnapConfiguration = DEFAULT_SNAP_CONFIG,
+  excludeElementId?: string // Exclude the element being dragged
+): SnapTarget[] => {
+  const targets: SnapTarget[] = [];
+
+  if (!config.textElementEdges.enabled) {
+    return targets;
+  }
+
+  const proximityThreshold = config.textElementEdges.proximityThreshold ?? config.proximityThreshold;
+
+  for (const element of textElements) {
+    if (element.type !== 'text' || element.id === excludeElementId) continue;
+
+    // Get DOM element to calculate actual dimensions
+    const domElement = document.querySelector(`[data-element-id="${element.id}"]`) as HTMLElement;
+    
+    if (!domElement) continue;
+    
+    const elementDimensions = calculateElementDimensions(domElement, element.position);
+
+    // Create horizontal alignment guides (top and bottom edges)
+    if (config.textElementEdges.horizontal) {
+      // Top edge horizontal line
+      targets.push({
+        id: `text-edge-top-${element.id}`,
+        type: 'text-edge',
+        orientation: 'horizontal',
+        position: { y: elementDimensions.top },
+        proximityThreshold,
+        priority: 6, // Medium priority, below canvas center but above custom
+        elementId: element.id,
+        label: `${element.name} Top Edge`,
+      });
+
+      // Bottom edge horizontal line  
+      targets.push({
+        id: `text-edge-bottom-${element.id}`,
+        type: 'text-edge',
+        orientation: 'horizontal', 
+        position: { y: elementDimensions.bottom },
+        proximityThreshold,
+        priority: 6,
+        elementId: element.id,
+        label: `${element.name} Bottom Edge`,
+      });
+    }
+
+    // Create vertical alignment guides (left and right edges)
+    if (config.textElementEdges.vertical) {
+      // Left edge vertical line
+      targets.push({
+        id: `text-edge-left-${element.id}`,
+        type: 'text-edge',
+        orientation: 'vertical',
+        position: { x: elementDimensions.left },
+        proximityThreshold,
+        priority: 6,
+        elementId: element.id,
+        label: `${element.name} Left Edge`,
+      });
+
+      // Right edge vertical line
+      targets.push({
+        id: `text-edge-right-${element.id}`,
+        type: 'text-edge',
+        orientation: 'vertical',
+        position: { x: elementDimensions.right },
+        proximityThreshold,
+        priority: 6,
+        elementId: element.id,
+        label: `${element.name} Right Edge`,
+      });
+    }
+  }
+
+  return targets;
+};
+
+/**
+ * Create text element center snap targets
+ */
+export const createTextElementCenterTargets = (
+  textElements: SlideElement[],
+  config: SnapConfiguration = DEFAULT_SNAP_CONFIG,
+  excludeElementId?: string // Exclude the element being dragged
+): SnapTarget[] => {
+  const targets: SnapTarget[] = [];
+
+  if (!config.textElementCenters.enabled) {
+    return targets;
+  }
+
+  const proximityThreshold = config.textElementCenters.proximityThreshold ?? config.proximityThreshold;
+
+  for (const element of textElements) {
+    if (element.type !== 'text' || element.id === excludeElementId) continue;
+
+    // Get DOM element to calculate actual dimensions
+    const domElement = document.querySelector(`[data-element-id="${element.id}"]`) as HTMLElement;
+    
+    if (!domElement) continue;
+    
+    const elementDimensions = calculateElementDimensions(domElement, element.position);
+
+    // Create horizontal center line (for vertical alignment)
+    if (config.textElementCenters.horizontal) {
+      targets.push({
+        id: `text-center-horizontal-${element.id}`,
+        type: 'text-center',
+        orientation: 'horizontal',
+        position: { y: elementDimensions.centerY },
+        proximityThreshold,
+        priority: 9, // Highest priority for text centers
+        elementId: element.id,
+        label: `${element.name} Horizontal Center`,
+      });
+    }
+
+    // Create vertical center line (for horizontal alignment)
+    if (config.textElementCenters.vertical) {
+      targets.push({
+        id: `text-center-vertical-${element.id}`,
+        type: 'text-center',
+        orientation: 'vertical',
+        position: { x: elementDimensions.centerX },
+        proximityThreshold,
+        priority: 9, // Highest priority for text centers
+        elementId: element.id,
+        label: `${element.name} Vertical Center`,
+      });
+    }
+  }
+
+  return targets;
+};
+
+/**
  * Calculate distance from a point to a snap target
  */
 export const calculateDistanceToTarget = (
   elementDimensions: ElementDimensions,
   target: SnapTarget
 ): number => {
-  const { centerX, centerY } = elementDimensions;
+  const { centerX, centerY, left, right, top, bottom } = elementDimensions;
 
-  if (target.orientation === 'vertical' && target.position.x !== undefined) {
-    return Math.abs(centerX - target.position.x);
+  // For canvas center targets, snap to center point
+  if (target.type === 'canvas-center') {
+    if (target.orientation === 'vertical' && target.position.x !== undefined) {
+      return Math.abs(centerX - target.position.x);
+    }
+
+    if (target.orientation === 'horizontal' && target.position.y !== undefined) {
+      return Math.abs(centerY - target.position.y);
+    }
+
+    if (target.orientation === 'both' && target.position.x !== undefined && target.position.y !== undefined) {
+      const dx = centerX - target.position.x;
+      const dy = centerY - target.position.y;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
   }
 
-  if (target.orientation === 'horizontal' && target.position.y !== undefined) {
-    return Math.abs(centerY - target.position.y);
+  // For text edge targets, snap edges to edges
+  if (target.type === 'text-edge') {
+    if (target.orientation === 'vertical' && target.position.x !== undefined) {
+      // Find closest edge (left or right) to target vertical line
+      const leftDistance = Math.abs(left - target.position.x);
+      const rightDistance = Math.abs(right - target.position.x);
+      return Math.min(leftDistance, rightDistance);
+    }
+
+    if (target.orientation === 'horizontal' && target.position.y !== undefined) {
+      // Find closest edge (top or bottom) to target horizontal line
+      const topDistance = Math.abs(top - target.position.y);
+      const bottomDistance = Math.abs(bottom - target.position.y);
+      return Math.min(topDistance, bottomDistance);
+    }
   }
 
-  if (target.orientation === 'both' && target.position.x !== undefined && target.position.y !== undefined) {
-    const dx = centerX - target.position.x;
-    const dy = centerY - target.position.y;
-    return Math.sqrt(dx * dx + dy * dy);
+  // For text center targets, snap center to center
+  if (target.type === 'text-center') {
+    if (target.orientation === 'vertical' && target.position.x !== undefined) {
+      return Math.abs(centerX - target.position.x);
+    }
+
+    if (target.orientation === 'horizontal' && target.position.y !== undefined) {
+      return Math.abs(centerY - target.position.y);
+    }
   }
 
   return Infinity;
@@ -130,18 +316,59 @@ export const findActiveSnaps = (
     if (distance <= target.proximityThreshold) {
       const snapPosition: { x?: number; y?: number } = {};
 
-      // Calculate final snap position
-      if (target.orientation === 'vertical' && target.position.x !== undefined) {
-        snapPosition.x = target.position.x;
-      }
+      // Calculate final snap position based on target type
+      if (target.type === 'canvas-center') {
+        // Canvas center snapping - snap element center to target position
+        if (target.orientation === 'vertical' && target.position.x !== undefined) {
+          snapPosition.x = target.position.x;
+        }
 
-      if (target.orientation === 'horizontal' && target.position.y !== undefined) {
-        snapPosition.y = target.position.y;
-      }
+        if (target.orientation === 'horizontal' && target.position.y !== undefined) {
+          snapPosition.y = target.position.y;
+        }
 
-      if (target.orientation === 'both' && target.position.x !== undefined && target.position.y !== undefined) {
-        snapPosition.x = target.position.x;
-        snapPosition.y = target.position.y;
+        if (target.orientation === 'both' && target.position.x !== undefined && target.position.y !== undefined) {
+          snapPosition.x = target.position.x;
+          snapPosition.y = target.position.y;
+        }
+      } else if (target.type === 'text-edge') {
+        // Text edge snapping - snap closest element edge to target position
+        if (target.orientation === 'vertical' && target.position.x !== undefined) {
+          const { left, right, width } = elementDimensions;
+          const leftDistance = Math.abs(left - target.position.x);
+          const rightDistance = Math.abs(right - target.position.x);
+          
+          if (leftDistance <= rightDistance) {
+            // Snap left edge to target
+            snapPosition.x = target.position.x + width / 2;
+          } else {
+            // Snap right edge to target
+            snapPosition.x = target.position.x - width / 2;
+          }
+        }
+
+        if (target.orientation === 'horizontal' && target.position.y !== undefined) {
+          const { top, bottom, height } = elementDimensions;
+          const topDistance = Math.abs(top - target.position.y);
+          const bottomDistance = Math.abs(bottom - target.position.y);
+          
+          if (topDistance <= bottomDistance) {
+            // Snap top edge to target
+            snapPosition.y = target.position.y + height / 2;
+          } else {
+            // Snap bottom edge to target
+            snapPosition.y = target.position.y - height / 2;
+          }
+        }
+      } else if (target.type === 'text-center') {
+        // Text center snapping - snap element center to target center position
+        if (target.orientation === 'vertical' && target.position.x !== undefined) {
+          snapPosition.x = target.position.x;
+        }
+
+        if (target.orientation === 'horizontal' && target.position.y !== undefined) {
+          snapPosition.y = target.position.y;
+        }
       }
 
       activeSnaps.push({
@@ -154,6 +381,10 @@ export const findActiveSnaps = (
   }
 
   // Sort by priority (higher priority first), then by distance (closer first)
+  // Priority hierarchy: 
+  // 9: Text element centers (highest priority, tight threshold)
+  // 8: Canvas center lines  
+  // 6: Text element edges (lower priority, wider threshold)
   return activeSnaps.sort((a, b) => {
     if (a.target.priority !== b.target.priority) {
       return b.target.priority - a.target.priority;
@@ -168,19 +399,40 @@ export const findActiveSnaps = (
 export const calculateSnapPosition = (
   currentPosition: { x: number; y: number },
   activeSnaps: ActiveSnap[],
-  snapThreshold: number = DEFAULT_SNAP_CONFIG.snapThreshold
+  _snapThreshold: number = DEFAULT_SNAP_CONFIG.snapThreshold
 ): { x: number; y: number } => {
   const finalPosition = { ...currentPosition };
 
-  // Apply snaps that are within the snap threshold
-  for (const activeSnap of activeSnaps) {
-    if (activeSnap.distance <= snapThreshold) {
-      if (activeSnap.snapPosition.x !== undefined) {
-        finalPosition.x = activeSnap.snapPosition.x;
-      }
-      if (activeSnap.snapPosition.y !== undefined) {
-        finalPosition.y = activeSnap.snapPosition.y;
-      }
+  // activeSnaps already contains only snaps within their individual proximity thresholds
+  // (filtered by findActiveSnaps), so we don't need to filter further
+  if (activeSnaps.length === 0) {
+    return finalPosition;
+  }
+
+  // Apply the highest priority snap for each orientation separately
+  // Find the highest priority vertical and horizontal snaps
+  const verticalSnaps = activeSnaps.filter(snap => 
+    snap.orientation === 'vertical' && snap.snapPosition.x !== undefined
+  );
+  const horizontalSnaps = activeSnaps.filter(snap => 
+    snap.orientation === 'horizontal' && snap.snapPosition.y !== undefined
+  );
+
+  // Apply highest priority vertical snap
+  if (verticalSnaps.length > 0) {
+    const highestVerticalPriority = Math.max(...verticalSnaps.map(snap => snap.target.priority));
+    const topVerticalSnap = verticalSnaps.find(snap => snap.target.priority === highestVerticalPriority);
+    if (topVerticalSnap && topVerticalSnap.snapPosition.x !== undefined) {
+      finalPosition.x = topVerticalSnap.snapPosition.x;
+    }
+  }
+
+  // Apply highest priority horizontal snap
+  if (horizontalSnaps.length > 0) {
+    const highestHorizontalPriority = Math.max(...horizontalSnaps.map(snap => snap.target.priority));
+    const topHorizontalSnap = horizontalSnaps.find(snap => snap.target.priority === highestHorizontalPriority);
+    if (topHorizontalSnap && topHorizontalSnap.snapPosition.y !== undefined) {
+      finalPosition.y = topHorizontalSnap.snapPosition.y;
     }
   }
 
@@ -191,15 +443,26 @@ export const calculateSnapPosition = (
  * Get all available snap targets for the current state
  */
 export const getAllSnapTargets = (
-  config: SnapConfiguration = DEFAULT_SNAP_CONFIG
+  config: SnapConfiguration = DEFAULT_SNAP_CONFIG,
+  textElements: SlideElement[] = [],
+  excludeElementId?: string
 ): SnapTarget[] => {
   const targets: SnapTarget[] = [];
 
-  // Add canvas center targets
-  targets.push(...createCanvasCenterTargets(config));
+  // Create config with reduced center snap proximity
+  const centerConfig = {
+    ...config,
+    proximityThreshold: 50 // Reduce center snap proximity to 50px
+  };
 
-  // Future: Add element-based targets here
-  // targets.push(...createElementSnapTargets(elements, config));
+  // Add canvas center targets with reduced proximity
+  targets.push(...createCanvasCenterTargets(centerConfig));
+
+  // Add text element edge targets (excluding the dragged element)
+  targets.push(...createTextElementSnapTargets(textElements, config, excludeElementId));
+
+  // Add text element center targets (excluding the dragged element)
+  targets.push(...createTextElementCenterTargets(textElements, config, excludeElementId));
 
   return targets;
 };

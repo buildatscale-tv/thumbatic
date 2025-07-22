@@ -13,19 +13,32 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
   activeSnaps,
   isVisible = true,
   dragPosition,
-  snapThreshold = 100
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  snapThreshold: _snapThreshold = 100
 }) => {
   if (!isVisible || activeSnaps.length === 0) {
     return null;
   }
 
-  // Group snaps by orientation for rendering
+  // Find the highest priority for each orientation separately
   const verticalSnaps = activeSnaps.filter(snap =>
     snap.orientation === 'vertical' && snap.target.position.x !== undefined
   );
   const horizontalSnaps = activeSnaps.filter(snap =>
     snap.orientation === 'horizontal' && snap.target.position.y !== undefined
   );
+
+  // Get the highest priority for each orientation (for coloring)
+  const highestPriorityVertical = verticalSnaps.length > 0 
+    ? Math.max(...verticalSnaps.map(snap => snap.target.priority))
+    : -1;
+  const highestPriorityHorizontal = horizontalSnaps.length > 0
+    ? Math.max(...horizontalSnaps.map(snap => snap.target.priority))
+    : -1;
+
+  // Show ALL proximity-based snaps, but color them based on priority
+  const filteredVerticalSnaps = verticalSnaps;
+  const filteredHorizontalSnaps = horizontalSnaps;
 
   return (
     <svg
@@ -73,13 +86,110 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
         </linearGradient>
       </defs>
 
-      {/* Vertical alignment guides */}
-      {verticalSnaps.map((snap, index) => {
+      {/* Vertical alignment guides - all proximity snaps with priority coloring */}
+      {filteredVerticalSnaps.map((snap, index) => {
         const x = snap.target.position.x!;
-        const isSnapReady = snap.distance <= snapThreshold;
-        const gradientId = isSnapReady ? 'url(#verticalSnapGradient)' : 'url(#verticalGuideGradient)';
-        const solidColor = isSnapReady ? '#22c55e' : '#ff3b94';
+        const willSnap = snap.target.priority === highestPriorityVertical;
+        const gradientId = willSnap ? 'url(#verticalGuideGradient)' : 'url(#verticalSnapGradient)';
+        const solidColor = willSnap ? '#ff3b94' : '#22c55e';
 
+        // Different rendering for text edge guides vs canvas center guides
+        const isTextEdge = snap.target.type === 'text-edge';
+        
+        if (isTextEdge) {
+          // For text edge guides, get the source text element bounds
+          const sourceElement = document.querySelector(`[data-element-id="${snap.target.elementId}"]`) as HTMLElement;
+          let elementTop = CANVAS_HEIGHT * 0.2;
+          let elementBottom = CANVAS_HEIGHT * 0.8;
+          let elementHeight = elementBottom - elementTop;
+          let elementCenterY = elementTop + elementHeight / 2;
+          
+          if (sourceElement) {
+            const rect = sourceElement.getBoundingClientRect();
+            const slideRect = sourceElement.closest('.slide-canvas')?.getBoundingClientRect();
+            if (slideRect) {
+              const scale = CANVAS_WIDTH / slideRect.width;
+              elementTop = (rect.top - slideRect.top) * scale;
+              elementBottom = (rect.bottom - slideRect.top) * scale;
+              elementHeight = rect.height * scale;
+              elementCenterY = elementTop + elementHeight / 2;
+            }
+          }
+
+          // Guide line height proportional to element height (1.75x)
+          const guideHeight = elementHeight * 1.75;
+          const guideTop = elementCenterY - guideHeight / 2;
+          const guideBottom = elementCenterY + guideHeight / 2;
+
+
+          return (
+            <g key={`vertical-edge-${snap.target.id}-${index}`}>
+              {/* Proportional guide line centered on element center vertically */}
+              <line
+                x1={x}
+                y1={guideTop}
+                x2={x}
+                y2={guideBottom}
+                stroke={solidColor}
+                strokeWidth="2"
+                opacity="0.9"
+                strokeDasharray="5,5"
+              >
+                <animate
+                  attributeName="opacity"
+                  from="0"
+                  to="0.9"
+                  dur="0.2s"
+                  fill="freeze"
+                />
+              </line>
+
+              {/* Element edge indicator - positioned at actual edge Y position */}
+              <rect
+                x={x - 1.5}
+                y={elementCenterY - 2}
+                width="3"
+                height="4"
+                fill={solidColor}
+                opacity="0.8"
+              >
+                <animate
+                  attributeName="opacity"
+                  from="0"
+                  to="0.8"
+                  dur="0.2s"
+                  fill="freeze"
+                />
+              </rect>
+              
+              {/* Edge type indicator */}
+              <circle
+                cx={x}
+                cy={elementCenterY}
+                r="3"
+                fill={solidColor}
+                opacity="1"
+              >
+                <animate
+                  attributeName="opacity"
+                  from="0"
+                  to="1"
+                  dur="0.3s"
+                  fill="freeze"
+                />
+                <animate
+                  attributeName="r"
+                  values="3;5;3"
+                  dur="2s"
+                  repeatCount="indefinite"
+                />
+              </circle>
+              
+            </g>
+          );
+        }
+
+        // Canvas center or text center guides - full width
         return (
           <g key={`vertical-${snap.target.id}-${index}`}>
             {/* Main guide line */}
@@ -147,13 +257,110 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
         );
       })}
 
-      {/* Horizontal alignment guides */}
-      {horizontalSnaps.map((snap, index) => {
+      {/* Horizontal alignment guides - all proximity snaps with priority coloring */}
+      {filteredHorizontalSnaps.map((snap, index) => {
         const y = snap.target.position.y!;
-        const isSnapReady = snap.distance <= snapThreshold;
-        const gradientId = isSnapReady ? 'url(#horizontalSnapGradient)' : 'url(#horizontalGuideGradient)';
-        const solidColor = isSnapReady ? '#22c55e' : '#ff3b94';
+        const willSnap = snap.target.priority === highestPriorityHorizontal;
+        const gradientId = willSnap ? 'url(#horizontalGuideGradient)' : 'url(#horizontalSnapGradient)';
+        const solidColor = willSnap ? '#ff3b94' : '#22c55e';
 
+        // Different rendering for text edge guides vs canvas center guides
+        const isTextEdge = snap.target.type === 'text-edge';
+        
+        if (isTextEdge) {
+          // For text edge guides, get the source text element bounds
+          const sourceElement = document.querySelector(`[data-element-id="${snap.target.elementId}"]`) as HTMLElement;
+          let elementLeft = CANVAS_WIDTH * 0.2;
+          let elementRight = CANVAS_WIDTH * 0.8;
+          let elementWidth = elementRight - elementLeft;
+          let elementCenterX = elementLeft + elementWidth / 2;
+          
+          if (sourceElement) {
+            const rect = sourceElement.getBoundingClientRect();
+            const slideRect = sourceElement.closest('.slide-canvas')?.getBoundingClientRect();
+            if (slideRect) {
+              const scale = CANVAS_WIDTH / slideRect.width;
+              elementLeft = (rect.left - slideRect.left) * scale;
+              elementRight = (rect.right - slideRect.left) * scale;
+              elementWidth = rect.width * scale;
+              elementCenterX = elementLeft + elementWidth / 2;
+            }
+          }
+
+          // Guide line width proportional to element width (1.75x)
+          const guideWidth = elementWidth * 1.75;
+          const guideLeft = elementCenterX - guideWidth / 2;
+          const guideRight = elementCenterX + guideWidth / 2;
+
+
+          return (
+            <g key={`horizontal-edge-${snap.target.id}-${index}`}>
+              {/* Proportional guide line centered on element center horizontally */}
+              <line
+                x1={guideLeft}
+                y1={y}
+                x2={guideRight}
+                y2={y}
+                stroke={solidColor}
+                strokeWidth="2"
+                opacity="0.9"
+                strokeDasharray="5,5"
+              >
+                <animate
+                  attributeName="opacity"
+                  from="0"
+                  to="0.9"
+                  dur="0.2s"
+                  fill="freeze"
+                />
+              </line>
+
+              {/* Element edge indicator - positioned at actual edge X position */}
+              <rect
+                x={elementCenterX - 2}
+                y={y - 1.5}
+                width="4"
+                height="3"
+                fill={solidColor}
+                opacity="0.8"
+              >
+                <animate
+                  attributeName="opacity"
+                  from="0"
+                  to="0.8"
+                  dur="0.2s"
+                  fill="freeze"
+                />
+              </rect>
+              
+              {/* Edge type indicator */}
+              <circle
+                cx={elementCenterX}
+                cy={y}
+                r="3"
+                fill={solidColor}
+                opacity="1"
+              >
+                <animate
+                  attributeName="opacity"
+                  from="0"
+                  to="1"
+                  dur="0.3s"
+                  fill="freeze"
+                />
+                <animate
+                  attributeName="r"
+                  values="3;5;3"
+                  dur="2s"
+                  repeatCount="indefinite"
+                />
+              </circle>
+              
+            </g>
+          );
+        }
+
+        // Canvas center or text center guides - full width
         return (
           <g key={`horizontal-${snap.target.id}-${index}`}>
             {/* Main guide line */}
@@ -222,14 +429,14 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
       })}
 
       {/* Debug information */}
-      {(dragPosition || activeSnaps.length > 0) && (
+      {(dragPosition || filteredVerticalSnaps.length > 0 || filteredHorizontalSnaps.length > 0) && (
         <g>
           {/* Element Center Position */}
           {dragPosition && (
             <text
               x={10}
               y={30}
-              fill="#ff3b94"
+              fill="#22c55e"
               fontSize="14"
               fontFamily="monospace"
               opacity="0.8"
@@ -238,31 +445,45 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
             </text>
           )}
 
-          {/* Active Snaps Count */}
-          {activeSnaps.length > 0 && (
+          {/* Filtered Snaps Info */}
+          {(filteredVerticalSnaps.length > 0 || filteredHorizontalSnaps.length > 0) && (
             <text
               x={10}
               y={50}
-              fill="#ff3b94"
+              fill="#22c55e"
               fontSize="14"
               fontFamily="monospace"
               opacity="0.8"
             >
-              {`Active Snaps: ${activeSnaps.length}`}
+              {`Will Snap To: ${[...filteredVerticalSnaps, ...filteredHorizontalSnaps].map(snap => snap.target.type).join(', ')}`}
+            </text>
+          )}
+
+          {/* Priority Information */}
+          {(filteredVerticalSnaps.length > 0 || filteredHorizontalSnaps.length > 0) && (
+            <text
+              x={10}
+              y={70}
+              fill="#22c55e"
+              fontSize="14"
+              fontFamily="monospace"
+              opacity="0.8"
+            >
+              {`Priorities: V=${highestPriorityVertical >= 0 ? highestPriorityVertical : 'none'} | H=${highestPriorityHorizontal >= 0 ? highestPriorityHorizontal : 'none'}`}
             </text>
           )}
 
           {/* Active Snap Coordinates */}
-          {activeSnaps.length > 0 && (
+          {(filteredVerticalSnaps.length > 0 || filteredHorizontalSnaps.length > 0) && (
             <text
               x={10}
-              y={70}
-              fill="#ff3b94"
+              y={90}
+              fill="#22c55e"
               fontSize="14"
               fontFamily="monospace"
               opacity="0.8"
             >
-              {`Snap Coords: ${activeSnaps.map(snap => {
+              {`Snap Coords: ${[...filteredVerticalSnaps, ...filteredHorizontalSnaps].map(snap => {
                 if (snap.orientation === 'vertical' && snap.target.position.x !== undefined) {
                   return `x=${Math.round(snap.target.position.x)}`;
                 } else if (snap.orientation === 'horizontal' && snap.target.position.y !== undefined) {
@@ -276,7 +497,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
           {/* Direct Pixel Mode */}
           <text
             x={10}
-            y={90}
+            y={110}
             fill="#ff3b94"
             fontSize="12"
             fontFamily="monospace"

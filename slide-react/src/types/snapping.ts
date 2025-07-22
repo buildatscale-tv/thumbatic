@@ -1,6 +1,6 @@
 // Snapping system type definitions
 
-export type SnapTargetType = 'canvas-center' | 'element-center' | 'element-edge' | 'custom';
+export type SnapTargetType = 'canvas-center' | 'element-center' | 'element-edge' | 'text-edge' | 'text-center' | 'custom';
 export type SnapOrientation = 'vertical' | 'horizontal' | 'both';
 
 export interface SnapTarget {
@@ -54,5 +54,17 @@ export interface SnapConfiguration {
     enabled: boolean;
     vertical: boolean;
     horizontal: boolean;
+  };
+  textElementEdges: {
+    enabled: boolean;
+    horizontal: boolean; // Top/bottom edge alignment guides
+    vertical: boolean;   // Left/right edge alignment guides
+    proximityThreshold?: number; // Override default proximity threshold
+  };
+  textElementCenters: {
+    enabled: boolean;
+    horizontal: boolean; // Horizontal center line (vertical alignment)
+    vertical: boolean;   // Vertical center line (horizontal alignment)
+    proximityThreshold?: number; // Override default proximity threshold
   };
 }
