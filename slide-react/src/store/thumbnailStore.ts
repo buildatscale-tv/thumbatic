@@ -58,9 +58,9 @@ const createInitialTextElements = (): ThumbnailElement[] => {
       position: { x: 640, y: 380 },
       properties: {
         fontSize: 84,
-        backgroundColor: '#FFD700',
+        backgroundColor: '#FEBC0A',
         backgroundStyle: 'drop-shadow',
-        cornerStyle: 'sharp',
+        cornerStyle: 'rounded',
         opacity: 100,
         content: 'AGENT',
         textType: 'subtitle' as TextElementType,
