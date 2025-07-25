@@ -61,6 +61,13 @@ function App() {
         return;
       }
 
+      // Don't handle keyboard shortcuts if focus is on a text input
+      if (document.activeElement && 
+          (document.activeElement.tagName === 'INPUT' || 
+           document.activeElement.tagName === 'TEXTAREA')) {
+        return;
+      }
+
       event.preventDefault();
 
       // Determine movement amount based on modifiers
