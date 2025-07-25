@@ -201,6 +201,11 @@
   padding: var(--ui-space-6);
 }
 
+/* Override overflow for control section content */
+.control-section .ui-card__content {
+  overflow: visible;
+}
+
 /* Input Component */
 .ui-input-wrapper {
   display: flex;
@@ -578,6 +583,7 @@
 .control-section {
   transition: all var(--ui-transition-normal);
   position: relative;
+  overflow: visible !important; /* Allow content to extend beyond card boundaries */
 }
 
 .control-section:not(:last-child)::after {
@@ -724,5 +730,378 @@
     width: 1.75rem;
     height: 1.75rem;
     font-size: var(--ui-font-size-lg);
+  }
+}
+
+/* Text Elements Interface Styles */
+
+/* Content Controls Container */
+.content-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-5);
+}
+
+/* Add Text Element Card */
+.add-text-element-card {
+  border: 2px dashed var(--ui-primary-200);
+  background: linear-gradient(135deg, var(--ui-primary-50) 0%, white 100%);
+  transition: all var(--ui-transition-normal);
+  overflow: visible !important; /* Override base card overflow */
+}
+
+.add-text-element-card:hover {
+  border-color: var(--ui-primary-300);
+  background: linear-gradient(135deg, var(--ui-primary-100) 0%, white 100%);
+  transform: translateY(-1px);
+  box-shadow: var(--ui-shadow-md);
+}
+
+.add-text-header {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-1);
+}
+
+.add-text-icon {
+  font-size: var(--ui-font-size-xl);
+  background: var(--ui-primary-500);
+  color: white;
+  border-radius: var(--ui-radius-full);
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.add-text-title {
+  font-size: var(--ui-font-size-lg);
+  font-weight: var(--ui-font-weight-semibold);
+  color: var(--ui-gray-900);
+  margin: 0;
+  flex: 1;
+}
+
+/* Text Type Selection */
+.text-type-selection {
+  margin-bottom: var(--ui-space-4);
+}
+
+.selection-label {
+  display: block;
+  font-size: var(--ui-font-size-sm);
+  font-weight: var(--ui-font-weight-medium);
+  color: var(--ui-gray-700);
+  margin-bottom: var(--ui-space-3);
+}
+
+.text-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--ui-space-3);
+}
+
+.text-type-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ui-space-2);
+  padding: var(--ui-space-3);
+  border: 2px solid var(--ui-gray-200);
+  border-radius: var(--ui-radius-lg);
+  background: white;
+  cursor: pointer;
+  transition: all var(--ui-transition-fast);
+  font-family: var(--ui-font-family-sans);
+}
+
+.text-type-option:hover {
+  border-color: var(--ui-primary-300);
+  background: var(--ui-primary-50);
+  transform: translateY(-1px);
+}
+
+.text-type-option.selected {
+  border-color: var(--ui-primary-500);
+  background: var(--ui-primary-100);
+  box-shadow: 0 0 0 3px var(--ui-primary-100);
+}
+
+.option-icon {
+  font-size: var(--ui-font-size-xl);
+}
+
+.option-label {
+  font-size: var(--ui-font-size-sm);
+  font-weight: var(--ui-font-weight-medium);
+  color: var(--ui-gray-700);
+}
+
+.text-type-option.selected .option-label {
+  color: var(--ui-primary-800);
+  font-weight: var(--ui-font-weight-semibold);
+}
+
+/* Content Input */
+.text-content-input {
+  margin-bottom: var(--ui-space-4);
+}
+
+.content-input {
+  width: 100%;
+}
+
+/* Text Templates */
+.text-templates {
+  margin-bottom: var(--ui-space-4);
+}
+
+.templates-label {
+  display: block;
+  font-size: var(--ui-font-size-xs);
+  font-weight: var(--ui-font-weight-medium);
+  color: var(--ui-gray-600);
+  margin-bottom: var(--ui-space-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.templates-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ui-space-2);
+}
+
+.template-chip {
+  padding: var(--ui-space-1) var(--ui-space-3);
+  font-size: var(--ui-font-size-xs);
+  font-weight: var(--ui-font-weight-medium);
+  background: white;
+  border: 1px solid var(--ui-gray-300);
+  border-radius: var(--ui-radius-full);
+  color: var(--ui-gray-700);
+  cursor: pointer;
+  transition: all var(--ui-transition-fast);
+  font-family: var(--ui-font-family-sans);
+  white-space: nowrap;
+}
+
+.template-chip:hover {
+  background: var(--ui-primary-50);
+  border-color: var(--ui-primary-300);
+  color: var(--ui-primary-700);
+  transform: translateY(-1px);
+}
+
+.template-chip:active {
+  transform: translateY(0);
+  background: var(--ui-primary-100);
+}
+
+/* Add Button */
+.add-element-button {
+  width: 100%;
+  font-weight: var(--ui-font-weight-semibold);
+  padding: var(--ui-space-3) var(--ui-space-4);
+}
+
+/* Text Elements Section */
+.text-elements-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-4);
+}
+
+.elements-section-title {
+  font-size: var(--ui-font-size-lg);
+  font-weight: var(--ui-font-weight-semibold);
+  color: var(--ui-gray-900);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-2);
+}
+
+.elements-section-title::before {
+  content: '📝';
+  font-size: var(--ui-font-size-xl);
+}
+
+/* Text Elements List */
+.text-elements-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-3);
+}
+
+/* Text Element Card */
+.text-element-card {
+  border: 1px solid var(--ui-gray-200);
+  transition: all var(--ui-transition-fast);
+  background: white;
+  overflow: visible !important; /* Override base card overflow */
+}
+
+.text-element-card:hover {
+  border-color: var(--ui-primary-300);
+  box-shadow: var(--ui-shadow-md);
+  transform: translateY(-1px);
+}
+
+.text-element-content {
+  width: 100%;
+}
+
+/* Element Info */
+.element-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-3);
+}
+
+.element-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-2);
+}
+
+/* Element Type Badge */
+.element-type-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-1);
+  font-weight: var(--ui-font-weight-medium);
+}
+
+.badge-icon {
+  font-size: var(--ui-font-size-sm);
+}
+
+/* Delete Button */
+.delete-button {
+  padding: var(--ui-space-1) var(--ui-space-2);
+  min-width: auto;
+  flex-shrink: 0;
+}
+
+/* Element Content Input */
+.element-content-input {
+  width: 100%;
+}
+
+.element-input {
+  width: 100%;
+  font-size: var(--ui-font-size-md);
+}
+
+.element-input.editing {
+  border-color: var(--ui-primary-500);
+  box-shadow: 0 0 0 3px var(--ui-primary-100);
+}
+
+/* Inline Editing */
+.inline-edit-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-2);
+}
+
+.inline-edit-actions {
+  display: flex;
+  gap: var(--ui-space-2);
+  justify-content: flex-end;
+}
+
+/* Element Display */
+.element-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ui-space-3);
+  border: 2px solid var(--ui-gray-200);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-gray-50);
+  cursor: pointer;
+  transition: all var(--ui-transition-fast);
+  min-height: 2.5rem;
+}
+
+.element-display:hover {
+  border-color: var(--ui-primary-300);
+  background: var(--ui-primary-50);
+}
+
+.element-display.selected {
+  border-color: var(--ui-primary-500);
+  background: var(--ui-primary-100);
+  box-shadow: 0 0 0 3px var(--ui-primary-100);
+}
+
+.element-text {
+  flex: 1;
+  font-size: var(--ui-font-size-md);
+  color: var(--ui-gray-900);
+  font-weight: var(--ui-font-weight-medium);
+}
+
+.element-display .element-text:empty::before {
+  content: attr(data-placeholder);
+  color: var(--ui-gray-400);
+  font-style: italic;
+}
+
+.edit-hint {
+  font-size: var(--ui-font-size-xs);
+  color: var(--ui-gray-500);
+  opacity: 0;
+  transition: opacity var(--ui-transition-fast);
+  font-weight: var(--ui-font-weight-normal);
+}
+
+.element-display:hover .edit-hint {
+  opacity: 1;
+}
+
+/* Element Actions */
+.element-actions {
+  display: flex;
+  gap: var(--ui-space-2);
+  justify-content: flex-end;
+}
+
+.select-button {
+  font-size: var(--ui-font-size-sm);
+  padding: var(--ui-space-2) var(--ui-space-3);
+}
+
+/* Responsive adjustments for text elements */
+@media (max-width: 768px) {
+  .text-type-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .element-header {
+    flex-wrap: wrap;
+    gap: var(--ui-space-2);
+  }
+  
+  .element-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+  
+  .select-button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .element-info {
+    width: 100%;
   }
 }
