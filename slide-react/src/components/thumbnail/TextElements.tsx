@@ -60,6 +60,7 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
 
   const handleElementClick = (event: React.MouseEvent) => {
     event.stopPropagation();
+    // Use the element prop directly to avoid store timing issues
     selectElement(element);
   };
 
@@ -77,7 +78,6 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
     minHeight: content ? undefined : '20px',
     minWidth: content ? undefined : '50px',
     display: 'inline-block',
-    padding: props.backgroundStyle !== 'none' ? '8px 12px' : '4px',
     ...(props.backgroundStyle !== 'none' && {
       '--element-bg-color': props.backgroundColor,
       '--element-text-color': textColor,
@@ -113,6 +113,10 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
       dragCallbacks={dragCallbacks}
       className={classes}
       style={style}
+      alignment={{
+        horizontal: props.horizontalAlign,
+        vertical: props.verticalAlign
+      }}
     >
       <div
         data-element-type="text"

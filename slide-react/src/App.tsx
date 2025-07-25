@@ -8,6 +8,9 @@ import './styles/thumbnail.css';
 function App() {
   // Get text elements for text-edge snapping using a stable reference
   const allElements = useThumbnailStore(state => state.elements);
+  const selectedElement = useThumbnailStore(state => state.selectedElement);
+  const updateElementPosition = useThumbnailStore(state => state.updateElementPosition);
+  
   const textElements = React.useMemo(
     () => allElements.filter(el => el.type === 'text'),
     [allElements]
@@ -48,6 +51,58 @@ function App() {
     activeSnaps: ActiveSnap[];
   }>({ activeId: null, activeSnaps: [] });
 
+  // Keyboard controls for element movement
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!selectedElement) return;
+
+      // Only handle arrow keys
+      if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+        return;
+      }
+
+      event.preventDefault();
+
+      // Determine movement amount based on modifiers
+      let moveAmount = 1; // Default 1px
+      if (event.shiftKey && (event.metaKey || event.ctrlKey)) {
+        moveAmount = 50; // Cmd/Ctrl + Shift = 50px
+      } else if (event.shiftKey) {
+        moveAmount = 10; // Shift = 10px
+      }
+
+      // Calculate new position
+      const currentPos = selectedElement.position;
+      const newPos = { ...currentPos };
+
+      switch (event.key) {
+        case 'ArrowUp':
+          newPos.y = Math.max(0, currentPos.y - moveAmount);
+          break;
+        case 'ArrowDown':
+          newPos.y = Math.min(720, currentPos.y + moveAmount);
+          break;
+        case 'ArrowLeft':
+          newPos.x = Math.max(0, currentPos.x - moveAmount);
+          break;
+        case 'ArrowRight':
+          newPos.x = Math.min(1280, currentPos.x + moveAmount);
+          break;
+      }
+
+      // Update element position
+      updateElementPosition(selectedElement.id, newPos);
+    };
+
+    // Add event listener to document
+    document.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedElement, updateElementPosition]);
+
   // Drag callbacks to be passed to draggable elements
   const dragCallbacks = {
     onDragStart: (elementId: string, position: { x: number; y: number }) => {
@@ -85,7 +140,7 @@ function App() {
       }
     },
 
-    onDragEnd: (elementId: string) => {
+    onDragEnd: (elementId: string, finalPosition: { x: number; y: number }) => {
       const currentElement = useThumbnailStore.getState().elements.find(el => el.id === elementId);
 
       if (currentElement && snapping.isSnapping) {
@@ -95,8 +150,13 @@ function App() {
         if (snappedPosition) {
           // Snapping occurred - use snapped position
           useThumbnailStore.getState().updateElementPosition(elementId, snappedPosition);
+        } else {
+          // No snapping - use the final constrained position from DraggableElement
+          useThumbnailStore.getState().updateElementPosition(elementId, finalPosition);
         }
-        // If no snapping, position is already updated from onDragMove
+      } else {
+        // No snapping active - use the final constrained position from DraggableElement
+        useThumbnailStore.getState().updateElementPosition(elementId, finalPosition);
       }
 
       // Clean up snapping session and reset drag state

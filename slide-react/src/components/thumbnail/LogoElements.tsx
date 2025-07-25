@@ -15,6 +15,7 @@ const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
 
   const handleLogoClick = (event: React.MouseEvent) => {
     event.stopPropagation();
+    // Use the element prop directly to avoid store timing issues
     selectElement(element);
   };
 

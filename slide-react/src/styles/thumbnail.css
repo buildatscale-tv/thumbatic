@@ -104,14 +104,14 @@
   background-color: var(--element-bg-color, #ff6b35) !important;
   color: var(--element-text-color, white) !important;
   box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
-  padding: 8px 12px;
+  padding: 8px 24px;
 }
 
 .bg-style-drop-shadow {
   background-color: var(--element-bg-color, #ff6b35) !important;
   color: var(--element-text-color, white) !important;
   box-shadow: -7px 7px 0px var(--element-shadow-color, rgba(0, 0, 0, 0.8));
-  padding: 8px 12px;
+  padding: 8px 24px;
 }
 
 
@@ -134,7 +134,6 @@
 .claude-theme .selectable-element.subtitle {
   color: #ffffff;
   font-size: 42px;
-  padding: 0 40px;
 }
 
 /* Tech Theme - Subtitle */
@@ -143,7 +142,6 @@
 .tech-theme .selectable-element.subtitle {
   color: #ffffff;
   font-size: 42px;
-  padding: 0 40px;
 }
 
 /* Dark Theme - Subtitle */
@@ -152,7 +150,6 @@
 .dark-theme .selectable-element.subtitle {
   color: #ffffff;
   font-size: 42px;
-  padding: 0 40px;
 }
 
 /* Blueprint Theme - Subtitle */
@@ -161,7 +158,6 @@
 .blueprint-theme .selectable-element.subtitle {
   color: #ffffff;
   font-size: 42px;
-  padding: 0 40px;
 }
 
 /* Title and accent elements - match theme specificity */

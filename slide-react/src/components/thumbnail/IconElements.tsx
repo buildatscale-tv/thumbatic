@@ -16,6 +16,7 @@ const DraggableIcon: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
 
   const handleIconClick = (event: React.MouseEvent) => {
     event.stopPropagation();
+    // Use the element prop directly to avoid store timing issues
     selectElement(element);
   };
 

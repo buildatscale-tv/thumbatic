@@ -19,9 +19,10 @@ const generateSafePosition = (): { x: number; y: number } => {
   const maxAttempts = 50;
 
   do {
-    // Generate pixel positions directly
-    x = Math.random() * (thumbnailWidth * 0.8) + (thumbnailWidth * 0.1); // 10-90% of thumbnail width
-    y = Math.random() * (thumbnailHeight * 0.8) + (thumbnailHeight * 0.1); // 10-90% of thumbnail height
+    // Allow 50px protrusion for logos and icons by extending the possible range
+    const protrusionAllowance = 50;
+    x = Math.random() * (thumbnailWidth + 2 * protrusionAllowance) - protrusionAllowance;
+    y = Math.random() * (thumbnailHeight + 2 * protrusionAllowance) - protrusionAllowance;
 
     const isInExclusion = x >= exclusionLeft && x <= exclusionRight &&
                          y >= exclusionTop && y <= exclusionBottom;
@@ -49,6 +50,8 @@ const createInitialTextElements = (): ThumbnailElement[] => {
         opacity: 100,
         content: 'CLAUDE CODE',
         textType: 'title' as TextElementType,
+        horizontalAlign: 'center' as const,
+        verticalAlign: 'middle' as const,
       }
     },
     {
@@ -64,6 +67,8 @@ const createInitialTextElements = (): ThumbnailElement[] => {
         opacity: 100,
         content: 'AGENT',
         textType: 'subtitle' as TextElementType,
+        horizontalAlign: 'center' as const,
+        verticalAlign: 'middle' as const,
       }
     },
     {
@@ -79,6 +84,8 @@ const createInitialTextElements = (): ThumbnailElement[] => {
         opacity: 100,
         content: '2.0',
         textType: 'accent-label' as TextElementType,
+        horizontalAlign: 'center' as const,
+        verticalAlign: 'middle' as const,
       }
     }
   ];
@@ -176,7 +183,14 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
     set({ iconSize, elements: updatedElements });
   },
 
-  selectElement: (selectedElement) => set({ selectedElement }),
+  selectElement: (selectedElement) => {
+    console.log('🔍 selectElement called with:', {
+      id: selectedElement?.id,
+      position: selectedElement?.position,
+      type: selectedElement?.type
+    });
+    set({ selectedElement });
+  },
 
   updateElementProperties: (elementId, properties) => {
     const state = get();
@@ -196,6 +210,12 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
   },
 
   updateElementPosition: (elementId, position) => {
+    console.log('📍 updateElementPosition called:', {
+      elementId,
+      newPosition: position,
+      stackTrace: new Error().stack?.split('\n').slice(1, 4)
+    });
+    
     const state = get();
 
     // Position is used directly (snapping handled in App component for text elements)
@@ -210,6 +230,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
     // Update selected element if it's the one being moved
     if (state.selectedElement?.id === elementId) {
       const updatedElement = updatedElements.find(el => el.id === elementId);
+      console.log('✅ Updated selectedElement position:', updatedElement?.position);
       set({ selectedElement: updatedElement || null });
     }
   },
@@ -228,10 +249,10 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
     };
 
     const defaultStyles = {
-      title: { fontSize: 128, backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'rounded' as const },
-      subtitle: { fontSize: 76, backgroundStyle: 'drop-shadow' as const, backgroundColor: '#FFD700', cornerStyle: 'sharp' as const },
-      'accent-label': { fontSize: 48, backgroundStyle: 'none' as const, backgroundColor: '#ffffff', cornerStyle: 'rounded' as const },
-      custom: { fontSize: 48, backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'rounded' as const },
+      title: { fontSize: 128, backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const, verticalAlign: 'middle' as const },
+      subtitle: { fontSize: 76, backgroundStyle: 'drop-shadow' as const, backgroundColor: '#FFD700', cornerStyle: 'sharp' as const, horizontalAlign: 'center' as const, verticalAlign: 'middle' as const },
+      'accent-label': { fontSize: 48, backgroundStyle: 'none' as const, backgroundColor: '#ffffff', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const, verticalAlign: 'middle' as const },
+      custom: { fontSize: 48, backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const, verticalAlign: 'middle' as const },
     };
 
     const newElement: ThumbnailElement = {
@@ -247,6 +268,8 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
         opacity: 100,
         content,
         textType,
+        horizontalAlign: defaultStyles[textType].horizontalAlign,
+        verticalAlign: defaultStyles[textType].verticalAlign,
       },
     };
 
@@ -299,8 +322,8 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
         ? {
             ...element,
             position: {
-              x: Math.random() * (1280 * 0.9) + (1280 * 0.05),
-              y: Math.random() * (720 * 0.9) + (720 * 0.05)
+              x: Math.random() * (1280 + 100) - 50, // Allow 50px protrusion on each side
+              y: Math.random() * (720 + 100) - 50   // Allow 50px protrusion on each side
             },
             properties: {
               ...element.properties,
