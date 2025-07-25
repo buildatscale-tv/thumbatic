@@ -1564,8 +1564,8 @@
   border-top: 1px solid var(--ui-gray-200);
 }
 
-/* Logo Size Control */
-.logo-size-control {
+/* Reusable Slider Component */
+.ui-slider {
   display: flex;
   flex-direction: column;
   gap: var(--ui-space-3);
@@ -1575,7 +1575,7 @@
   border: 1px solid var(--ui-gray-200);
 }
 
-.size-label {
+.slider-label {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1585,12 +1585,12 @@
   margin: 0;
 }
 
-.size-value {
+.slider-value {
   font-weight: var(--ui-font-weight-semibold);
   color: var(--ui-primary-600);
 }
 
-.size-slider {
+.slider-input {
   width: 100%;
   height: 6px;
   border-radius: 3px;
@@ -1601,7 +1601,12 @@
   cursor: pointer;
 }
 
-.size-slider::-webkit-slider-thumb {
+.slider-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.slider-input::-webkit-slider-thumb {
   appearance: none;
   width: 20px;
   height: 20px;
@@ -1613,13 +1618,19 @@
   transition: all var(--ui-transition-fast);
 }
 
-.size-slider::-webkit-slider-thumb:hover {
+.slider-input::-webkit-slider-thumb:hover {
   background: var(--ui-primary-600);
   transform: scale(1.1);
   box-shadow: var(--ui-shadow-md);
 }
 
-.size-slider::-moz-range-thumb {
+.slider-input:disabled::-webkit-slider-thumb {
+  background: var(--ui-gray-400);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.slider-input::-moz-range-thumb {
   width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -1630,17 +1641,34 @@
   transition: all var(--ui-transition-fast);
 }
 
-.size-slider::-moz-range-thumb:hover {
+.slider-input::-moz-range-thumb:hover {
   background: var(--ui-primary-600);
   transform: scale(1.1);
   box-shadow: var(--ui-shadow-md);
 }
 
-.size-range {
+.slider-input:disabled::-moz-range-thumb {
+  background: var(--ui-gray-400);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.slider-range {
   display: flex;
   justify-content: space-between;
   font-size: var(--ui-font-size-xs);
   color: var(--ui-gray-500);
+}
+
+/* Logo Size Control - Legacy support for specific logo styling */
+.logo-size-control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-4);
+  background: var(--ui-gray-50);
+  border-radius: var(--ui-radius-lg);
+  border: 1px solid var(--ui-gray-200);
 }
 
 /* Responsive Design for Logo Controls */
@@ -1766,5 +1794,107 @@
   
   .category-chips {
     justify-content: center;
+  }
+}
+
+/* Element Properties Panel */
+.element-selection-panel {
+  width: 100%;
+}
+
+.element-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+}
+
+.element-header h3 {
+  margin: 0;
+  font-size: var(--ui-font-size-lg);
+  font-weight: var(--ui-font-weight-semibold);
+  color: var(--ui-gray-900);
+  flex: 1;
+}
+
+.text-element-properties,
+.logo-element-properties {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-4);
+}
+
+/* Button Groups for Alignment */
+.button-group {
+  display: flex;
+  border-radius: var(--ui-radius-md);
+  overflow: hidden;
+  border: 1px solid var(--ui-gray-300);
+  background: white;
+}
+
+.button-group-item {
+  flex: 1;
+  padding: var(--ui-space-2) var(--ui-space-3);
+  background: white;
+  border: none;
+  border-right: 1px solid var(--ui-gray-300);
+  color: var(--ui-gray-700);
+  font-size: var(--ui-font-size-sm);
+  font-weight: var(--ui-font-weight-medium);
+  cursor: pointer;
+  transition: all var(--ui-transition-fast);
+  font-family: var(--ui-font-family-sans);
+}
+
+.button-group-item:last-child {
+  border-right: none;
+}
+
+.button-group-item:hover {
+  background: var(--ui-gray-50);
+  color: var(--ui-gray-900);
+}
+
+.button-group-item.active {
+  background: var(--ui-primary-500);
+  color: white;
+  font-weight: var(--ui-font-weight-semibold);
+}
+
+.button-group-item.active:hover {
+  background: var(--ui-primary-600);
+}
+
+/* Responsive Element Properties */
+@media (max-width: 768px) {
+  .element-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--ui-space-2);
+  }
+  
+  .element-header h3 {
+    text-align: center;
+  }
+  
+  .button-group {
+    flex-direction: column;
+  }
+  
+  .button-group-item {
+    border-right: none;
+    border-bottom: 1px solid var(--ui-gray-300);
+  }
+  
+  .button-group-item:last-child {
+    border-bottom: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .text-element-properties,
+  .logo-element-properties {
+    gap: var(--ui-space-3);
   }
 }

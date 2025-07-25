@@ -9,6 +9,7 @@ import { LogoGrid } from '../ui/LogoGrid';
 import { LogoSearch } from '../ui/LogoSearch';
 import { LogoSelectionSummary } from '../ui/LogoSelectionSummary';
 import { LogoCategoryFilter } from '../ui/LogoCategoryFilter';
+import { Slider } from '../ui/Slider';
 
 export const LogoControls: React.FC = () => {
   const { 
@@ -196,24 +197,16 @@ export const LogoControls: React.FC = () => {
                 </Button>
               </div>
 
-              <div className="logo-size-control">
-                <label className="size-label">
-                  Logo Size: <span className="size-value">{logoSize}px</span>
-                </label>
-                <input
-                  type="range"
-                  min="64"
-                  max="256"
-                  step="8"
-                  value={logoSize}
-                  onChange={(e) => setLogoSize(parseInt(e.target.value))}
-                  className="size-slider"
-                />
-                <div className="size-range">
-                  <span>64px</span>
-                  <span>256px</span>
-                </div>
-              </div>
+              <Slider
+                label="Logo Size"
+                value={logoSize}
+                min={64}
+                max={256}
+                step={8}
+                unit="px"
+                onChange={setLogoSize}
+                disabled={selectedLogos.length === 0}
+              />
             </div>
           )}
         </CardContent>
