@@ -110,6 +110,60 @@ export const ElementPropertiesPanel: React.FC = () => {
             />
             <span>{(selectedElement.properties as TextElementProperties).opacity}%</span>
           </div>
+
+          <div className="input-group">
+            <label>Horizontal Alignment:</label>
+            <div className="button-group">
+              <button
+                type="button"
+                className={`button-group-item ${(selectedElement.properties as TextElementProperties).horizontalAlign === 'left' ? 'active' : ''}`}
+                onClick={() => updateElementProperties(selectedElement.id, { horizontalAlign: 'left' })}
+              >
+                Left
+              </button>
+              <button
+                type="button"
+                className={`button-group-item ${(selectedElement.properties as TextElementProperties).horizontalAlign === 'center' ? 'active' : ''}`}
+                onClick={() => updateElementProperties(selectedElement.id, { horizontalAlign: 'center' })}
+              >
+                Center
+              </button>
+              <button
+                type="button"
+                className={`button-group-item ${(selectedElement.properties as TextElementProperties).horizontalAlign === 'right' ? 'active' : ''}`}
+                onClick={() => updateElementProperties(selectedElement.id, { horizontalAlign: 'right' })}
+              >
+                Right
+              </button>
+            </div>
+          </div>
+
+          <div className="input-group">
+            <label>Vertical Alignment:</label>
+            <div className="button-group">
+              <button
+                type="button"
+                className={`button-group-item ${(selectedElement.properties as TextElementProperties).verticalAlign === 'top' ? 'active' : ''}`}
+                onClick={() => updateElementProperties(selectedElement.id, { verticalAlign: 'top' })}
+              >
+                Top
+              </button>
+              <button
+                type="button"
+                className={`button-group-item ${(selectedElement.properties as TextElementProperties).verticalAlign === 'middle' ? 'active' : ''}`}
+                onClick={() => updateElementProperties(selectedElement.id, { verticalAlign: 'middle' })}
+              >
+                Middle
+              </button>
+              <button
+                type="button"
+                className={`button-group-item ${(selectedElement.properties as TextElementProperties).verticalAlign === 'bottom' ? 'active' : ''}`}
+                onClick={() => updateElementProperties(selectedElement.id, { verticalAlign: 'bottom' })}
+              >
+                Bottom
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
