@@ -8,7 +8,7 @@ export const LOGO_LIBRARY: LogoLibraryItem[] = [
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/babel/babel-original.svg", label: "Babel" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bitbucket/bitbucket-original.svg", label: "Bitbucket" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bootstrap/bootstrap-original.svg", label: "Bootstrap" },
-  { value: "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/claude-ai-icon.png", label: "Claude AI" },
+  { value: "/src/assets/logos/claude-ai-icon.svg", label: "Claude AI" },
   { value: "https://cursor.com/favicon.svg", label: "Cursor" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cypress/cypress-original.svg", label: "Cypress" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/digitalocean/digitalocean-original.svg", label: "DigitalOcean" },

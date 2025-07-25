@@ -10,6 +10,8 @@ export interface TextElementProperties {
   opacity: number;
   content: string;
   textType: TextElementType;
+  horizontalAlign: 'left' | 'center' | 'right';
+  verticalAlign: 'top' | 'middle' | 'bottom';
 }
 
 export interface LogoIconElementProperties {
