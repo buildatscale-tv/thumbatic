@@ -37,6 +37,7 @@ export interface ThumbnailElement {
 export interface LogoLibraryItem {
   value: string;
   label: string;
+  category: string;
 }
 
 // Icon library structure
