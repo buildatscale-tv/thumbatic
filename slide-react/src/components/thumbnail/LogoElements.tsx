@@ -1,6 +1,7 @@
 import React from 'react';
 import { useThumbnailStore } from '../../store/thumbnailStore';
 import { DraggableElement } from '../DraggableElement';
+import { LOGO_LIBRARY } from '../../constants/logos';
 import type { LogoIconElementProperties, ThumbnailElement } from '../../types';
 
 interface DragCallbacks {
@@ -21,6 +22,10 @@ const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
 
   const logoSize = props.size || 64;
 
+  // Check if this logo should be inverted
+  const logoInfo = LOGO_LIBRARY.find(logo => logo.value === props.src);
+  const shouldInvert = logoInfo?.invert || false;
+
   return (
     <DraggableElement
       id={element.id}
@@ -40,7 +45,7 @@ const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
         onClick={handleLogoClick}
       >
         <img
-          src={props.src}
+          src={props.src?.replace('#inverted', '')}
           alt={element.name}
           style={{
             width: '100%',
@@ -48,6 +53,7 @@ const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
             objectFit: 'contain',
             pointerEvents: 'none',
             transform: `rotate(${props.rotation}deg)`,
+            filter: shouldInvert ? 'invert(1)' : 'none',
           }}
         />
       </div>
@@ -63,6 +69,10 @@ export const LogoElements: React.FC<LogoElementsProps> = ({ dragCallbacks }) => 
   const { logoType, logoUrl, elements } = useThumbnailStore();
   const logoElements = elements.filter(el => el.type === 'logo');
 
+  // Check if custom URL logo should be inverted
+  const customLogoInfo = logoUrl ? LOGO_LIBRARY.find(logo => logo.value === logoUrl) : null;
+  const shouldInvertCustom = customLogoInfo?.invert || false;
+
   return (
     <>
       {/* Custom URL Logo */}
@@ -70,11 +80,14 @@ export const LogoElements: React.FC<LogoElementsProps> = ({ dragCallbacks }) => 
         <div className="logo-section">
           <div className="custom-logo">
             <img
-              src={logoUrl}
+              src={logoUrl?.replace('#inverted', '')}
               alt="Logo"
               width="80"
               height="80"
-              style={{ objectFit: 'contain' }}
+              style={{
+                objectFit: 'contain',
+                filter: shouldInvertCustom ? 'invert(1)' : 'none'
+              }}
             />
           </div>
         </div>
@@ -84,8 +97,8 @@ export const LogoElements: React.FC<LogoElementsProps> = ({ dragCallbacks }) => 
       {logoType === 'library' && (
         <div className="multiple-logos">
           {logoElements.map((element) => (
-            <DraggableLogo 
-              key={element.id} 
+            <DraggableLogo
+              key={element.id}
               element={element}
               dragCallbacks={dragCallbacks}
             />
