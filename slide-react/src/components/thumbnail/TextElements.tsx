@@ -68,12 +68,13 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
   const content = props.content || '';
   const isSelected = selectedElement?.id === element.id;
 
-  // Calculate contrasting text color and shadow color
-  const textColor = props.backgroundStyle !== 'none' ? getContrastingColor(props.backgroundColor) : undefined;
+  // Use custom font color, falling back to contrasting color for backgrounds
+  const textColor = props.fontColor || (props.backgroundStyle !== 'none' ? getContrastingColor(props.backgroundColor) : '#ffffff');
   const shadowColor = props.backgroundStyle === 'drop-shadow' ? getDarkenedColor(props.backgroundColor) : undefined;
 
   const style = {
     fontSize: `${props.fontSize}px`,
+    color: textColor,
     opacity: props.opacity / 100,
     minHeight: content ? undefined : '20px',
     minWidth: content ? undefined : '50px',

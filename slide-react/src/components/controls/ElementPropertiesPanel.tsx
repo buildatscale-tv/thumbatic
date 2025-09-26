@@ -41,8 +41,8 @@ export const ElementPropertiesPanel: React.FC = () => {
                 type="text"
                 value={(selectedElement.properties as TextElementProperties).content || ''}
                 placeholder="Enter text content"
-                onChange={(e) => updateElementProperties(selectedElement.id, { 
-                  content: e.target.value 
+                onChange={(e) => updateElementProperties(selectedElement.id, {
+                  content: e.target.value
                 })}
               />
 
@@ -53,8 +53,17 @@ export const ElementPropertiesPanel: React.FC = () => {
                 max={120}
                 step={2}
                 unit="px"
-                onChange={(value) => updateElementProperties(selectedElement.id, { 
-                  fontSize: value 
+                onChange={(value) => updateElementProperties(selectedElement.id, {
+                  fontSize: value
+                })}
+              />
+
+              <Input
+                label="Font Color"
+                type="color"
+                value={(selectedElement.properties as TextElementProperties).fontColor}
+                onChange={(e) => updateElementProperties(selectedElement.id, {
+                  fontColor: e.target.value
                 })}
               />
 
@@ -62,15 +71,15 @@ export const ElementPropertiesPanel: React.FC = () => {
                 label="Background Color"
                 type="color"
                 value={(selectedElement.properties as TextElementProperties).backgroundColor}
-                onChange={(e) => updateElementProperties(selectedElement.id, { 
-                  backgroundColor: e.target.value 
+                onChange={(e) => updateElementProperties(selectedElement.id, {
+                  backgroundColor: e.target.value
                 })}
               />
 
               <Select
                 label="Background Style"
                 value={(selectedElement.properties as TextElementProperties).backgroundStyle}
-                onChange={(value) => updateElementProperties(selectedElement.id, { 
+                onChange={(value) => updateElementProperties(selectedElement.id, {
                   backgroundStyle: value as 'none' | 'highlight' | 'drop-shadow'
                 })}
                 options={[
@@ -83,7 +92,7 @@ export const ElementPropertiesPanel: React.FC = () => {
               <Select
                 label="Corner Style"
                 value={(selectedElement.properties as TextElementProperties).cornerStyle}
-                onChange={(value) => updateElementProperties(selectedElement.id, { 
+                onChange={(value) => updateElementProperties(selectedElement.id, {
                   cornerStyle: value as 'rounded' | 'sharp'
                 })}
                 options={[
@@ -99,8 +108,8 @@ export const ElementPropertiesPanel: React.FC = () => {
                 max={100}
                 step={5}
                 unit="%"
-                onChange={(value) => updateElementProperties(selectedElement.id, { 
-                  opacity: value 
+                onChange={(value) => updateElementProperties(selectedElement.id, {
+                  opacity: value
                 })}
               />
 
@@ -169,8 +178,8 @@ export const ElementPropertiesPanel: React.FC = () => {
                 max={512}
                 step={8}
                 unit="px"
-                onChange={(value) => updateElementProperties(selectedElement.id, { 
-                  size: value 
+                onChange={(value) => updateElementProperties(selectedElement.id, {
+                  size: value
                 })}
               />
 
@@ -181,8 +190,8 @@ export const ElementPropertiesPanel: React.FC = () => {
                 max={180}
                 step={1}
                 unit="°"
-                onChange={(value) => updateElementProperties(selectedElement.id, { 
-                  rotation: value 
+                onChange={(value) => updateElementProperties(selectedElement.id, {
+                  rotation: value
                 })}
               />
 
@@ -193,8 +202,8 @@ export const ElementPropertiesPanel: React.FC = () => {
                 max={100}
                 step={5}
                 unit="%"
-                onChange={(value) => updateElementProperties(selectedElement.id, { 
-                  opacity: value 
+                onChange={(value) => updateElementProperties(selectedElement.id, {
+                  opacity: value
                 })}
               />
             </div>

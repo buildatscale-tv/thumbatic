@@ -4,6 +4,7 @@ export type TextElementType = 'title' | 'subtitle' | 'accent-label' | 'custom';
 // Element property interfaces
 export interface TextElementProperties {
   fontSize: number;
+  fontColor: string;
   backgroundColor: string;
   backgroundStyle: 'none' | 'highlight' | 'drop-shadow';
   cornerStyle: 'rounded' | 'sharp';
@@ -38,6 +39,7 @@ export interface LogoLibraryItem {
   value: string;
   label: string;
   category: string;
+  invert?: boolean;
 }
 
 // Icon library structure
@@ -55,25 +57,25 @@ export type IconType = 'none' | 'tech' | 'shapes' | 'arrows' | 'mixed';
 
 // Main store state interface
 export interface ThumbnailState {
-  
+
   // Theme and styling
   theme: Theme;
   cornerStyle: CornerStyle;
-  
+
   // Logo configuration
   logoType: LogoType;
   logoUrl: string;
   selectedLogos: string[];
   logoSize: number;
-  
+
   // Decorative icons
   iconType: IconType;
   iconSize: number;
-  
+
   // Element management
   elements: ThumbnailElement[];
   selectedElement: ThumbnailElement | null;
-  
+
   // Actions
   setTheme: (theme: Theme) => void;
   setCornerStyle: (style: CornerStyle) => void;
