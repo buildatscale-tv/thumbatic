@@ -10,6 +10,7 @@ export const LOGO_LIBRARY: LogoLibraryItem[] = [
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/netlify/netlify-original.svg", label: "Netlify", category: "Cloud" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vercel/vercel-original.svg", label: "Vercel", category: "Cloud" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vercel/vercel-original.svg#inverted", label: "Vercel (Inverted)", category: "Cloud", invert: true },
+  { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cloudflare/cloudflare-original.svg", label: "Cloudflare", category: "Cloud" },
 
   // Frontend Frameworks & Libraries
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg", label: "React", category: "Frontend" },
