@@ -311,6 +311,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
         backgroundStyle: defaultStyles[textType].backgroundStyle,
         cornerStyle: defaultStyles[textType].cornerStyle,
         opacity: 100,
+        rotation: 0,
         content,
         textType,
         horizontalAlign: defaultStyles[textType].horizontalAlign,

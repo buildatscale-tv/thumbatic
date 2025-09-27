@@ -79,6 +79,7 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
     minHeight: content ? undefined : '20px',
     minWidth: content ? undefined : '50px',
     display: 'inline-block',
+    transform: `rotate(${props.rotation || 0}deg)`,
     ...(props.backgroundStyle !== 'none' && {
       '--element-bg-color': props.backgroundColor,
       '--element-text-color': textColor,

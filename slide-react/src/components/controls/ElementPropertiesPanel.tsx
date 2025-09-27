@@ -102,6 +102,18 @@ export const ElementPropertiesPanel: React.FC = () => {
               />
 
               <Slider
+                label="Rotation"
+                value={(selectedElement.properties as TextElementProperties).rotation || 0}
+                min={-180}
+                max={180}
+                step={1}
+                unit="°"
+                onChange={(value) => updateElementProperties(selectedElement.id, {
+                  rotation: value
+                })}
+              />
+
+              <Slider
                 label="Opacity"
                 value={(selectedElement.properties as TextElementProperties).opacity}
                 min={0}

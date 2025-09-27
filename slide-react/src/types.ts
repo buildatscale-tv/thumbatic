@@ -9,6 +9,7 @@ export interface TextElementProperties {
   backgroundStyle: 'none' | 'highlight' | 'drop-shadow';
   cornerStyle: 'rounded' | 'sharp';
   opacity: number;
+  rotation: number;
   content: string;
   textType: TextElementType;
   horizontalAlign: 'left' | 'center' | 'right';
