@@ -12,16 +12,16 @@ import { LogoCategoryFilter } from '../ui/LogoCategoryFilter';
 import { Slider } from '../ui/Slider';
 
 export const LogoControls: React.FC = () => {
-  const { 
-    logoType, 
-    logoUrl, 
-    selectedLogos, 
+  const {
+    logoType,
+    logoUrl,
+    selectedLogos,
     logoSize,
-    setLogoType, 
-    setLogoUrl, 
-    setSelectedLogos, 
+    setLogoType,
+    setLogoUrl,
+    setSelectedLogos,
     setLogoSize,
-    randomizeLogoPositions 
+    randomizeLogoPositions
   } = useThumbnailStore();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,12 +31,12 @@ export const LogoControls: React.FC = () => {
   const { categories, logoCounts } = useMemo(() => {
     const categorySet = new Set<string>();
     const counts: Record<string, number> = {};
-    
+
     LOGO_LIBRARY.forEach(logo => {
       categorySet.add(logo.category);
       counts[logo.category] = (counts[logo.category] || 0) + 1;
     });
-    
+
     return {
       categories: Array.from(categorySet),
       logoCounts: counts
@@ -45,19 +45,19 @@ export const LogoControls: React.FC = () => {
 
   const filteredLogos = useMemo(() => {
     let filtered = LOGO_LIBRARY;
-    
+
     // Filter by category
     if (selectedCategory) {
       filtered = filtered.filter(logo => logo.category === selectedCategory);
     }
-    
+
     // Filter by search term
     if (searchTerm.trim()) {
-      filtered = filtered.filter(logo => 
+      filtered = filtered.filter(logo =>
         logo.label.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    
+
     return filtered;
   }, [searchTerm, selectedCategory]);
 
@@ -121,9 +121,9 @@ export const LogoControls: React.FC = () => {
                 <div className="custom-logo-preview">
                   <div className="preview-label">Preview:</div>
                   <div className="preview-container">
-                    <img 
-                      src={logoUrl} 
-                      alt="Custom logo preview" 
+                    <img
+                      src={logoUrl}
+                      alt="Custom logo preview"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
@@ -201,7 +201,7 @@ export const LogoControls: React.FC = () => {
                 label="Logo Size"
                 value={logoSize}
                 min={64}
-                max={256}
+                max={512}
                 step={8}
                 unit="px"
                 onChange={setLogoSize}
