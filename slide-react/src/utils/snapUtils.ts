@@ -473,12 +473,12 @@ export const getAllSnapTargets = (
 ): SnapTarget[] => {
   const targets: SnapTarget[] = [];
 
-  // Canvas center targets disabled for now - implementing centering differently
-  // const centerConfig = {
-  //   ...config,
-  //   proximityThreshold: 50 // Reduce center snap proximity to 50px
-  // };
-  // targets.push(...createCanvasCenterTargets(centerConfig));
+  // Canvas center targets
+  const centerConfig = {
+    ...config,
+    proximityThreshold: 100 // Increase center snap proximity to 100px
+  };
+  targets.push(...createCanvasCenterTargets(centerConfig));
 
   // Add text element edge targets (excluding the dragged element)
   targets.push(...createTextElementSnapTargets(textElements, config, excludeElementId));
