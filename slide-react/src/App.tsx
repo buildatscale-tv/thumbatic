@@ -10,7 +10,8 @@ function App() {
   const allElements = useThumbnailStore(state => state.elements);
   const selectedElement = useThumbnailStore(state => state.selectedElement);
   const updateElementPosition = useThumbnailStore(state => state.updateElementPosition);
-  
+  const updateElementZIndex = useThumbnailStore(state => state.updateElementZIndex);
+
   const textElements = React.useMemo(
     () => allElements.filter(el => el.type === 'text'),
     [allElements]
@@ -62,13 +63,43 @@ function App() {
       }
 
       // Don't handle keyboard shortcuts if focus is on a text input
-      if (document.activeElement && 
-          (document.activeElement.tagName === 'INPUT' || 
+      if (document.activeElement &&
+          (document.activeElement.tagName === 'INPUT' ||
            document.activeElement.tagName === 'TEXTAREA')) {
         return;
       }
 
       event.preventDefault();
+
+      console.log('⌨️ Key pressed:', {
+        key: event.key,
+        altKey: event.altKey,
+        shiftKey: event.shiftKey,
+        metaKey: event.metaKey,
+        ctrlKey: event.ctrlKey,
+        elementZIndex: selectedElement.zIndex
+      });
+
+      // Handle Alt+Arrow for z-index changes
+      if (event.altKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+        console.log('🎯 Alt+Arrow detected!', { key: event.key, altKey: event.altKey, currentZIndex: selectedElement.zIndex });
+        const currentZIndex = selectedElement.zIndex ?? 100; // Default to 100 if no z-index (use nullish coalescing to allow 0)
+        const zIndexChange = event.shiftKey ? 500 : 100; // Shift+Alt for larger jumps
+
+        let newZIndex;
+        if (event.key === 'ArrowUp') {
+          newZIndex = currentZIndex + zIndexChange; // Move forward (higher z-index)
+        } else {
+          newZIndex = Math.max(-9000, currentZIndex - zIndexChange); // Move backward (lower z-index, minimum -9000 to stay above background)
+        }
+
+        console.log('🚀 Updating z-index:', { from: currentZIndex, to: newZIndex, elementId: selectedElement.id });
+        updateElementZIndex(selectedElement.id, newZIndex);
+        return;
+      }
+
+      // Handle regular movement (only if Alt is not pressed)
+      if (event.altKey) return;
 
       // Determine movement amount based on modifiers
       let moveAmount = 1; // Default 1px
@@ -108,7 +139,7 @@ function App() {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedElement, updateElementPosition]);
+  }, [selectedElement, updateElementPosition, updateElementZIndex]);
 
   // Drag callbacks to be passed to draggable elements
   const dragCallbacks = {

@@ -111,6 +111,7 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
     <DraggableElement
       id={element.id}
       position={element.position}
+      zIndex={element.zIndex}
       dragCallbacks={dragCallbacks}
       className={classes}
       style={style}

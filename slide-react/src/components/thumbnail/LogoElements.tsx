@@ -30,6 +30,7 @@ const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
     <DraggableElement
       id={element.id}
       position={element.position}
+      zIndex={element.zIndex}
       dragCallbacks={dragCallbacks}
       className="random-logo selectable-element"
       style={{

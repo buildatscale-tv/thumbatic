@@ -31,6 +31,7 @@ export interface ThumbnailElement {
   type: 'text' | 'logo' | 'icon';
   name: string;
   position: { x: number; y: number };
+  zIndex: number;
   properties: ElementProperties;
 }
 

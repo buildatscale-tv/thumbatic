@@ -10,6 +10,7 @@ interface DragCallbacks {
 interface DraggableElementProps {
   id: string;
   position: { x: number; y: number };
+  zIndex?: number;
   children: React.ReactNode;
   dragCallbacks: DragCallbacks;
   className?: string;
@@ -20,13 +21,13 @@ interface DraggableElementProps {
 // Helper function to convert center coordinates to top-left coordinates
 const centerToTopLeft = (centerPos: { x: number; y: number }, element: HTMLElement): { x: number; y: number } => {
   const rect = element.getBoundingClientRect();
-  
+
   // Guard against invalid element dimensions
   if (rect.width === 0 || rect.height === 0) {
     // Return a fallback position if element not properly rendered
     return { x: centerPos.x - 50, y: centerPos.y - 25 }; // Assume 100x50 as fallback
   }
-  
+
   return {
     x: centerPos.x - rect.width / 2,
     y: centerPos.y - rect.height / 2,
@@ -37,6 +38,7 @@ const centerToTopLeft = (centerPos: { x: number; y: number }, element: HTMLEleme
 export function DraggableElement({
   id,
   position,
+  zIndex,
   children,
   dragCallbacks,
   className = '',
@@ -55,26 +57,26 @@ export function DraggableElement({
   // Calculate aligned position using actual element dimensions
   const calculateAlignedPosition = React.useCallback(() => {
     if (!elementRef.current || !alignment) return position;
-    
+
     const rect = elementRef.current.getBoundingClientRect();
-    
+
     // Guard against invalid rect dimensions that could corrupt position
     if (rect.width === 0 || rect.height === 0) {
       console.log('⚠️  Invalid rect dimensions, skipping alignment:', { id, rect, position });
       return position; // Return current position if element not properly rendered
     }
-    
+
     const canvasWidth = 1280;
     const canvasHeight = 720;
-    
+
     // Check for drop shadow offset
     let dropShadowOffset = { x: 0, y: 0 };
     if (elementRef.current.classList.contains('bg-style-drop-shadow')) {
       dropShadowOffset = { x: 8, y: 8 };
     }
-    
+
     const newPosition = { ...position };
-    
+
     if (alignment.horizontal) {
       switch (alignment.horizontal) {
         case 'left':
@@ -90,7 +92,7 @@ export function DraggableElement({
           break;
       }
     }
-    
+
     if (alignment.vertical) {
       switch (alignment.vertical) {
         case 'top':
@@ -106,12 +108,12 @@ export function DraggableElement({
           break;
       }
     }
-    
+
     // Guard against invalid calculated positions
     if (newPosition.x < 0 || newPosition.y < 0 || isNaN(newPosition.x) || isNaN(newPosition.y)) {
       return position; // Return current position if calculation results in invalid values
     }
-    
+
     return newPosition;
   }, [alignment, position]);
 
@@ -120,23 +122,23 @@ export function DraggableElement({
     // Only track alignment changes after initial render
     const isInitialRender = previousAlignment.current === undefined;
     const alignmentChanged = JSON.stringify(alignment) !== JSON.stringify(previousAlignment.current);
-    
+
     // Always update the previous alignment reference
     previousAlignment.current = alignment;
-    
+
     // Skip alignment calculation on initial render to prevent timing issues
     if (isInitialRender || !elementRef.current || !alignment || !alignmentChanged) {
       return;
     }
-    
+
     // Wait for next frame to ensure element is fully rendered
     requestAnimationFrame(() => {
       if (!elementRef.current) return;
-      
+
       console.log('🔄 Alignment effect running for:', { id, currentPosition: position, alignment });
       const alignedPosition = calculateAlignedPosition();
       console.log('📐 Calculated aligned position:', { id, alignedPosition, originalPosition: position });
-      
+
       // Additional guard: only update if the aligned position is significantly different and valid
       const positionDifference = Math.abs(alignedPosition.x - position.x) + Math.abs(alignedPosition.y - position.y);
       if (positionDifference > 1 && alignedPosition.x > 0 && alignedPosition.y > 0) {
@@ -155,7 +157,7 @@ export function DraggableElement({
       const newTopLeft = centerToTopLeft(position, elementRef.current);
       setTopLeftPosition(newTopLeft);
     }
-    
+
     // CRITICAL: Keep currentPositionRef in sync with actual position
     currentPositionRef.current = position;
   }, [position]);
@@ -165,7 +167,7 @@ export function DraggableElement({
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
     setInitialCenterPosition(position); // position is stored as center coordinates
-    
+
     // CRITICAL: Update currentPositionRef to current position to prevent corruption
     currentPositionRef.current = position;
 
@@ -202,12 +204,12 @@ export function DraggableElement({
     // Determine element type from id to apply different constraints
     const isLogoOrIcon = id.startsWith('logo-') || id.startsWith('icon-');
     const isTextElement = id.startsWith('text-');
-    
+
     // For logos and icons, allow 50px protrusion off canvas
     // For text elements, account for drop shadow if present
     let protrusionAllowance = 0;
     let dropShadowOffset = { x: 0, y: 0 };
-    
+
     if (isLogoOrIcon) {
       protrusionAllowance = 50;
     } else if (isTextElement) {
@@ -218,10 +220,10 @@ export function DraggableElement({
         dropShadowOffset = { x: 8, y: 8 };
       }
     }
-    
+
     const constrainedCenterPosition = {
       x: Math.max(
-        elementWidth / 2 + dropShadowOffset.x - protrusionAllowance, 
+        elementWidth / 2 + dropShadowOffset.x - protrusionAllowance,
         Math.min(
           1280 - elementWidth / 2 + protrusionAllowance, // Right edge: no shadow offset needed
           newCenterPosition.x
@@ -271,7 +273,7 @@ export function DraggableElement({
     top: topLeftPosition.y,
     cursor: isDragging ? 'grabbing' : 'grab',
     userSelect: 'none',
-    zIndex: isDragging ? 1000 : 'auto',
+    zIndex: isDragging ? 10000 : (zIndex || 0), // Use element's zIndex, dragging elements go to 10000
     outline: isSelected ? '2px solid #007acc' : 'none',
     outlineOffset: '2px',
     ...style,

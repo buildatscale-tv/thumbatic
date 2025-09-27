@@ -42,6 +42,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
       type: 'text',
       name: 'Title',
       position: { x: 640, y: 200 },
+      zIndex: 100,
       properties: {
         fontSize: 128,
         fontColor: '#ffffff',
@@ -60,6 +61,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
       type: 'text',
       name: 'Subtitle',
       position: { x: 640, y: 380 },
+      zIndex: 200,
       properties: {
         fontSize: 84,
         fontColor: '#000000',
@@ -78,6 +80,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
       type: 'text',
       name: 'Accent Label',
       position: { x: 640, y: 520 },
+      zIndex: 300,
       properties: {
         fontSize: 72,
         fontColor: '#ffffff',
@@ -147,6 +150,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
           type: 'logo' as const,
           name: `Logo ${index + 1}`,
           position: { x, y },
+          zIndex: 400 + index * 10, // Start at 400, increment by 10 for each logo
           properties: {
             size: state.logoSize,
             rotation: Math.random() * 30 - 15, // -15 to 15 degrees
@@ -238,6 +242,21 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
     }
   },
 
+  updateElementZIndex: (elementId, zIndex) => {
+    set((state) => {
+      const updatedElements = state.elements.map(element =>
+        element.id === elementId ? { ...element, zIndex } : element
+      );
+
+      return {
+        elements: updatedElements,
+        selectedElement: state.selectedElement?.id === elementId
+          ? { ...state.selectedElement, zIndex }
+          : state.selectedElement
+      };
+    });
+  },
+
   addElement: (element) =>
     set((state) => ({
       elements: [...state.elements, element],
@@ -263,6 +282,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
       type: 'text',
       name: `${textType.charAt(0).toUpperCase() + textType.slice(1).replace('-', ' ')}`,
       position: position || defaultPositions[textType],
+      zIndex: 100 + state.elements.filter(el => el.type === 'text').length * 100, // Increment by 100 for each text element
       properties: {
         fontSize: defaultStyles[textType].fontSize,
         fontColor: defaultStyles[textType].fontColor,

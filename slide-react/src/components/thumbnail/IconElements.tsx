@@ -21,11 +21,12 @@ const DraggableIcon: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
   };
 
   const iconSize = props.size || 48;
-  
+
   return (
     <DraggableElement
       id={element.id}
       position={element.position}
+      zIndex={element.zIndex}
       dragCallbacks={dragCallbacks}
       className="decorative-icon random-icon selectable-element"
       style={{
@@ -64,7 +65,7 @@ export const IconElements: React.FC<IconElementsProps> = ({ dragCallbacks }) => 
     if (iconType === 'none') return;
 
     let iconsToUse: string[] = [];
-    
+
     if (iconType === 'mixed') {
       iconsToUse = [
         ...ICON_LIBRARY.tech.slice(0, 2),
@@ -77,7 +78,7 @@ export const IconElements: React.FC<IconElementsProps> = ({ dragCallbacks }) => 
 
     // Create 4-6 random icons
     const numIcons = Math.floor(Math.random() * 3) + 4; // 4-6 icons
-    
+
     for (let i = 0; i < numIcons; i++) {
       const randomIcon = iconsToUse[Math.floor(Math.random() * iconsToUse.length)];
       const x = Math.random() * (1280 * 0.9) + (1280 * 0.05); // 5-95% of slide width
@@ -90,6 +91,7 @@ export const IconElements: React.FC<IconElementsProps> = ({ dragCallbacks }) => 
         type: 'icon',
         name: `Icon ${i + 1}`,
         position: { x, y },
+        zIndex: 50 + i, // Icons start at z-index 50, increment by 1
         properties: {
           size: size,
           rotation: rotation,
