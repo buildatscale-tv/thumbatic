@@ -91,7 +91,7 @@ export const IconElements: React.FC<IconElementsProps> = ({ dragCallbacks }) => 
         type: 'icon',
         name: `Icon ${i + 1}`,
         position: { x, y },
-        zIndex: 50 + i, // Icons start at z-index 50, increment by 1
+        zIndex: 5000 + i, // Icons start at z-index 5000, increment by 1
         properties: {
           size: size,
           rotation: rotation,

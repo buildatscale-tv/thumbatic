@@ -343,7 +343,6 @@
   top: 0;
   left: 0;
   pointer-events: none;
-  z-index: 1;
   overflow: hidden;
 }
 
@@ -377,6 +376,135 @@
   bottom: 40px;
   right: 160px;
   border-radius: 50%;
+}
+
+/* Accent shapes for other themes */
+.tech-theme .accent-shapes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.tech-theme .shape {
+  position: absolute;
+  border-radius: 8px;
+}
+
+.tech-theme .shape-1 {
+  width: 200px;
+  height: 80px;
+  background: rgba(59, 130, 246, 0.1);
+  top: 60px;
+  left: -40px;
+  transform: rotate(-12deg);
+}
+
+.tech-theme .shape-2 {
+  width: 160px;
+  height: 160px;
+  background: rgba(59, 130, 246, 0.08);
+  top: 200px;
+  right: -60px;
+  border-radius: 50%;
+}
+
+.tech-theme .shape-3 {
+  width: 120px;
+  height: 120px;
+  background: rgba(59, 130, 246, 0.06);
+  bottom: 40px;
+  left: 120px;
+  border-radius: 50%;
+}
+
+.dark-theme .accent-shapes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.dark-theme .shape {
+  position: absolute;
+  border-radius: 8px;
+}
+
+.dark-theme .shape-1 {
+  width: 180px;
+  height: 70px;
+  background: rgba(34, 197, 94, 0.12);
+  top: 80px;
+  right: -30px;
+  transform: rotate(15deg);
+}
+
+.dark-theme .shape-2 {
+  width: 140px;
+  height: 140px;
+  background: rgba(34, 197, 94, 0.08);
+  bottom: 120px;
+  left: -40px;
+  border-radius: 50%;
+}
+
+.dark-theme .shape-3 {
+  width: 100px;
+  height: 100px;
+  background: rgba(34, 197, 94, 0.1);
+  top: 180px;
+  left: 100px;
+  transform: rotate(45deg);
+}
+
+.blueprint-theme .accent-shapes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.blueprint-theme .shape {
+  position: absolute;
+}
+
+.blueprint-theme .shape-1 {
+  width: 220px;
+  height: 60px;
+  background: rgba(59, 130, 246, 0.15);
+  top: 50px;
+  left: -50px;
+  transform: skew(-15deg);
+  border-radius: 4px;
+}
+
+.blueprint-theme .shape-2 {
+  width: 150px;
+  height: 150px;
+  background: rgba(59, 130, 246, 0.08);
+  bottom: 80px;
+  right: -40px;
+  transform: skew(10deg);
+  border-radius: 4px;
+}
+
+.blueprint-theme .shape-3 {
+  width: 80px;
+  height: 200px;
+  background: rgba(59, 130, 246, 0.1);
+  top: 150px;
+  left: 80px;
+  transform: skew(-8deg);
+  border-radius: 4px;
 }
 
 /* Tech Blue Theme */
@@ -635,7 +763,6 @@
   top: 0;
   left: 0;
   pointer-events: none;
-  z-index: 3;
 }
 
 .random-logo {

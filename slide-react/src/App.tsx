@@ -71,29 +71,18 @@ function App() {
 
       event.preventDefault();
 
-      console.log('⌨️ Key pressed:', {
-        key: event.key,
-        altKey: event.altKey,
-        shiftKey: event.shiftKey,
-        metaKey: event.metaKey,
-        ctrlKey: event.ctrlKey,
-        elementZIndex: selectedElement.zIndex
-      });
-
       // Handle Alt+Arrow for z-index changes
       if (event.altKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
-        console.log('🎯 Alt+Arrow detected!', { key: event.key, altKey: event.altKey, currentZIndex: selectedElement.zIndex });
-        const currentZIndex = selectedElement.zIndex ?? 100; // Default to 100 if no z-index (use nullish coalescing to allow 0)
+        const currentZIndex = selectedElement.zIndex ?? 5000; // Default to 5000 baseline if no z-index
         const zIndexChange = event.shiftKey ? 500 : 100; // Shift+Alt for larger jumps
 
         let newZIndex;
         if (event.key === 'ArrowUp') {
-          newZIndex = currentZIndex + zIndexChange; // Move forward (higher z-index)
+          newZIndex = Math.min(10000, currentZIndex + zIndexChange); // Move forward (higher z-index, max 10000)
         } else {
-          newZIndex = Math.max(-9000, currentZIndex - zIndexChange); // Move backward (lower z-index, minimum -9000 to stay above background)
+          newZIndex = Math.max(0, currentZIndex - zIndexChange); // Move backward (lower z-index, minimum 0)
         }
 
-        console.log('🚀 Updating z-index:', { from: currentZIndex, to: newZIndex, elementId: selectedElement.id });
         updateElementZIndex(selectedElement.id, newZIndex);
         return;
       }

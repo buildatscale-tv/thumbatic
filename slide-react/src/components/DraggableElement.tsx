@@ -62,7 +62,6 @@ export function DraggableElement({
 
     // Guard against invalid rect dimensions that could corrupt position
     if (rect.width === 0 || rect.height === 0) {
-      console.log('⚠️  Invalid rect dimensions, skipping alignment:', { id, rect, position });
       return position; // Return current position if element not properly rendered
     }
 
@@ -135,18 +134,13 @@ export function DraggableElement({
     requestAnimationFrame(() => {
       if (!elementRef.current) return;
 
-      console.log('🔄 Alignment effect running for:', { id, currentPosition: position, alignment });
       const alignedPosition = calculateAlignedPosition();
-      console.log('📐 Calculated aligned position:', { id, alignedPosition, originalPosition: position });
 
       // Additional guard: only update if the aligned position is significantly different and valid
       const positionDifference = Math.abs(alignedPosition.x - position.x) + Math.abs(alignedPosition.y - position.y);
       if (positionDifference > 1 && alignedPosition.x > 0 && alignedPosition.y > 0) {
-        console.log('⚡ Updating element position via alignment:', { id, from: position, to: alignedPosition });
         // Use updateElementPosition directly to avoid triggering drag callbacks
         updateElementPosition(id, alignedPosition);
-      } else {
-        console.log('⏭️  Skipping alignment update:', { id, positionDifference, alignedPosition });
       }
     });
   }, [alignment, calculateAlignedPosition, id, updateElementPosition]);
@@ -267,16 +261,18 @@ export function DraggableElement({
 
   const isSelected = selectedElement?.id === id;
 
+  const effectiveZIndex = isDragging ? 10000 : (zIndex ?? 5000);
+
   const combinedStyle: React.CSSProperties = {
+    ...style, // Spread style first so our values take precedence
     position: 'absolute',
     left: topLeftPosition.x,
     top: topLeftPosition.y,
     cursor: isDragging ? 'grabbing' : 'grab',
     userSelect: 'none',
-    zIndex: isDragging ? 10000 : (zIndex || 0), // Use element's zIndex, dragging elements go to 10000
+    zIndex: effectiveZIndex, // This should override any zIndex in style
     outline: isSelected ? '2px solid #007acc' : 'none',
     outlineOffset: '2px',
-    ...style,
   };
 
   const combinedClassName = `${className} ${isDragging ? 'dragging' : ''} ${isSelected ? 'selected' : ''}`.trim();

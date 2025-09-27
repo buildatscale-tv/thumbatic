@@ -42,7 +42,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
       type: 'text',
       name: 'Title',
       position: { x: 640, y: 200 },
-      zIndex: 100,
+      zIndex: 5000,
       properties: {
         fontSize: 128,
         fontColor: '#ffffff',
@@ -50,6 +50,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
         backgroundStyle: 'none',
         cornerStyle: 'rounded',
         opacity: 100,
+        rotation: 0,
         content: 'CLAUDE CODE',
         textType: 'title' as TextElementType,
         horizontalAlign: 'center' as const,
@@ -61,7 +62,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
       type: 'text',
       name: 'Subtitle',
       position: { x: 640, y: 380 },
-      zIndex: 200,
+      zIndex: 5100,
       properties: {
         fontSize: 84,
         fontColor: '#000000',
@@ -69,6 +70,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
         backgroundStyle: 'drop-shadow',
         cornerStyle: 'rounded',
         opacity: 100,
+        rotation: 0,
         content: 'AGENT',
         textType: 'subtitle' as TextElementType,
         horizontalAlign: 'center' as const,
@@ -80,7 +82,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
       type: 'text',
       name: 'Accent Label',
       position: { x: 640, y: 520 },
-      zIndex: 300,
+      zIndex: 5200,
       properties: {
         fontSize: 72,
         fontColor: '#ffffff',
@@ -88,6 +90,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
         backgroundStyle: 'none',
         cornerStyle: 'rounded',
         opacity: 100,
+        rotation: 0,
         content: '2.0',
         textType: 'accent-label' as TextElementType,
         horizontalAlign: 'center' as const,
@@ -124,7 +127,33 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
 
   setLogoType: (logoType) => set({ logoType }),
 
-  setLogoUrl: (logoUrl) => set({ logoUrl }),
+  setLogoUrl: (logoUrl) => {
+    const state = get();
+
+    // Remove existing custom logo element if any
+    const updatedElements = state.elements.filter(el => el.id !== 'logo-custom');
+
+    // If new URL is provided, create a custom logo element
+    if (logoUrl) {
+      const { x, y } = generateSafePosition();
+      const customLogoElement: ThumbnailElement = {
+        id: 'logo-custom',
+        type: 'logo',
+        name: 'Custom Logo',
+        position: { x, y },
+        zIndex: 5000,
+        properties: {
+          size: state.logoSize,
+          rotation: 0,
+          opacity: 100,
+          src: logoUrl,
+        },
+      };
+      updatedElements.push(customLogoElement);
+    }
+
+    set({ logoUrl, elements: updatedElements });
+  },
 
   setSelectedLogos: (selectedLogos) => {
     const state = get();
@@ -150,7 +179,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
           type: 'logo' as const,
           name: `Logo ${index + 1}`,
           position: { x, y },
-          zIndex: 400 + index * 10, // Start at 400, increment by 10 for each logo
+          zIndex: 5000 + index * 10, // Start at 5000, increment by 10 for each logo
           properties: {
             size: state.logoSize,
             rotation: Math.random() * 30 - 15, // -15 to 15 degrees
@@ -191,11 +220,10 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
   },
 
   selectElement: (selectedElement) => {
-    console.log('🔍 selectElement called with:', {
-      id: selectedElement?.id,
-      position: selectedElement?.position,
-      type: selectedElement?.type
-    });
+    // Ensure the selected element has a zIndex if it doesn't already
+    if (selectedElement && selectedElement.zIndex === undefined) {
+      selectedElement = { ...selectedElement, zIndex: 5000 };
+    }
     set({ selectedElement });
   },
 
@@ -217,12 +245,6 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
   },
 
   updateElementPosition: (elementId, position) => {
-    console.log('📍 updateElementPosition called:', {
-      elementId,
-      newPosition: position,
-      stackTrace: new Error().stack?.split('\n').slice(1, 4)
-    });
-
     const state = get();
 
     // Position is used directly (snapping handled in App component for text elements)
@@ -237,7 +259,6 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
     // Update selected element if it's the one being moved
     if (state.selectedElement?.id === elementId) {
       const updatedElement = updatedElements.find(el => el.id === elementId);
-      console.log('✅ Updated selectedElement position:', updatedElement?.position);
       set({ selectedElement: updatedElement || null });
     }
   },
@@ -282,7 +303,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
       type: 'text',
       name: `${textType.charAt(0).toUpperCase() + textType.slice(1).replace('-', ' ')}`,
       position: position || defaultPositions[textType],
-      zIndex: 100 + state.elements.filter(el => el.type === 'text').length * 100, // Increment by 100 for each text element
+      zIndex: 5000 + state.elements.filter(el => el.type === 'text').length * 100, // Increment by 100 for each text element
       properties: {
         fontSize: defaultStyles[textType].fontSize,
         fontColor: defaultStyles[textType].fontColor,
