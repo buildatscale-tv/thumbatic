@@ -201,7 +201,7 @@ export const LogoControls: React.FC = () => {
                 label="Logo Size"
                 value={logoSize}
                 min={64}
-                max={512}
+                max={1024}
                 step={8}
                 unit="px"
                 onChange={setLogoSize}

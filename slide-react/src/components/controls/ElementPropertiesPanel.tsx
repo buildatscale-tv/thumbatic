@@ -187,7 +187,7 @@ export const ElementPropertiesPanel: React.FC = () => {
                 label="Size"
                 value={(selectedElement.properties as LogoIconElementProperties).size}
                 min={32}
-                max={512}
+                max={1024}
                 step={8}
                 unit="px"
                 onChange={(value) => updateElementProperties(selectedElement.id, {
