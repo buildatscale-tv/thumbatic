@@ -12,8 +12,8 @@ export interface TextElementProperties {
   rotation: number;
   content: string;
   textType: TextElementType;
-  horizontalAlign: 'left' | 'center' | 'right';
-  verticalAlign: 'top' | 'middle' | 'bottom';
+  horizontalAlign?: 'left' | 'center' | 'right';
+  verticalAlign?: 'top' | 'middle' | 'bottom';
 }
 
 export interface LogoIconElementProperties {
@@ -90,6 +90,7 @@ export interface ThumbnailState {
   selectElement: (element: ThumbnailElement | null) => void;
   updateElementProperties: (elementId: string, properties: Partial<ElementProperties>) => void;
   updateElementPosition: (elementId: string, position: { x: number; y: number }) => void;
+  updateElementZIndex: (elementId: string, zIndex: number) => void;
   addElement: (element: ThumbnailElement) => void;
   addTextElement: (textType: TextElementType, content: string, position?: { x: number; y: number }) => void;
   removeElement: (elementId: string) => void;

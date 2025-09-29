@@ -3,6 +3,7 @@ import React from 'react';
 export interface CardProps {
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export interface CardHeaderProps {
@@ -15,9 +16,9 @@ export interface CardContentProps {
   className?: string;
 }
 
-export const Card: React.FC<CardProps> = ({ children, className = '' }) => {
+export const Card: React.FC<CardProps> = ({ children, className = '', style }) => {
   return (
-    <div className={`ui-card ${className}`}>
+    <div className={`ui-card ${className}`} style={style}>
       {children}
     </div>
   );

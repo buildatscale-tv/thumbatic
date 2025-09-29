@@ -54,7 +54,6 @@ const createInitialTextElements = (): ThumbnailElement[] => {
         content: 'CLAUDE CODE',
         textType: 'title' as TextElementType,
         horizontalAlign: 'center' as const,
-        verticalAlign: 'middle' as const,
       }
     },
     {
@@ -74,7 +73,6 @@ const createInitialTextElements = (): ThumbnailElement[] => {
         content: 'AGENT',
         textType: 'subtitle' as TextElementType,
         horizontalAlign: 'center' as const,
-        verticalAlign: 'middle' as const,
       }
     },
     {
@@ -94,7 +92,6 @@ const createInitialTextElements = (): ThumbnailElement[] => {
         content: '2.0',
         textType: 'accent-label' as TextElementType,
         horizontalAlign: 'center' as const,
-        verticalAlign: 'middle' as const,
       }
     }
   ];
@@ -263,7 +260,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
     }
   },
 
-  updateElementZIndex: (elementId, zIndex) => {
+  updateElementZIndex: (elementId: string, zIndex: number) => {
     set((state) => {
       const updatedElements = state.elements.map(element =>
         element.id === elementId ? { ...element, zIndex } : element
@@ -292,10 +289,10 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
     };
 
     const defaultStyles = {
-      title: { fontSize: 128, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const, verticalAlign: 'middle' as const },
-      subtitle: { fontSize: 76, fontColor: '#000000', backgroundStyle: 'drop-shadow' as const, backgroundColor: '#FFD700', cornerStyle: 'sharp' as const, horizontalAlign: 'center' as const, verticalAlign: 'middle' as const },
-      'accent-label': { fontSize: 48, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ffffff', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const, verticalAlign: 'middle' as const },
-      custom: { fontSize: 48, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const, verticalAlign: 'middle' as const },
+      title: { fontSize: 128, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const },
+      subtitle: { fontSize: 76, fontColor: '#000000', backgroundStyle: 'drop-shadow' as const, backgroundColor: '#FFD700', cornerStyle: 'sharp' as const, horizontalAlign: 'center' as const },
+      'accent-label': { fontSize: 48, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ffffff', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const },
+      custom: { fontSize: 48, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const },
     };
 
     const newElement: ThumbnailElement = {
@@ -303,7 +300,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
       type: 'text',
       name: `${textType.charAt(0).toUpperCase() + textType.slice(1).replace('-', ' ')}`,
       position: position || defaultPositions[textType],
-      zIndex: 5000 + state.elements.filter(el => el.type === 'text').length * 100, // Increment by 100 for each text element
+      zIndex: 5000 + get().elements.filter(el => el.type === 'text').length * 100, // Increment by 100 for each text element
       properties: {
         fontSize: defaultStyles[textType].fontSize,
         fontColor: defaultStyles[textType].fontColor,
@@ -315,7 +312,6 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
         content,
         textType,
         horizontalAlign: defaultStyles[textType].horizontalAlign,
-        verticalAlign: defaultStyles[textType].verticalAlign,
       },
     };
 

@@ -116,10 +116,14 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
       dragCallbacks={dragCallbacks}
       className={classes}
       style={style}
-      alignment={{
-        horizontal: props.horizontalAlign,
-        vertical: props.verticalAlign
-      }}
+      alignment={
+        props.horizontalAlign || props.verticalAlign
+          ? {
+              ...(props.horizontalAlign && { horizontal: props.horizontalAlign }),
+              ...(props.verticalAlign && { vertical: props.verticalAlign })
+            }
+          : undefined
+      }
     >
       <div
         data-element-type="text"
