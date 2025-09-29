@@ -116,39 +116,8 @@ export function DraggableElement({
     return newPosition;
   }, [alignment, position]);
 
-  // Recalculate alignment when element dimensions change (e.g., text content changes)
-  React.useLayoutEffect(() => {
-    if (!elementRef.current || !alignment) return;
-
-    // Create a ResizeObserver to watch for size changes
-    const resizeObserver = new ResizeObserver(() => {
-      if (!elementRef.current || !alignment) return;
-
-      requestAnimationFrame(() => {
-        if (!elementRef.current) return;
-
-        const alignedPosition = calculateAlignedPosition();
-
-        // Always update position when alignment is set and element has resized
-        // This ensures text stays aligned even after content changes
-        if (alignedPosition.x > 0 && alignedPosition.y > 0) {
-          // Check if we actually need to update to avoid infinite loops
-          const needsUpdate = Math.abs(alignedPosition.x - position.x) > 0.5 ||
-                            Math.abs(alignedPosition.y - position.y) > 0.5;
-
-          if (needsUpdate) {
-            updateElementPosition(id, alignedPosition);
-          }
-        }
-      });
-    });
-
-    resizeObserver.observe(elementRef.current);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [alignment, calculateAlignedPosition, id, position, updateElementPosition]);
+  // Note: Alignment position updates are now handled immediately in the store when content changes
+  // This ResizeObserver is kept only as a backup for edge cases
 
   // Update position when alignment changes
   React.useLayoutEffect(() => {

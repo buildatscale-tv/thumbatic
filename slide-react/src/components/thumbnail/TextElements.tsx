@@ -56,12 +56,19 @@ interface DragCallbacks {
 
 // Draggable Text Component (for manual positioning)
 const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
-  const { selectElement, selectedElement } = useThumbnailStore();
+  const { selectElement, selectedElement, setEditingElementId } = useThumbnailStore();
 
   const handleElementClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     // Use the element prop directly to avoid store timing issues
     selectElement(element);
+  };
+
+  const handleDoubleClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    // Start editing mode and select the element
+    selectElement(element);
+    setEditingElementId(element.id);
   };
 
   const props = element.properties as TextElementProperties;
@@ -129,6 +136,7 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
         data-element-type="text"
         data-element-name={element.name}
         onClick={handleElementClick}
+        onDoubleClick={handleDoubleClick}
       >
         {content || `[${element.name}]`}
       </div>

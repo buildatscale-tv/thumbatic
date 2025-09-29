@@ -77,6 +77,7 @@ export interface ThumbnailState {
   // Element management
   elements: ThumbnailElement[];
   selectedElement: ThumbnailElement | null;
+  editingElementId: string | null;
 
   // Actions
   setTheme: (theme: Theme) => void;
@@ -88,6 +89,7 @@ export interface ThumbnailState {
   setIconType: (type: IconType) => void;
   setIconSize: (size: number) => void;
   selectElement: (element: ThumbnailElement | null) => void;
+  setEditingElementId: (elementId: string | null) => void;
   updateElementProperties: (elementId: string, properties: Partial<ElementProperties>) => void;
   updateElementPosition: (elementId: string, position: { x: number; y: number }, isManual?: boolean) => void;
   updateElementZIndex: (elementId: string, zIndex: number) => void;

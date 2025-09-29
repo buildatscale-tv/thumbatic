@@ -13,11 +13,12 @@ export const ContentControls: React.FC = () => {
     addTextElement,
     removeElement,
     selectElement,
-    selectedElement
+    selectedElement,
+    editingElementId,
+    setEditingElementId
   } = useThumbnailStore();
   const [newElementType, setNewElementType] = useState<TextElementType>('title');
   const [newElementContent, setNewElementContent] = useState('');
-  const [editingElement, setEditingElement] = useState<string | null>(null);
   const [tempContent, setTempContent] = useState<string>('');
 
   // Get all text elements
@@ -36,8 +37,8 @@ export const ContentControls: React.FC = () => {
 
   const handleDeleteElement = (elementId: string) => {
     removeElement(elementId);
-    if (editingElement === elementId) {
-      setEditingElement(null);
+    if (editingElementId === elementId) {
+      setEditingElementId(null);
     }
   };
 
@@ -50,12 +51,12 @@ export const ContentControls: React.FC = () => {
 
   // Inline editing handlers
   const startEditing = (elementId: string, currentContent: string) => {
-    setEditingElement(elementId);
+    setEditingElementId(elementId);
     setTempContent(currentContent);
   };
 
   const cancelEditing = () => {
-    setEditingElement(null);
+    setEditingElementId(null);
     setTempContent('');
   };
 
@@ -63,9 +64,20 @@ export const ContentControls: React.FC = () => {
     if (tempContent.trim()) {
       handleContentChange(elementId, tempContent.trim());
     }
-    setEditingElement(null);
+    setEditingElementId(null);
     setTempContent('');
   };
+
+  // Effect to handle external editing trigger
+  React.useEffect(() => {
+    if (editingElementId) {
+      const element = elements.find(el => el.id === editingElementId);
+      if (element && element.type === 'text') {
+        const props = element.properties as TextElementProperties;
+        setTempContent(props.content || '');
+      }
+    }
+  }, [editingElementId, elements]);
 
   const handleKeyPress = (e: React.KeyboardEvent, elementId: string) => {
     if (e.key === 'Enter') {
@@ -236,48 +248,35 @@ export const ContentControls: React.FC = () => {
                           </Badge>
                           <Button
                             onClick={() => handleDeleteElement(element.id)}
-                            variant="danger"
+                            variant="outline"
                             size="sm"
                             className="delete-button"
                             title="Delete element"
                           >
-                            🗑️
+                            ✕
                           </Button>
                         </div>
                         
                         {/* Content Input */}
                         <div className="element-content-input">
-                          {editingElement === element.id ? (
+                          {editingElementId === element.id ? (
                             <div className="inline-edit-container">
                               <Input
                                 type="text"
                                 value={tempContent}
                                 placeholder={`Enter ${typeOption?.label.toLowerCase()} text`}
-                                onChange={(e) => setTempContent(e.target.value)}
+                                onChange={(e) => {
+                                  setTempContent(e.target.value);
+                                  // Update properties on every keystroke for live alignment
+                                  handleContentChange(element.id, e.target.value);
+                                }}
                                 onKeyDown={(e) => handleKeyPress(e, element.id)}
                                 className="element-input editing"
                                 autoFocus
                               />
-                              <div className="inline-edit-actions">
-                                <Button
-                                  onClick={() => saveEditing(element.id)}
-                                  variant="primary"
-                                  size="sm"
-                                  disabled={!tempContent.trim()}
-                                >
-                                  ✓
-                                </Button>
-                                <Button
-                                  onClick={cancelEditing}
-                                  variant="outline"
-                                  size="sm"
-                                >
-                                  ✕
-                                </Button>
-                              </div>
                             </div>
                           ) : (
-                            <div 
+                            <div
                               className={`element-display ${selectedElement?.id === element.id ? 'selected' : ''}`}
                               onClick={() => startEditing(element.id, props.content || '')}
                             >
@@ -299,16 +298,6 @@ export const ContentControls: React.FC = () => {
                           >
                             {selectedElement?.id === element.id ? "🎯 Selected" : "🎯 Select"}
                           </Button>
-                          {editingElement !== element.id && (
-                            <Button
-                              onClick={() => startEditing(element.id, props.content || '')}
-                              variant="outline"
-                              size="sm"
-                              className="edit-button"
-                            >
-                              ✏️ Edit
-                            </Button>
-                          )}
                         </div>
                       </div>
                     </div>
