@@ -15,7 +15,10 @@ export const ContentControls: React.FC = () => {
     selectElement,
     selectedElement,
     editingElementId,
-    setEditingElementId
+    setEditingElementId,
+    textSelection,
+    setTextSelection,
+    setCursorPosition
   } = useThumbnailStore();
   const [newElementType, setNewElementType] = useState<TextElementType>('title');
   const [newElementContent, setNewElementContent] = useState('');
@@ -53,11 +56,15 @@ export const ContentControls: React.FC = () => {
   const startEditing = (elementId: string, currentContent: string) => {
     setEditingElementId(elementId);
     setTempContent(currentContent);
+    // Set initial cursor at end
+    setCursorPosition({ elementId, position: currentContent.length });
   };
 
   const cancelEditing = () => {
     setEditingElementId(null);
     setTempContent('');
+    setTextSelection(null); // Clear selection when canceling
+    setCursorPosition(null); // Clear cursor position
   };
 
   const saveEditing = (elementId: string) => {
@@ -66,6 +73,8 @@ export const ContentControls: React.FC = () => {
     }
     setEditingElementId(null);
     setTempContent('');
+    setTextSelection(null); // Clear selection when saving
+    setCursorPosition(null); // Clear cursor position
   };
 
   // Effect to handle external editing trigger
@@ -75,12 +84,25 @@ export const ContentControls: React.FC = () => {
       if (element && element.type === 'text') {
         const props = element.properties as TextElementProperties;
         setTempContent(props.content || '');
+        // Set cursor at end when starting to edit
+        setCursorPosition({ elementId: editingElementId, position: props.content?.length || 0 });
       }
     }
-  }, [editingElementId, elements]);
+  }, [editingElementId, elements, setCursorPosition]);
 
   const handleKeyPress = (e: React.KeyboardEvent, elementId: string) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
+      // Cmd+A or Ctrl+A - Select all text
+      e.preventDefault();
+      setTextSelection({
+        elementId,
+        start: 0,
+        end: tempContent.length
+      });
+      // Also select the text in the input field
+      const input = e.target as HTMLInputElement;
+      input.setSelectionRange(0, tempContent.length);
+    } else if (e.key === 'Enter') {
       saveEditing(elementId);
     } else if (e.key === 'Escape') {
       cancelEditing();
@@ -125,6 +147,8 @@ export const ContentControls: React.FC = () => {
         selectElement(nextElement);
         setEditingElementId(nextElement.id);
         setTempContent(nextProps.content || '');
+        // Set cursor at end of new element
+        setCursorPosition({ elementId: nextElement.id, position: nextProps.content?.length || 0 });
       }
     }
   };
@@ -309,8 +333,55 @@ export const ContentControls: React.FC = () => {
                                 placeholder={`Enter ${typeOption?.label.toLowerCase()} text`}
                                 onChange={(e) => {
                                   setTempContent(e.target.value);
+                                  // Clear selection when typing
+                                  setTextSelection(null);
                                   // Update properties on every keystroke for live alignment
                                   handleContentChange(element.id, e.target.value);
+                                }}
+                                onSelect={(e) => {
+                                  const input = e.target as HTMLInputElement;
+                                  if (input.selectionStart !== input.selectionEnd) {
+                                    setTextSelection({
+                                      elementId: element.id,
+                                      start: input.selectionStart || 0,
+                                      end: input.selectionEnd || 0
+                                    });
+                                  } else {
+                                    setTextSelection(null);
+                                    // Track cursor position when no selection
+                                    setCursorPosition({
+                                      elementId: element.id,
+                                      position: input.selectionStart || 0
+                                    });
+                                  }
+                                }}
+                                onClick={(e) => {
+                                  // Track cursor position on click
+                                  const input = e.target as HTMLInputElement;
+                                  setCursorPosition({
+                                    elementId: element.id,
+                                    position: input.selectionStart || 0
+                                  });
+                                }}
+                                onKeyUp={(e) => {
+                                  // Track cursor position and selection after key events
+                                  const input = e.target as HTMLInputElement;
+
+                                  // Check for selection changes (including shift+arrow keys)
+                                  if (input.selectionStart !== input.selectionEnd) {
+                                    setTextSelection({
+                                      elementId: element.id,
+                                      start: input.selectionStart || 0,
+                                      end: input.selectionEnd || 0
+                                    });
+                                  } else {
+                                    // No selection, just cursor position
+                                    setTextSelection(null);
+                                    setCursorPosition({
+                                      elementId: element.id,
+                                      position: input.selectionStart || 0
+                                    });
+                                  }
                                 }}
                                 onKeyDown={(e) => handleKeyPress(e, element.id)}
                                 className="element-input editing"

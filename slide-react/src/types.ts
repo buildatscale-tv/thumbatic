@@ -78,6 +78,8 @@ export interface ThumbnailState {
   elements: ThumbnailElement[];
   selectedElement: ThumbnailElement | null;
   editingElementId: string | null;
+  textSelection: { elementId: string; start: number; end: number } | null;
+  cursorPosition: { elementId: string; position: number } | null;
 
   // Actions
   setTheme: (theme: Theme) => void;
@@ -90,6 +92,8 @@ export interface ThumbnailState {
   setIconSize: (size: number) => void;
   selectElement: (element: ThumbnailElement | null) => void;
   setEditingElementId: (elementId: string | null) => void;
+  setTextSelection: (selection: { elementId: string; start: number; end: number } | null) => void;
+  setCursorPosition: (cursor: { elementId: string; position: number } | null) => void;
   updateElementProperties: (elementId: string, properties: Partial<ElementProperties>) => void;
   updateElementPosition: (elementId: string, position: { x: number; y: number }, isManual?: boolean) => void;
   updateElementZIndex: (elementId: string, zIndex: number) => void;

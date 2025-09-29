@@ -125,6 +125,8 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     elements: initialElements,
     selectedElement: null,
     editingElementId: null as string | null,
+    textSelection: null,
+    cursorPosition: null,
 
   // Actions
   setTheme: (theme) => set({ theme }),
@@ -235,11 +237,30 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
       type: selectedElement?.type,
       horizontalAlign: selectedElement?.type === 'text' ? (selectedElement?.properties as any)?.horizontalAlign : null
     });
-    set({ selectedElement });
+
+    const state = get();
+    // Clear text selection if selecting a different element or deselecting
+    if (!selectedElement || selectedElement.id !== state.textSelection?.elementId) {
+      set({ selectedElement, textSelection: null });
+    } else {
+      set({ selectedElement });
+    }
   },
 
   setEditingElementId: (editingElementId) => {
-    set({ editingElementId });
+    set({
+      editingElementId,
+      textSelection: null,
+      cursorPosition: null // Clear cursor, will be set properly by ContentControls
+    });
+  },
+
+  setTextSelection: (textSelection) => {
+    set({ textSelection });
+  },
+
+  setCursorPosition: (cursorPosition) => {
+    set({ cursorPosition });
   },
 
   updateElementProperties: (elementId, properties) => {

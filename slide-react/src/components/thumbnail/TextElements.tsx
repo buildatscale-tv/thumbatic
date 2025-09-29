@@ -56,7 +56,7 @@ interface DragCallbacks {
 
 // Draggable Text Component (for manual positioning)
 const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
-  const { selectElement, selectedElement, setEditingElementId, editingElementId } = useThumbnailStore();
+  const { selectElement, selectedElement, setEditingElementId, editingElementId, textSelection, cursorPosition } = useThumbnailStore();
 
   const handleElementClick = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -75,6 +75,47 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
   const content = props.content || '';
   const isSelected = selectedElement?.id === element.id;
   const isEditing = editingElementId === element.id;
+  const hasSelection = textSelection?.elementId === element.id;
+  const hasCursor = cursorPosition?.elementId === element.id;
+
+  // Calculate cursor visual position
+  const getCursorOffset = React.useMemo(() => {
+    if (!hasCursor || !cursorPosition) return 0;
+
+    const textBeforeCursor = content.substring(0, cursorPosition.position);
+    if (!textBeforeCursor) return 0;
+
+    // Create a temporary element to measure text width
+    const measureEl = document.createElement('span');
+    measureEl.style.fontSize = `${props.fontSize}px`;
+
+    // Use the correct font for each text type
+    if (props.textType === 'subtitle') {
+      measureEl.style.fontFamily = 'Geist, sans-serif';
+      measureEl.style.fontWeight = '600';
+    } else {
+      measureEl.style.fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
+      measureEl.style.fontWeight = '900';
+    }
+
+    measureEl.style.visibility = 'hidden';
+    measureEl.style.position = 'absolute';
+    measureEl.style.whiteSpace = 'pre'; // Use 'pre' to preserve spaces
+    measureEl.textContent = textBeforeCursor;
+
+    document.body.appendChild(measureEl);
+    let width = measureEl.offsetWidth;
+    document.body.removeChild(measureEl);
+
+    // Fine-tune cursor position for title (slightly to the right)
+    if (props.textType === 'title' && textBeforeCursor.length > 0) {
+      // Scale the offset based on how far we are in the text
+      const offsetPerChar = 8 / content.length;
+      width += offsetPerChar * textBeforeCursor.length;
+    }
+
+    return width;
+  }, [hasCursor, cursorPosition, content, props.fontSize, props.textType]);
 
   // Use custom font color, falling back to contrasting color for backgrounds
   const textColor = props.fontColor || (props.backgroundStyle !== 'none' ? getContrastingColor(props.backgroundColor) : '#ffffff');
@@ -140,13 +181,103 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
         onDoubleClick={handleDoubleClick}
         style={{ position: 'relative', display: 'inline-block' }}
       >
-        {content || (isEditing ? '\u00A0' : '')}
-        {isEditing && (
+        {hasSelection && textSelection && (
+          <div
+            className="text-selection"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: `${(() => {
+                // Calculate selection start position
+                const textBeforeSelection = content.substring(0, textSelection.start);
+                const measureEl = document.createElement('span');
+                measureEl.style.fontSize = `${props.fontSize}px`;
+
+                if (props.textType === 'subtitle') {
+                  measureEl.style.fontFamily = 'Geist, sans-serif';
+                  measureEl.style.fontWeight = '600';
+                } else {
+                  measureEl.style.fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
+                  measureEl.style.fontWeight = '900';
+                }
+
+                measureEl.style.visibility = 'hidden';
+                measureEl.style.position = 'absolute';
+                measureEl.style.whiteSpace = 'pre'; // Preserve spaces
+                measureEl.textContent = textBeforeSelection;
+
+                document.body.appendChild(measureEl);
+                let startPos = measureEl.offsetWidth;
+                document.body.removeChild(measureEl);
+
+                // Apply title offset if needed
+                if (props.textType === 'title' && textBeforeSelection.length > 0) {
+                  const offsetPerChar = 8 / content.length;
+                  startPos += offsetPerChar * textBeforeSelection.length;
+                }
+
+                return startPos;
+              })()}px`,
+              width: `${(() => {
+                // Calculate selection width
+                const selectedText = content.substring(textSelection.start, textSelection.end);
+                const measureEl = document.createElement('span');
+                measureEl.style.fontSize = `${props.fontSize}px`;
+
+                if (props.textType === 'subtitle') {
+                  measureEl.style.fontFamily = 'Geist, sans-serif';
+                  measureEl.style.fontWeight = '600';
+                } else {
+                  measureEl.style.fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
+                  measureEl.style.fontWeight = '900';
+                }
+
+                measureEl.style.visibility = 'hidden';
+                measureEl.style.position = 'absolute';
+                measureEl.style.whiteSpace = 'pre'; // Preserve spaces
+                measureEl.textContent = selectedText;
+
+                document.body.appendChild(measureEl);
+                let width = measureEl.offsetWidth;
+                document.body.removeChild(measureEl);
+
+                return width;
+              })()}px`,
+              bottom: 0,
+              backgroundColor: textColor,
+              opacity: 1,
+              pointerEvents: 'none',
+              borderRadius: props.cornerStyle === 'rounded' ? '2px' : '0',
+              zIndex: -1
+            }}
+          />
+        )}
+        <span style={{ position: 'relative', whiteSpace: 'nowrap' }}>
+          {hasSelection && textSelection ? (
+            <>
+              {/* Text before selection */}
+              <span>{content.substring(0, textSelection.start)}</span>
+              {/* Selected text - use background color when text has background, otherwise use contrasting color */}
+              <span style={{
+                color: props.backgroundStyle !== 'none' ? props.backgroundColor : '#000000',
+                position: 'relative',
+                zIndex: 1
+              }}>
+                {content.substring(textSelection.start, textSelection.end)}
+              </span>
+              {/* Text after selection */}
+              <span>{content.substring(textSelection.end)}</span>
+            </>
+          ) : (
+            content || (isEditing ? '\u00A0' : '')
+          )}
+        </span>
+        {isEditing && !hasSelection && hasCursor && (
           <span
             className="text-cursor"
             style={{
               position: 'absolute',
-              right: content ? '-2px' : '0px',
+              left: `${getCursorOffset}px`,
               top: '50%',
               transform: 'translateY(-50%)',
               width: '2px',

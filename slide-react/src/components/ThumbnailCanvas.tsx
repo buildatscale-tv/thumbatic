@@ -24,16 +24,17 @@ interface ThumbnailCanvasProps {
 }
 
 export const ThumbnailCanvas: React.FC<ThumbnailCanvasProps> = ({ dragState, dragCallbacks, snapThreshold = 100 }) => {
-  const { theme, cornerStyle, selectElement } = useThumbnailStore();
+  const { theme, cornerStyle, selectElement, setEditingElementId } = useThumbnailStore();
 
   const themeClass = `${theme}-theme`;
   const cornerClass = cornerStyle === 'sharp' ? 'sharp-corners' : '';
 
   const handleThumbnailClick = (event: React.MouseEvent) => {
     // Only clear selection if clicking directly on the thumbnail background
-    if (event.target === event.currentTarget || 
+    if (event.target === event.currentTarget ||
         (event.target as HTMLElement).classList.contains('thumbnail-content')) {
       selectElement(null);
+      setEditingElementId(null); // Also clear editing state to remove cursor
     }
   };
 
