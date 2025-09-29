@@ -241,15 +241,31 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => ({
     }
   },
 
-  updateElementPosition: (elementId, position) => {
+  updateElementPosition: (elementId, position, isManual = false) => {
     const state = get();
 
     // Position is used directly (snapping handled in App component for text elements)
-    const updatedElements = state.elements.map(element =>
-      element.id === elementId
-        ? { ...element, position }
-        : element
-    );
+    const updatedElements = state.elements.map(element => {
+      if (element.id === elementId) {
+        // Only clear alignment if this is a manual position update (drag or arrow keys)
+        if (isManual && element.type === 'text') {
+          const textProps = element.properties as any;
+          if (textProps.horizontalAlign || textProps.verticalAlign) {
+            return {
+              ...element,
+              position,
+              properties: {
+                ...element.properties,
+                horizontalAlign: undefined,
+                verticalAlign: undefined
+              }
+            };
+          }
+        }
+        return { ...element, position };
+      }
+      return element;
+    });
 
     set({ elements: updatedElements });
 

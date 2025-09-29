@@ -190,6 +190,25 @@ export function DraggableElement({
     currentPositionRef.current = position;
   }, [position]);
 
+  // Also update topLeftPosition when element size changes (e.g., text content changes)
+  React.useLayoutEffect(() => {
+    if (!elementRef.current) return;
+
+    const sizeObserver = new ResizeObserver(() => {
+      if (!elementRef.current) return;
+
+      // Recalculate top-left position from current center position
+      const newTopLeft = centerToTopLeft(position, elementRef.current);
+      setTopLeftPosition(newTopLeft);
+    });
+
+    sizeObserver.observe(elementRef.current);
+
+    return () => {
+      sizeObserver.disconnect();
+    };
+  }, [position]); // Include position in deps to ensure we use current position
+
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);

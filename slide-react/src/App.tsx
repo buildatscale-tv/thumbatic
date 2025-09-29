@@ -117,8 +117,8 @@ function App() {
           break;
       }
 
-      // Update element position
-      updateElementPosition(selectedElement.id, newPos);
+      // Update element position (manual adjustment via arrow keys)
+      updateElementPosition(selectedElement.id, newPos, true);
     };
 
     // Add event listener to document
@@ -151,8 +151,8 @@ function App() {
       const currentElement = useThumbnailStore.getState().elements.find(el => el.id === elementId);
 
       if (currentElement) {
-        // Update position in store immediately for visual feedback
-        useThumbnailStore.getState().updateElementPosition(elementId, position);
+        // Update position in store immediately for visual feedback (manual drag)
+        useThumbnailStore.getState().updateElementPosition(elementId, position, true);
 
         // Update snapping system for all element types
         if (snapping.isSnapping) {
@@ -175,15 +175,15 @@ function App() {
         const snappedPosition = snapping.finalizeDrag();
 
         if (snappedPosition) {
-          // Snapping occurred - use snapped position
-          useThumbnailStore.getState().updateElementPosition(elementId, snappedPosition);
+          // Snapping occurred - use snapped position (manual drag)
+          useThumbnailStore.getState().updateElementPosition(elementId, snappedPosition, true);
         } else {
-          // No snapping - use the final constrained position from DraggableElement
-          useThumbnailStore.getState().updateElementPosition(elementId, finalPosition);
+          // No snapping - use the final constrained position from DraggableElement (manual drag)
+          useThumbnailStore.getState().updateElementPosition(elementId, finalPosition, true);
         }
       } else {
-        // No snapping active - use the final constrained position from DraggableElement
-        useThumbnailStore.getState().updateElementPosition(elementId, finalPosition);
+        // No snapping active - use the final constrained position from DraggableElement (manual drag)
+        useThumbnailStore.getState().updateElementPosition(elementId, finalPosition, true);
       }
 
       // Clean up snapping session and reset drag state

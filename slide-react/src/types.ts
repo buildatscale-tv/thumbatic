@@ -89,7 +89,7 @@ export interface ThumbnailState {
   setIconSize: (size: number) => void;
   selectElement: (element: ThumbnailElement | null) => void;
   updateElementProperties: (elementId: string, properties: Partial<ElementProperties>) => void;
-  updateElementPosition: (elementId: string, position: { x: number; y: number }) => void;
+  updateElementPosition: (elementId: string, position: { x: number; y: number }, isManual?: boolean) => void;
   updateElementZIndex: (elementId: string, zIndex: number) => void;
   addElement: (element: ThumbnailElement) => void;
   addTextElement: (textType: TextElementType, content: string, position?: { x: number; y: number }) => void;
