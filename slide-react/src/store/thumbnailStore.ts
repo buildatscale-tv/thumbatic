@@ -113,7 +113,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     logoType: 'library',
     logoUrl: '',
     selectedLogos: [],
-    logoSize: 128,
+    logoSize: 256,
 
     // Initial decorative icons
     iconType: 'none',

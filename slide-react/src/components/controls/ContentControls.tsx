@@ -183,42 +183,6 @@ export const ContentControls: React.FC = () => {
 
   const selectedTypeOption = textTypeOptions.find(opt => opt.value === newElementType);
 
-  // Common text templates/presets
-  const textTemplates = {
-    title: [
-      "Ultimate Guide to",
-      "How to Master",
-      "5 Tips for Better",
-      "The Complete Guide",
-      "Everything About"
-    ],
-    subtitle: [
-      "Step-by-step tutorial",
-      "Beginner's guide",
-      "Advanced techniques",
-      "Pro tips included",
-      "Free course inside"
-    ],
-    'accent-label': [
-      "NEW",
-      "UPDATED",
-      "FREE",
-      "TUTORIAL",
-      "GUIDE"
-    ],
-    custom: [
-      "Click here!",
-      "Subscribe now",
-      "Learn more",
-      "Get started",
-      "Download free"
-    ]
-  };
-
-  const handleTemplateSelect = (template: string) => {
-    setNewElementContent(template);
-  };
-
   return (
     <div className="content-controls">
       {/* Add Text Element Card */}
@@ -259,26 +223,6 @@ export const ContentControls: React.FC = () => {
               className="content-input"
             />
           </div>
-
-          {/* Text Templates */}
-          {textTemplates[newElementType]?.length > 0 && (
-            <div className="text-templates">
-              <label className="templates-label">Quick templates:</label>
-              <div className="templates-grid">
-                {textTemplates[newElementType].map((template, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    className="template-chip"
-                    onClick={() => handleTemplateSelect(template)}
-                    title={`Use template: ${template}`}
-                  >
-                    {template}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Add Button */}
           <Button
