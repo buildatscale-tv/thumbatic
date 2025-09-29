@@ -559,7 +559,7 @@
 .preview {
   flex: 1 !important;
   height: 100vh !important;
-  background: var(--ui-gray-50) !important;
+  background: var(--ui-gray-300) !important;
   padding: var(--ui-space-8) !important;
   display: flex !important;
   align-items: center !important;

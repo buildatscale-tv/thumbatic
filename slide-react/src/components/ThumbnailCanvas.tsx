@@ -24,10 +24,9 @@ interface ThumbnailCanvasProps {
 }
 
 export const ThumbnailCanvas: React.FC<ThumbnailCanvasProps> = ({ dragState, dragCallbacks, snapThreshold = 100 }) => {
-  const { theme, cornerStyle, selectElement, setEditingElementId } = useThumbnailStore();
+  const { theme, selectElement, setEditingElementId } = useThumbnailStore();
 
   const themeClass = `${theme}-theme`;
-  const cornerClass = cornerStyle === 'sharp' ? 'sharp-corners' : '';
 
   const handleThumbnailClick = (event: React.MouseEvent) => {
     // Only clear selection if clicking directly on the thumbnail background
@@ -39,9 +38,9 @@ export const ThumbnailCanvas: React.FC<ThumbnailCanvasProps> = ({ dragState, dra
   };
 
   return (
-    <div 
+    <div
       id="thumbnail"
-      className={`thumbnail ${themeClass} ${cornerClass}`.trim()}
+      className={`thumbnail ${themeClass}`.trim()}
       onClick={handleThumbnailClick}
       style={{ 
         position: 'relative',

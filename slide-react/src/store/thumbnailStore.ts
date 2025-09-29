@@ -48,7 +48,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
         fontColor: '#ffffff',
         backgroundColor: '#ff6b35',
         backgroundStyle: 'none',
-        cornerStyle: 'rounded',
+        cornerStyle: 'sharp',
         opacity: 100,
         rotation: 0,
         content: 'CLAUDE CODE',
@@ -108,7 +108,6 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
   return {
     // Initial theme and styling
     theme: 'claude',
-    cornerStyle: 'sharp',
 
     // Initial logo configuration
     logoType: 'library',
@@ -130,8 +129,6 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
 
   // Actions
   setTheme: (theme) => set({ theme }),
-
-  setCornerStyle: (cornerStyle) => set({ cornerStyle }),
 
   setLogoType: (logoType) => set({ logoType }),
 
@@ -431,10 +428,10 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     };
 
     const defaultStyles = {
-      title: { fontSize: 128, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const },
-      subtitle: { fontSize: 76, fontColor: '#000000', backgroundStyle: 'drop-shadow' as const, backgroundColor: '#FFD700', cornerStyle: 'sharp' as const, horizontalAlign: 'center' as const },
-      'accent-label': { fontSize: 48, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ffffff', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const },
-      custom: { fontSize: 48, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const },
+      title: { fontSize: 128, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'sharp' as const, horizontalAlign: 'center' as const },
+      subtitle: { fontSize: 76, fontColor: '#000000', backgroundStyle: 'drop-shadow' as const, backgroundColor: '#FEBC0A', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const },
+      'accent-label': { fontSize: 60, fontColor: '#ffffff', backgroundStyle: 'drop-shadow' as const, backgroundColor: '#017cff', cornerStyle: 'sharp' as const, horizontalAlign: 'center' as const },
+      custom: { fontSize: 48, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'sharp' as const, horizontalAlign: 'center' as const },
     };
 
     const newElement: ThumbnailElement = {

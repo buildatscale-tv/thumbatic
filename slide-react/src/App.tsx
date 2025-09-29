@@ -11,6 +11,7 @@ function App() {
   const selectedElement = useThumbnailStore(state => state.selectedElement);
   const updateElementPosition = useThumbnailStore(state => state.updateElementPosition);
   const updateElementZIndex = useThumbnailStore(state => state.updateElementZIndex);
+  const removeElement = useThumbnailStore(state => state.removeElement);
 
   const textElements = React.useMemo(
     () => allElements.filter(el => el.type === 'text'),
@@ -52,10 +53,24 @@ function App() {
     activeSnaps: ActiveSnap[];
   }>({ activeId: null, activeSnaps: [] });
 
-  // Keyboard controls for element movement
+  // Keyboard controls for element movement and deletion
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!selectedElement) return;
+
+      // Handle delete key
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+        // Don't delete if focus is on a text input
+        if (document.activeElement &&
+            (document.activeElement.tagName === 'INPUT' ||
+             document.activeElement.tagName === 'TEXTAREA')) {
+          return;
+        }
+
+        event.preventDefault();
+        removeElement(selectedElement.id);
+        return;
+      }
 
       // Only handle arrow keys
       if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
@@ -128,7 +143,7 @@ function App() {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedElement, updateElementPosition, updateElementZIndex]);
+  }, [selectedElement, updateElementPosition, updateElementZIndex, removeElement]);
 
   // Drag callbacks to be passed to draggable elements
   const dragCallbacks = {

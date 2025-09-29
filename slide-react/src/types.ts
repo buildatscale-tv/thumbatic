@@ -52,8 +52,7 @@ export interface IconSet {
 }
 
 // Theme and style types
-export type Theme = 'claude' | 'tech' | 'dark' | 'blueprint';
-export type CornerStyle = 'rounded' | 'sharp';
+export type Theme = 'claude' | 'tech' | 'dark';
 export type LogoType = 'url' | 'library';
 export type IconType = 'none' | 'tech' | 'shapes' | 'arrows' | 'mixed';
 
@@ -62,7 +61,6 @@ export interface ThumbnailState {
 
   // Theme and styling
   theme: Theme;
-  cornerStyle: CornerStyle;
 
   // Logo configuration
   logoType: LogoType;
@@ -83,7 +81,6 @@ export interface ThumbnailState {
 
   // Actions
   setTheme: (theme: Theme) => void;
-  setCornerStyle: (style: CornerStyle) => void;
   setLogoType: (type: LogoType) => void;
   setLogoUrl: (url: string) => void;
   setSelectedLogos: (logos: string[]) => void;

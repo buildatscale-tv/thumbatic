@@ -50,7 +50,7 @@ export const ElementPropertiesPanel: React.FC = () => {
                 label="Font Size"
                 value={(selectedElement.properties as TextElementProperties).fontSize}
                 min={20}
-                max={120}
+                max={128}
                 step={2}
                 unit="px"
                 onChange={(value) => updateElementProperties(selectedElement.id, {
