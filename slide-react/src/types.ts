@@ -56,6 +56,9 @@ export type Theme = 'claude' | 'tech' | 'dark';
 export type LogoType = 'url' | 'library';
 export type IconType = 'none' | 'tech' | 'shapes' | 'arrows' | 'mixed';
 
+// Tool types for the new UI
+export type ToolType = 'text' | 'logo' | 'icon';
+
 // Main store state interface
 export interface ThumbnailState {
 
@@ -79,6 +82,11 @@ export interface ThumbnailState {
   textSelection: { elementId: string; start: number; end: number } | null;
   cursorPosition: { elementId: string; position: number } | null;
 
+  // New UI states
+  activeTool: ToolType;
+  showLogoLibrary: boolean;
+  showGridGuides: boolean;
+
   // Actions
   setTheme: (theme: Theme) => void;
   setLogoType: (type: LogoType) => void;
@@ -100,4 +108,9 @@ export interface ThumbnailState {
   reorderElements: (elementIds: string[]) => void;
   randomizeLogoPositions: () => void;
   randomizeIconPositions: () => void;
+
+  // New UI actions
+  setActiveTool: (tool: ToolType) => void;
+  setShowLogoLibrary: (show: boolean) => void;
+  setShowGridGuides: (show: boolean) => void;
 }

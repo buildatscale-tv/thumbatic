@@ -16,6 +16,8 @@ interface DraggableElementProps {
   className?: string;
   style?: React.CSSProperties;
   alignment?: { horizontal?: 'left' | 'center' | 'right', vertical?: 'top' | 'middle' | 'bottom' };
+  onClick?: (event: React.MouseEvent) => void;
+  onDoubleClick?: (event: React.MouseEvent) => void;
 }
 
 // Helper function to convert center coordinates to top-left coordinates
@@ -43,7 +45,9 @@ export function DraggableElement({
   dragCallbacks,
   className = '',
   style = {},
-  alignment
+  alignment,
+  onClick,
+  onDoubleClick
 }: DraggableElementProps) {
   const { updateElementPosition, selectedElement } = useThumbnailStore();
   const [isDragging, setIsDragging] = useState(false);
@@ -180,6 +184,11 @@ export function DraggableElement({
 
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    // Don't start dragging on double-click
+    if (e.detail === 2) {
+      return;
+    }
+
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
     setInitialCenterPosition(position); // position is stored as center coordinates
@@ -303,6 +312,8 @@ export function DraggableElement({
     <div
       ref={elementRef}
       onMouseDown={handleMouseDown}
+      onClick={onClick}
+      onDoubleClick={onDoubleClick}
       className={combinedClassName}
       style={combinedStyle}
       data-element-id={id}

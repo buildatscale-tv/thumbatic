@@ -119,13 +119,17 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     iconType: 'none',
     iconSize: 48,
 
-
     // Initial element management - include text elements
     elements: initialElements,
     selectedElement: null,
     editingElementId: null as string | null,
     textSelection: null,
     cursorPosition: null,
+
+    // New UI states
+    activeTool: 'text' as const,
+    showLogoLibrary: false,
+    showGridGuides: false,
 
   // Actions
   setTheme: (theme) => set({ theme }),
@@ -276,7 +280,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
       isContentChanging,
       hasAlignment,
       horizontalAlign: element.type === 'text' ? (element.properties as any).horizontalAlign : null,
-      newContent: properties.content,
+      newContent: (properties as any).content,
       oldContent: (element.properties as any).content
     });
 
@@ -516,5 +520,12 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
 
     set({ elements: updatedElements });
   },
+
+  // New UI actions
+  setActiveTool: (tool) => set({ activeTool: tool }),
+
+  setShowLogoLibrary: (show) => set({ showLogoLibrary: show }),
+
+  setShowGridGuides: (show) => set({ showGridGuides: show }),
   };
 });

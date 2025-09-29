@@ -42,7 +42,7 @@ export const ThumbnailCanvas: React.FC<ThumbnailCanvasProps> = ({ dragState, dra
       id="thumbnail"
       className={`thumbnail ${themeClass}`.trim()}
       onClick={handleThumbnailClick}
-      style={{ 
+      style={{
         position: 'relative',
         width: '1280px',
         height: '720px',

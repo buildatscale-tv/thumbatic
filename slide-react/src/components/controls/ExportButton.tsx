@@ -55,7 +55,11 @@ const ensureFontsLoaded = async (): Promise<void> => {
   await document.fonts.ready;
 };
 
-export const ExportButton: React.FC = () => {
+interface ExportButtonProps {
+  compact?: boolean;
+}
+
+export const ExportButton: React.FC<ExportButtonProps> = ({ compact = false }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { elements, selectElement } = useThumbnailStore();
 
@@ -177,11 +181,22 @@ export const ExportButton: React.FC = () => {
 
   return (
     <button
-      className="download-button"
+      className={compact ? "download-button--compact" : "download-button"}
       onClick={handleExport}
       disabled={isGenerating}
     >
-      {isGenerating ? 'Generating...' : 'Download Thumbnail'}
+      {compact ? (
+        <>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          {isGenerating ? 'Downloading...' : 'Download'}
+        </>
+      ) : (
+        isGenerating ? 'Generating...' : 'Download Thumbnail'
+      )}
     </button>
   );
 };

@@ -66,9 +66,16 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
 
   const handleDoubleClick = (event: React.MouseEvent) => {
     event.stopPropagation();
-    // Start editing mode and select the element
+    // Select the element and enable inline editing
     selectElement(element);
     setEditingElementId(element.id);
+    // Initialize cursor at the end of the text
+    const props = element.properties as TextElementProperties;
+    const contentLength = props.content?.length || 0;
+    useThumbnailStore.getState().setCursorPosition({
+      elementId: element.id,
+      position: contentLength
+    });
   };
 
   const props = element.properties as TextElementProperties;
@@ -165,6 +172,8 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
       dragCallbacks={dragCallbacks}
       className={classes}
       style={style}
+      onClick={handleElementClick}
+      onDoubleClick={handleDoubleClick}
       alignment={
         props.horizontalAlign || props.verticalAlign
           ? {
@@ -177,8 +186,6 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
       <div
         data-element-type="text"
         data-element-name={element.name}
-        onClick={handleElementClick}
-        onDoubleClick={handleDoubleClick}
         style={{ position: 'relative', display: 'inline-block' }}
       >
         {hasSelection && textSelection && (

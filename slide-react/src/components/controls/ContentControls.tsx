@@ -16,7 +16,6 @@ export const ContentControls: React.FC = () => {
     selectedElement,
     editingElementId,
     setEditingElementId,
-    textSelection,
     setTextSelection,
     setCursorPosition
   } = useThumbnailStore();

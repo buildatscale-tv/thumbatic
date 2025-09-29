@@ -4,6 +4,7 @@ import { useThumbnailStore } from './store/thumbnailStore';
 import { useSnapping } from './hooks/useSnapping';
 import type { ActiveSnap } from './types/snapping';
 import './styles/thumbnail.css';
+import './styles/editor-layout.css';
 
 function App() {
   // Get text elements for text-edge snapping using a stable reference
@@ -53,9 +54,327 @@ function App() {
     activeSnaps: ActiveSnap[];
   }>({ activeId: null, activeSnaps: [] });
 
-  // Keyboard controls for element movement and deletion
+
+  // Subscribe to editing state
+  const editingElementId = useThumbnailStore(state => state.editingElementId);
+
+  // Virtual inline text editing with selection
   React.useEffect(() => {
+    if (!editingElementId) return;
+
     const handleKeyDown = (event: KeyboardEvent) => {
+      const store = useThumbnailStore.getState();
+      const { elements, updateElementProperties, setEditingElementId, setCursorPosition, setTextSelection } = store;
+
+      const element = elements.find(el => el.id === editingElementId);
+      if (!element || element.type !== 'text') return;
+
+      // Handle Tab first before anything else
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Get all text elements sorted by Y position (top to bottom)
+        const textElements = elements
+          .filter(el => el.type === 'text')
+          .sort((a, b) => {
+            // Sort by Y position first, then X for same line
+            const yDiff = a.position.y - b.position.y;
+            if (Math.abs(yDiff) < 20) { // Consider within 20px as same line
+              return a.position.x - b.position.x;
+            }
+            return yDiff;
+          });
+
+        const currentIndex = textElements.findIndex(el => el.id === editingElementId);
+
+        if (currentIndex !== -1 && textElements.length > 1) {
+          let nextIndex;
+
+          if (event.shiftKey) {
+            // Shift+Tab: Go to previous element
+            nextIndex = currentIndex - 1;
+            if (nextIndex < 0) {
+              nextIndex = textElements.length - 1; // Wrap to bottom
+            }
+          } else {
+            // Tab: Go to next element
+            nextIndex = currentIndex + 1;
+            if (nextIndex >= textElements.length) {
+              nextIndex = 0; // Wrap to top
+            }
+          }
+
+          const nextElement = textElements[nextIndex];
+
+          // Exit current editing
+          setEditingElementId(null);
+          setCursorPosition(null);
+          setTextSelection(null);
+
+          // Start editing next element
+          setTimeout(() => {
+            const store = useThumbnailStore.getState();
+            store.selectElement(nextElement);
+            store.setEditingElementId(nextElement.id);
+
+            // Position cursor at end of text
+            const nextProps = nextElement.properties as any;
+            const contentLength = nextProps.content?.length || 0;
+            store.setCursorPosition({
+              elementId: nextElement.id,
+              position: contentLength
+            });
+          }, 10);
+        }
+        return;
+      }
+
+      const props = element.properties as any;
+      let content = props.content || '';
+      let cursor = store.cursorPosition?.position || 0;
+      let selection = store.textSelection;
+
+      // Helper to find word boundaries
+      const findWordBoundary = (text: string, pos: number, direction: 'left' | 'right') => {
+        const wordRegex = /\w/;
+        if (direction === 'left') {
+          // Skip any non-word chars first
+          while (pos > 0 && !wordRegex.test(text[pos - 1])) pos--;
+          // Then skip word chars
+          while (pos > 0 && wordRegex.test(text[pos - 1])) pos--;
+        } else {
+          // Skip any non-word chars first
+          while (pos < text.length && !wordRegex.test(text[pos])) pos++;
+          // Then skip word chars
+          while (pos < text.length && wordRegex.test(text[pos])) pos++;
+        }
+        return pos;
+      };
+
+      // Handle text selection first
+      if (event.shiftKey && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+        event.preventDefault();
+        let newPos = cursor;
+
+        if (event.key === 'ArrowLeft') {
+          if (event.altKey || event.metaKey) {
+            // Select to previous word
+            newPos = findWordBoundary(content, cursor, 'left');
+          } else {
+            // Select one character left
+            newPos = Math.max(0, cursor - 1);
+          }
+        } else if (event.key === 'ArrowRight') {
+          if (event.altKey || event.metaKey) {
+            // Select to next word
+            newPos = findWordBoundary(content, cursor, 'right');
+          } else {
+            // Select one character right
+            newPos = Math.min(content.length, cursor + 1);
+          }
+        } else if (event.key === 'Home') {
+          newPos = 0;
+        } else if (event.key === 'End') {
+          newPos = content.length;
+        }
+
+        if (newPos !== cursor) {
+          // Update or create selection
+          if (!selection) {
+            selection = { elementId: editingElementId, start: cursor, end: newPos };
+          } else {
+            // Keep the anchor point, move the end
+            selection = { ...selection, end: newPos };
+          }
+
+          // Store the actual selection for proper rendering
+          setTextSelection({
+            elementId: editingElementId,
+            start: Math.min(selection.start, selection.end),
+            end: Math.max(selection.start, selection.end)
+          });
+          setCursorPosition({ elementId: editingElementId, position: newPos });
+        }
+        return;
+      }
+
+      // Clear selection on non-shift movement
+      if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key) && !event.shiftKey) {
+        setTextSelection(null);
+      }
+
+      // Handle character input
+      if (event.key.length === 1 && !event.ctrlKey && !event.metaKey) {
+        event.preventDefault();
+
+        // If there's a selection, replace it
+        if (selection && selection.elementId === editingElementId) {
+          const start = Math.min(selection.start, selection.end);
+          const end = Math.max(selection.start, selection.end);
+
+          console.log('Replacing selection:', {
+            selection,
+            start,
+            end,
+            oldContent: content,
+            selectedText: content.slice(start, end),
+            key: event.key
+          });
+
+          content = content.slice(0, start) + event.key + content.slice(end);
+          cursor = start + 1;
+          setTextSelection(null);
+        } else {
+          content = content.slice(0, cursor) + event.key + content.slice(cursor);
+          cursor = cursor + 1;
+        }
+
+        updateElementProperties(editingElementId, { content });
+        setCursorPosition({ elementId: editingElementId, position: cursor });
+      }
+      // Handle backspace
+      else if (event.key === 'Backspace') {
+        event.preventDefault();
+
+        if (selection) {
+          const start = Math.min(selection.start, selection.end);
+          const end = Math.max(selection.start, selection.end);
+          content = content.slice(0, start) + content.slice(end);
+          cursor = start;
+          setTextSelection(null);
+        } else if (cursor > 0) {
+          if (event.altKey || event.metaKey) {
+            // Delete to previous word
+            const newPos = findWordBoundary(content, cursor, 'left');
+            content = content.slice(0, newPos) + content.slice(cursor);
+            cursor = newPos;
+          } else {
+            content = content.slice(0, cursor - 1) + content.slice(cursor);
+            cursor = cursor - 1;
+          }
+        }
+
+        updateElementProperties(editingElementId, { content });
+        setCursorPosition({ elementId: editingElementId, position: cursor });
+      }
+      // Handle delete
+      else if (event.key === 'Delete') {
+        event.preventDefault();
+
+        if (selection) {
+          const start = Math.min(selection.start, selection.end);
+          const end = Math.max(selection.start, selection.end);
+          content = content.slice(0, start) + content.slice(end);
+          cursor = start;
+          setTextSelection(null);
+        } else if (cursor < content.length) {
+          if (event.altKey || event.metaKey) {
+            // Delete to next word
+            const newPos = findWordBoundary(content, cursor, 'right');
+            content = content.slice(0, cursor) + content.slice(newPos);
+          } else {
+            content = content.slice(0, cursor) + content.slice(cursor + 1);
+          }
+        }
+
+        updateElementProperties(editingElementId, { content });
+        setCursorPosition({ elementId: editingElementId, position: cursor });
+      }
+      // Handle arrow keys (without shift - just movement)
+      else if (event.key === 'ArrowLeft' && !event.shiftKey) {
+        event.preventDefault();
+        if (event.altKey || event.metaKey) {
+          cursor = findWordBoundary(content, cursor, 'left');
+        } else {
+          cursor = Math.max(0, cursor - 1);
+        }
+        setCursorPosition({ elementId: editingElementId, position: cursor });
+      }
+      else if (event.key === 'ArrowRight' && !event.shiftKey) {
+        event.preventDefault();
+        if (event.altKey || event.metaKey) {
+          cursor = findWordBoundary(content, cursor, 'right');
+        } else {
+          cursor = Math.min(content.length, cursor + 1);
+        }
+        setCursorPosition({ elementId: editingElementId, position: cursor });
+      }
+      // Handle Home/End (without shift)
+      else if (event.key === 'Home' && !event.shiftKey) {
+        event.preventDefault();
+        setCursorPosition({ elementId: editingElementId, position: 0 });
+      }
+      else if (event.key === 'End' && !event.shiftKey) {
+        event.preventDefault();
+        setCursorPosition({ elementId: editingElementId, position: content.length });
+      }
+      // Handle Select All
+      else if (event.key === 'a' && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        setTextSelection({
+          elementId: editingElementId,
+          start: 0,
+          end: content.length
+        });
+        setCursorPosition({ elementId: editingElementId, position: content.length });
+      }
+      // Handle Enter/Escape - exit editing
+      else if (event.key === 'Enter' || event.key === 'Escape') {
+        event.preventDefault();
+        setEditingElementId(null);
+        setCursorPosition(null);
+        setTextSelection(null);
+      }
+    };
+
+    // Use capture phase to intercept Tab before other handlers
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, [editingElementId]); // Only re-register when editing state changes
+
+  // Keyboard controls for tools and element manipulation
+  React.useEffect(() => {
+    const {
+      setShowLogoLibrary,
+      setShowGridGuides,
+      addTextElement,
+      showGridGuides,
+    } = useThumbnailStore.getState();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Don't handle shortcuts if typing in an input or editing text
+      if (event.target instanceof HTMLInputElement ||
+          event.target instanceof HTMLTextAreaElement ||
+          useThumbnailStore.getState().editingElementId) {
+        return;
+      }
+
+      // Tool shortcuts (without modifiers)
+      switch(event.key.toLowerCase()) {
+        case 't':
+          if (!event.ctrlKey && !event.metaKey) {
+            event.preventDefault();
+            addTextElement('custom', 'New Text');
+          }
+          break;
+        case 'l':
+          if (!event.ctrlKey && !event.metaKey) {
+            event.preventDefault();
+            setShowLogoLibrary(true);
+          }
+          break;
+        case 'g':
+          if (!event.ctrlKey && !event.metaKey) {
+            event.preventDefault();
+            setShowGridGuides(!showGridGuides);
+          }
+          break;
+      }
+
+      // Element-specific shortcuts
       if (!selectedElement) return;
 
       // Handle delete key
