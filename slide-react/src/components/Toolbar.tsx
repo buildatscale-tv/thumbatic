@@ -47,7 +47,8 @@ export const Toolbar: React.FC = () => {
   };
 
   const handleAddIcon = () => {
-    // This will open icon selector in the future
+    const { setShowIconLibrary } = useThumbnailStore.getState();
+    setShowIconLibrary(true);
   };
 
   return (

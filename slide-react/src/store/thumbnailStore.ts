@@ -135,6 +135,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     // New UI states
     activeTool: 'text' as const,
     showLogoLibrary: false,
+    showIconLibrary: false,
     showGridGuides: false,
 
   // Actions
@@ -529,6 +530,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
   setActiveTool: (tool) => set({ activeTool: tool }),
 
   setShowLogoLibrary: (show) => set({ showLogoLibrary: show }),
+  setShowIconLibrary: (show) => set({ showIconLibrary: show }),
 
   setShowGridGuides: (show) => set({ showGridGuides: show }),
   };

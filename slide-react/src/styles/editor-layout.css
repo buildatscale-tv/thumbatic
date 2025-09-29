@@ -1072,3 +1072,91 @@
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
 }
+
+/* Icon Library Modal */
+.icon-library {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.icon-library__filters {
+  display: flex;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #444;
+}
+
+.icon-library__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.icon-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #1a1a1a;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-card:hover {
+  background: #222;
+  border-color: #444;
+}
+
+.icon-card.selected {
+  background: #222;
+  border-color: #3b82f6;
+}
+
+.icon-card__preview {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-card__preview svg {
+  width: 100%;
+  height: 100%;
+  color: #fff;
+}
+
+.icon-card__name {
+  font-size: 11px;
+  text-align: center;
+  color: #999;
+}
+
+.filter-button {
+  padding: 6px 12px;
+  background: #1a1a1a;
+  border: 1px solid #444;
+  color: #999;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-button:hover {
+  background: #222;
+  color: #ccc;
+}
+
+.filter-button.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
