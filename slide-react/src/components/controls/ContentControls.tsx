@@ -84,6 +84,48 @@ export const ContentControls: React.FC = () => {
       saveEditing(elementId);
     } else if (e.key === 'Escape') {
       cancelEditing();
+    } else if (e.key === 'Tab') {
+      e.preventDefault(); // Prevent default tab behavior
+
+      // Get all text elements sorted by their position (top to bottom)
+      const sortedTextElements = textElements.sort((a, b) => {
+        // Sort by Y position first, then X position for elements on same line
+        const yDiff = a.position.y - b.position.y;
+        if (Math.abs(yDiff) < 20) { // Consider elements within 20px as same line
+          return a.position.x - b.position.x;
+        }
+        return yDiff;
+      });
+
+      // Find current element index
+      const currentIndex = sortedTextElements.findIndex(el => el.id === elementId);
+
+      if (currentIndex !== -1) {
+        let nextIndex;
+        if (e.shiftKey) {
+          // Shift+Tab: Go to previous element
+          nextIndex = currentIndex - 1;
+          if (nextIndex < 0) {
+            nextIndex = sortedTextElements.length - 1; // Wrap to last
+          }
+        } else {
+          // Tab: Go to next element
+          nextIndex = currentIndex + 1;
+          if (nextIndex >= sortedTextElements.length) {
+            nextIndex = 0; // Wrap to first
+          }
+        }
+
+        // Save current element and start editing the next one
+        saveEditing(elementId);
+        const nextElement = sortedTextElements[nextIndex];
+        const nextProps = nextElement.properties as TextElementProperties;
+
+        // Select and start editing the next element
+        selectElement(nextElement);
+        setEditingElementId(nextElement.id);
+        setTempContent(nextProps.content || '');
+      }
     }
   };
 
