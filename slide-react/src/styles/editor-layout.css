@@ -411,7 +411,7 @@
 }
 
 .properties-panel__coord input {
-  flex: 1;
+  width: 75px;
   padding: 4px 6px;
   background: #222;
   color: #ddd;
@@ -431,6 +431,147 @@
   max-width: 100%;
   max-height: 100px;
   object-fit: contain;
+}
+
+/* Dark styling for sliders and selects inside properties panel */
+.properties-panel .ui-slider {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.properties-panel .slider-input {
+  background: #1a1a1a;
+}
+
+.properties-panel .slider-input::-webkit-slider-thumb {
+  background: #3b82f6;
+  border: 2px solid #1f2937;
+}
+
+.properties-panel .slider-input::-webkit-slider-thumb:hover {
+  background: #2563eb;
+}
+
+.properties-panel .slider-input::-moz-range-thumb {
+  background: #3b82f6;
+  border: 2px solid #1f2937;
+}
+
+.properties-panel .slider-input::-moz-range-thumb:hover {
+  background: #2563eb;
+}
+
+.properties-panel .slider-input:disabled::-webkit-slider-thumb,
+.properties-panel .slider-input:disabled::-moz-range-thumb {
+  background: #4b5563;
+}
+
+.properties-panel .slider-label {
+  color: #e5e7eb;
+}
+
+.properties-panel .slider-value {
+  color: #f3f4f6;
+  background: transparent;
+  border: none;
+}
+
+.properties-panel .slider-range {
+  color: #9ca3af;
+}
+
+/* Dark styling for select dropdowns inside properties panel */
+.properties-panel .ui-select,
+.properties-panel .ui-select-wrapper {
+  background: transparent;
+  border: none;
+}
+
+.properties-panel .ui-select__trigger {
+  background: #1a1a1a;
+  color: #f3f4f6;
+  padding: 8px 12px;
+  border: 1px solid #444;
+  border-radius: 4px;
+}
+
+.properties-panel .ui-select:hover:not(.ui-select--disabled) .ui-select__trigger {
+  background: #404754;
+}
+
+.properties-panel .ui-select:focus .ui-select__trigger,
+.properties-panel .ui-select--open .ui-select__trigger {
+  border-color: #3b82f6;
+  background: #404754;
+}
+
+.properties-panel .ui-select__placeholder {
+  color: #6b7280;
+}
+
+.properties-panel .ui-select__value {
+  color: #f3f4f6;
+}
+
+.properties-panel .ui-select__arrow {
+  color: #9ca3af;
+}
+
+.properties-panel .ui-select__options {
+  background: #1f2937;
+  border: 1px solid #374151;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  margin-top: 4px;
+  border-radius: 8px;
+}
+
+.properties-panel .ui-select__option {
+  color: #f3f4f6;
+  padding: 8px 12px;
+}
+
+.properties-panel .ui-select__option:hover,
+.properties-panel .ui-select__option--focused {
+  background: #374151;
+}
+
+.properties-panel .ui-select__option--selected {
+  background: #3b82f6;
+  color: white;
+}
+
+.properties-panel .ui-select__label {
+  color: #e5e7eb;
+}
+
+/* Dark styling for inputs inside properties panel */
+.properties-panel .input,
+.properties-panel input[type="text"],
+.properties-panel input[type="number"],
+.properties-panel input[type="color"],
+.properties-panel textarea,
+.properties-panel .text-input,
+.properties-panel .url-input {
+  background: #1a1a1a;
+  border: 1px solid #444;
+  color: #f3f4f6;
+}
+
+.properties-panel .input:focus,
+.properties-panel input[type="text"]:focus,
+.properties-panel input[type="number"]:focus,
+.properties-panel textarea:focus,
+.properties-panel .text-input:focus,
+.properties-panel .url-input:focus {
+  border-color: #3b82f6;
+  background: #222;
+}
+
+.properties-panel .input::placeholder,
+.properties-panel .text-input::placeholder,
+.properties-panel .url-input::placeholder {
+  color: #6b7280;
 }
 
 .properties-panel__actions {

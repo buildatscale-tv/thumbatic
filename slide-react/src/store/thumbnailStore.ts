@@ -3,7 +3,13 @@ import type { ThumbnailState, ThumbnailElement, TextElementType, LogoIconElement
 
 
 // Helper function to generate safe positions outside center exclusion zone (pixel-based)
-const generateSafePosition = (): { x: number; y: number } => {
+const generateSafePosition = (forLogo: boolean = false): { x: number; y: number } => {
+  // Use fixed position for logos - lower left area where they're always visible
+  if (forLogo) {
+    return { x: 175, y: 550 };
+  }
+
+  // For icons and randomization, use random positions
   const thumbnailWidth = 1280;
   const thumbnailHeight = 720;
   const exclusionWidth = 900;
@@ -144,12 +150,11 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
 
     // If new URL is provided, create a custom logo element
     if (logoUrl) {
-      const { x, y } = generateSafePosition();
       const customLogoElement: ThumbnailElement = {
         id: 'logo-custom',
         type: 'logo',
         name: 'Custom Logo',
-        position: { x, y },
+        position: { x: 175, y: 550 },
         zIndex: 5000,
         properties: {
           size: state.logoSize,
@@ -182,12 +187,11 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     const newLogoElements: ThumbnailElement[] = selectedLogos
       .filter(url => !existingLogoUrls.includes(url))
       .map((url, index) => {
-        const { x, y } = generateSafePosition();
         return {
           id: `logo-${Date.now()}-${index}`,
           type: 'logo' as const,
           name: `Logo ${index + 1}`,
-          position: { x, y },
+          position: { x: 175, y: 550 },
           zIndex: 5000 + index * 10, // Start at 5000, increment by 10 for each logo
           properties: {
             size: state.logoSize,
@@ -488,7 +492,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
       element.type === 'logo'
         ? {
             ...element,
-            position: generateSafePosition(),
+            position: generateSafePosition(false), // Use random position for randomization
             properties: {
               ...element.properties,
               rotation: Math.random() * 30 - 15

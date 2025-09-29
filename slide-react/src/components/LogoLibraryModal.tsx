@@ -67,8 +67,8 @@ export const LogoLibraryModal: React.FC = () => {
         const logoItem = LOGO_LIBRARY.find(l => l.value === logoUrl);
         if (logoItem) {
           const position = {
-            x: 640 + (index % 3 - 1) * 150,
-            y: 360 + Math.floor(index / 3) * 150
+            x: 175 + (index * 30), // Stack horizontally with small offset
+            y: 550
           };
 
           addElement({
@@ -94,7 +94,7 @@ export const LogoLibraryModal: React.FC = () => {
           id: `logo-custom-${Date.now()}`,
           type: 'logo',
           name: 'Custom Logo',
-          position: { x: 640, y: 360 },
+          position: { x: 175, y: 550 },
           zIndex: 5000,
           properties: {
             size: 128,

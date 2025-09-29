@@ -354,12 +354,6 @@ function App() {
 
       // Tool shortcuts (without modifiers)
       switch(event.key.toLowerCase()) {
-        case 't':
-          if (!event.ctrlKey && !event.metaKey) {
-            event.preventDefault();
-            addTextElement('custom', 'New Text');
-          }
-          break;
         case 'l':
           if (!event.ctrlKey && !event.metaKey) {
             event.preventDefault();

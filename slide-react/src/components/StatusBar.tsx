@@ -40,9 +40,6 @@ export const StatusBar: React.FC = () => {
       <div className="status-bar__center">
         <div className="status-bar__hints">
           <span className="status-bar__hint">
-            <kbd>T</kbd> Add Text
-          </span>
-          <span className="status-bar__hint">
             <kbd>L</kbd> Add Logo
           </span>
           <span className="status-bar__hint">

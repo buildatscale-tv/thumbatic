@@ -1925,3 +1925,108 @@
     gap: var(--ui-space-3);
   }
 }
+
+/* Dark mode support for sliders and selects */
+@media (prefers-color-scheme: dark) {
+  /* Slider dark mode styles */
+  .slider-input {
+    background: #374151; /* Dark gray track */
+  }
+
+  .slider-input::-webkit-slider-thumb {
+    background: #3b82f6; /* Blue thumb */
+    border: 2px solid #1f2937; /* Dark border instead of white */
+  }
+
+  .slider-input::-webkit-slider-thumb:hover {
+    background: #2563eb; /* Darker blue on hover */
+  }
+
+  .slider-input::-moz-range-thumb {
+    background: #3b82f6; /* Blue thumb */
+    border: 2px solid #1f2937; /* Dark border instead of white */
+  }
+
+  .slider-input::-moz-range-thumb:hover {
+    background: #2563eb; /* Darker blue on hover */
+  }
+
+  .slider-input:disabled::-webkit-slider-thumb,
+  .slider-input:disabled::-moz-range-thumb {
+    background: #4b5563; /* Darker gray for disabled */
+  }
+
+  .slider-label {
+    color: #e5e7eb; /* Light gray text */
+  }
+
+  .slider-value {
+    color: #f3f4f6; /* Lighter text for value */
+    background: #374151; /* Dark background */
+    border-color: #4b5563; /* Dark border */
+  }
+
+  .slider-range {
+    color: #9ca3af; /* Medium gray for range labels */
+  }
+
+  /* Select/dropdown dark mode styles */
+  .select-trigger {
+    background: #374151; /* Dark background */
+    border-color: #4b5563; /* Dark border */
+    color: #f3f4f6; /* Light text */
+  }
+
+  .select-trigger:hover:not(:disabled) {
+    background: #404754; /* Slightly lighter on hover */
+    border-color: #6b7280; /* Lighter border on hover */
+  }
+
+  .select-trigger:focus {
+    border-color: #3b82f6; /* Blue focus border */
+  }
+
+  .select-dropdown {
+    background: #1f2937; /* Dark dropdown background */
+    border-color: #374151; /* Dark border */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); /* Darker shadow */
+  }
+
+  .select-option {
+    color: #f3f4f6; /* Light text */
+  }
+
+  .select-option:hover,
+  .select-option.focused {
+    background: #374151; /* Dark hover background */
+  }
+
+  .select-option.selected {
+    background: #3b82f6; /* Blue selected background */
+    color: white;
+  }
+
+  /* Input and form control dark mode styles */
+  .input,
+  .color-input-wrapper input[type="color"],
+  .text-input,
+  .url-input {
+    background: #374151; /* Dark background */
+    border-color: #4b5563; /* Dark border */
+    color: #f3f4f6; /* Light text */
+  }
+
+  .input:focus,
+  .text-input:focus,
+  .url-input:focus {
+    border-color: #3b82f6; /* Blue focus border */
+    background: #404754; /* Slightly lighter on focus */
+  }
+
+  .input::placeholder,
+  .text-input::placeholder,
+  .url-input::placeholder {
+    color: #6b7280; /* Darker placeholder text */
+  }
+
+}
