@@ -56,7 +56,7 @@ interface DragCallbacks {
 
 // Draggable Text Component (for manual positioning)
 const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
-  const { selectElement, selectedElement, setEditingElementId } = useThumbnailStore();
+  const { selectElement, selectedElement, setEditingElementId, editingElementId } = useThumbnailStore();
 
   const handleElementClick = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -74,6 +74,7 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
   const props = element.properties as TextElementProperties;
   const content = props.content || '';
   const isSelected = selectedElement?.id === element.id;
+  const isEditing = editingElementId === element.id;
 
   // Use custom font color, falling back to contrasting color for backgrounds
   const textColor = props.fontColor || (props.backgroundStyle !== 'none' ? getContrastingColor(props.backgroundColor) : '#ffffff');
@@ -137,8 +138,25 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
         data-element-name={element.name}
         onClick={handleElementClick}
         onDoubleClick={handleDoubleClick}
+        style={{ position: 'relative', display: 'inline-block' }}
       >
-        {content || `[${element.name}]`}
+        {content || (isEditing ? '\u00A0' : '')}
+        {isEditing && (
+          <span
+            className="text-cursor"
+            style={{
+              position: 'absolute',
+              right: content ? '-2px' : '0px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '2px',
+              height: '1.2em',
+              backgroundColor: textColor,
+              animation: 'blink 1s infinite',
+              pointerEvents: 'none'
+            }}
+          />
+        )}
       </div>
     </DraggableElement>
   );
