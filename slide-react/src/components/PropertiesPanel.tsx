@@ -303,7 +303,7 @@ const LogoIconProperties: React.FC<LogoIconPropertiesProps> = ({ properties, onC
             label="Size"
             value={properties.size}
             min={32}
-            max={512}
+            max={1024}
             step={8}
             unit="px"
             onChange={(value) => onChange('size', value)}
