@@ -36,6 +36,24 @@ export const IconLibraryModal: React.FC = () => {
   const [selectedIcon, setSelectedIcon] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+  // Handle ESC key to close modal
+  React.useEffect(() => {
+    if (!showIconLibrary) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setShowIconLibrary(false);
+        setSelectedIcon('');
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showIconLibrary, setShowIconLibrary]);
+
   if (!showIconLibrary) return null;
 
   const filteredIcons = selectedCategory

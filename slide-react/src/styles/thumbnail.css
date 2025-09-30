@@ -376,7 +376,7 @@ body, #root {
 .claude-theme .shape-1 {
   width: 160px;
   height: 160px;
-  background: rgba(255, 107, 53, 0.1);
+  background: rgba(255, 107, 53, 0.06);
   top: 120px;
   right: 80px;
   transform: rotate(45deg);
@@ -385,7 +385,7 @@ body, #root {
 .claude-theme .shape-2 {
   width: 240px;
   height: 40px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
   bottom: 160px;
   left: 20px;
   transform: rotate(-15deg);
@@ -394,7 +394,7 @@ body, #root {
 .claude-theme .shape-3 {
   width: 120px;
   height: 120px;
-  background: rgba(255, 107, 53, 0.08);
+  background: rgba(255, 107, 53, 0.06);
   bottom: 40px;
   right: 160px;
   border-radius: 50%;
@@ -419,7 +419,7 @@ body, #root {
 .tech-theme .shape-1 {
   width: 200px;
   height: 80px;
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(59, 130, 246, 0.06);
   top: 60px;
   left: -40px;
   transform: rotate(-12deg);
@@ -428,7 +428,7 @@ body, #root {
 .tech-theme .shape-2 {
   width: 160px;
   height: 160px;
-  background: rgba(59, 130, 246, 0.08);
+  background: rgba(59, 130, 246, 0.06);
   top: 200px;
   right: -60px;
   border-radius: 50%;
@@ -461,7 +461,7 @@ body, #root {
 .dark-theme .shape-1 {
   width: 180px;
   height: 70px;
-  background: rgba(34, 197, 94, 0.12);
+  background: rgba(34, 197, 94, 0.06);
   top: 80px;
   right: -30px;
   transform: rotate(15deg);
@@ -470,7 +470,7 @@ body, #root {
 .dark-theme .shape-2 {
   width: 140px;
   height: 140px;
-  background: rgba(34, 197, 94, 0.08);
+  background: rgba(34, 197, 94, 0.06);
   bottom: 120px;
   left: -40px;
   border-radius: 50%;
@@ -479,7 +479,7 @@ body, #root {
 .dark-theme .shape-3 {
   width: 100px;
   height: 100px;
-  background: rgba(34, 197, 94, 0.1);
+  background: rgba(34, 197, 94, 0.06);
   top: 180px;
   left: 100px;
   transform: rotate(45deg);
@@ -502,7 +502,7 @@ body, #root {
 .blueprint-theme .shape-1 {
   width: 220px;
   height: 60px;
-  background: rgba(59, 130, 246, 0.15);
+  background: rgba(59, 130, 246, 0.06);
   top: 50px;
   left: -50px;
   transform: skew(-15deg);
@@ -512,7 +512,7 @@ body, #root {
 .blueprint-theme .shape-2 {
   width: 150px;
   height: 150px;
-  background: rgba(59, 130, 246, 0.08);
+  background: rgba(59, 130, 246, 0.06);
   bottom: 80px;
   right: -40px;
   transform: skew(10deg);
@@ -522,7 +522,7 @@ body, #root {
 .blueprint-theme .shape-3 {
   width: 80px;
   height: 200px;
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(59, 130, 246, 0.06);
   top: 150px;
   left: 80px;
   transform: skew(-8deg);

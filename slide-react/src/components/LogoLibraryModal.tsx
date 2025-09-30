@@ -116,6 +116,23 @@ export const LogoLibraryModal: React.FC = () => {
     setShowLogoLibrary(false);
   };
 
+  // Handle ESC key to close modal
+  React.useEffect(() => {
+    if (!showLogoLibrary) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        handleCancel();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showLogoLibrary]);
+
   if (!showLogoLibrary) return null;
 
   return (

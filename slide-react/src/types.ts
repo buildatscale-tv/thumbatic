@@ -86,6 +86,7 @@ export interface ThumbnailState {
   activeTool: ToolType;
   showLogoLibrary: boolean;
   showGridGuides: boolean;
+  previewMode: boolean;
 
   // Actions
   setTheme: (theme: Theme) => void;
@@ -113,4 +114,5 @@ export interface ThumbnailState {
   setActiveTool: (tool: ToolType) => void;
   setShowLogoLibrary: (show: boolean) => void;
   setShowGridGuides: (show: boolean) => void;
+  setPreviewMode: (previewMode: boolean) => void;
 }

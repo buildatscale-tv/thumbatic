@@ -40,7 +40,13 @@ export const StatusBar: React.FC = () => {
       <div className="status-bar__center">
         <div className="status-bar__hints">
           <span className="status-bar__hint">
-            <kbd>L</kbd> Add Logo
+            <kbd>L</kbd> Logo
+          </span>
+          <span className="status-bar__hint">
+            <kbd>I</kbd> Icon
+          </span>
+          <span className="status-bar__hint">
+            <kbd>P</kbd> Preview
           </span>
           <span className="status-bar__hint">
             <kbd>G</kbd> Grid
@@ -52,6 +58,17 @@ export const StatusBar: React.FC = () => {
       </div>
 
       <div className="status-bar__right">
+        <button
+          className="status-bar__button"
+          onClick={() => useThumbnailStore.getState().setPreviewMode(true)}
+          title="Preview thumbnail at YouTube sizes"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span>Preview</span>
+        </button>
         <ExportButton compact />
       </div>
     </div>

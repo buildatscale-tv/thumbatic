@@ -56,7 +56,8 @@ interface DragCallbacks {
 
 // Draggable Text Component (for manual positioning)
 const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
-  const { selectElement, selectedElement, setEditingElementId, editingElementId, textSelection, cursorPosition } = useThumbnailStore();
+  const { selectElement, selectedElement, setEditingElementId, editingElementId, textSelection, cursorPosition, setTextSelection, setCursorPosition } = useThumbnailStore();
+  const textRef = React.useRef<HTMLDivElement>(null);
 
   const handleElementClick = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -66,16 +67,81 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
 
   const handleDoubleClick = (event: React.MouseEvent) => {
     event.stopPropagation();
-    // Select the element and enable inline editing
-    selectElement(element);
-    setEditingElementId(element.id);
-    // Initialize cursor at the end of the text
     const props = element.properties as TextElementProperties;
-    const contentLength = props.content?.length || 0;
-    useThumbnailStore.getState().setCursorPosition({
-      elementId: element.id,
-      position: contentLength
-    });
+    const content = props.content || '';
+
+    // If already editing, select word under cursor
+    if (editingElementId === element.id && textRef.current) {
+      // Calculate character position from click
+      const rect = textRef.current.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+
+      // Measure text to find clicked character
+      const measureEl = document.createElement('span');
+      measureEl.style.fontSize = `${props.fontSize}px`;
+      if (props.textType === 'subtitle') {
+        measureEl.style.fontFamily = 'Geist, sans-serif';
+        measureEl.style.fontWeight = '600';
+      } else {
+        measureEl.style.fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
+        measureEl.style.fontWeight = '800';
+      }
+      measureEl.style.visibility = 'hidden';
+      measureEl.style.position = 'absolute';
+      measureEl.style.whiteSpace = 'pre';
+
+      document.body.appendChild(measureEl);
+
+      // Find character at click position
+      let charIndex = 0;
+      for (let i = 0; i <= content.length; i++) {
+        measureEl.textContent = content.substring(0, i);
+        const width = measureEl.offsetWidth;
+        if (width >= clickX) {
+          charIndex = i;
+          break;
+        }
+        charIndex = i;
+      }
+
+      document.body.removeChild(measureEl);
+
+      // Find word boundaries
+      const findWordBoundary = (text: string, pos: number, direction: 'left' | 'right') => {
+        const wordRegex = /\w/;
+        if (direction === 'left') {
+          while (pos > 0 && !wordRegex.test(text[pos - 1])) pos--;
+          while (pos > 0 && wordRegex.test(text[pos - 1])) pos--;
+        } else {
+          while (pos < text.length && !wordRegex.test(text[pos])) pos++;
+          while (pos < text.length && wordRegex.test(text[pos])) pos++;
+        }
+        return pos;
+      };
+
+      const wordStart = findWordBoundary(content, charIndex, 'left');
+      const wordEnd = findWordBoundary(content, charIndex, 'right');
+
+      // Select the word
+      setTextSelection({
+        elementId: element.id,
+        start: wordStart,
+        end: wordEnd
+      });
+      setCursorPosition({
+        elementId: element.id,
+        position: wordEnd
+      });
+    } else {
+      // Not editing yet - enter edit mode
+      selectElement(element);
+      setEditingElementId(element.id);
+      const contentLength = content.length;
+      setCursorPosition({
+        elementId: element.id,
+        position: contentLength
+      });
+    }
   };
 
   const props = element.properties as TextElementProperties;
@@ -259,7 +325,7 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
             }}
           />
         )}
-        <span style={{ position: 'relative', whiteSpace: 'nowrap' }}>
+        <span ref={textRef} style={{ position: 'relative', whiteSpace: 'nowrap' }}>
           {hasSelection && textSelection ? (
             <>
               {/* Text before selection */}
