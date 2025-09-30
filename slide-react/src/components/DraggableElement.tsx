@@ -200,23 +200,34 @@ export function DraggableElement({
     // Calculate where user clicked relative to element
     const rect = elementRef.current.getBoundingClientRect();
     const clickX = e.clientX - rect.left; // Click position within element
+    const clickY = e.clientY - rect.top;  // Click position within element
 
-    // Determine anchor based on horizontal position only
-    const clickRatio = clickX / rect.width;
-
+    // Determine horizontal anchor based on position
+    const clickRatioX = clickX / rect.width;
     let anchorOffsetX = 0; // Default: center anchor
 
-    if (clickRatio < 0.25) {
+    if (clickRatioX < 0.25) {
       // Clicked in leftmost 25% - snap left edge
       anchorOffsetX = -rect.width / 2;
-    } else if (clickRatio > 0.75) {
+    } else if (clickRatioX > 0.75) {
       // Clicked in rightmost 25% - snap right edge
       anchorOffsetX = rect.width / 2;
     }
     // else: middle 50% keeps center anchor (anchorOffsetX = 0)
 
-    // Always use vertical center (anchorOffsetY = 0)
-    const anchor = { x: anchorOffsetX, y: 0 };
+    // Determine vertical anchor based on proximity to top/bottom edges
+    let anchorOffsetY = 0; // Default: vertical center
+
+    if (clickY <= 10) {
+      // Clicked within 10px of top - snap top edge
+      anchorOffsetY = -rect.height / 2;
+    } else if (clickY >= rect.height - 10) {
+      // Clicked within 10px of bottom - snap bottom edge
+      anchorOffsetY = rect.height / 2;
+    }
+    // else: outside 10px threshold keeps vertical center (anchorOffsetY = 0)
+
+    const anchor = { x: anchorOffsetX, y: anchorOffsetY };
     setDragAnchor(anchor);
 
     setIsDragging(true);
