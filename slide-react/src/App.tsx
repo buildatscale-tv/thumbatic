@@ -546,8 +546,6 @@ function App() {
               y: gridSnap.y - anchor.y
             };
           }
-
-          console.log('Grid snap:', { position, anchor, anchorPoint, gridSnap, gridSnapPoint, snapped: gridSnap.snapped });
         } else if (gridEnabled) {
           // Fallback: snap center if no anchor provided
           const gridSnap = snapToGrid(position);

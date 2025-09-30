@@ -8,8 +8,6 @@ interface GridOverlayProps {
 export const GridOverlay: React.FC<GridOverlayProps> = ({ isVisible, activeSnapPoint }) => {
   if (!isVisible) return null;
 
-  console.log('GridOverlay render:', { isVisible, activeSnapPoint });
-
   // 12 columns × 4 rows (interior lines only)
   const columns = 12;
   const rows = 4;
