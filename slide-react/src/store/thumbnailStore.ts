@@ -47,7 +47,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
       id: 'text-title',
       type: 'text',
       name: 'Title',
-      position: { x: 640, y: 180 },
+      position: { x: 640, y: 200 },
       zIndex: 5000,
       properties: {
         fontSize: 128,
@@ -85,7 +85,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
       id: 'text-accent-label',
       type: 'text',
       name: 'Accent Label',
-      position: { x: 640, y: 540 },
+      position: { x: 640, y: 520 },
       zIndex: 5200,
       properties: {
         fontSize: 60,

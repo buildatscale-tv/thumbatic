@@ -8,17 +8,15 @@ interface GridOverlayProps {
 export const GridOverlay: React.FC<GridOverlayProps> = ({ isVisible, activeSnapPoint }) => {
   if (!isVisible) return null;
 
-  // 12 columns × 4 rows (interior lines only)
+  // 12 columns × custom rows (interior lines only)
   const columns = 12;
-  const rows = 4;
 
   // Canvas dimensions
   const width = 1280;
   const height = 720;
 
-  // Calculate spacing
+  // Calculate column spacing
   const columnWidth = width / columns;
-  const rowHeight = height / rows;
 
   // Generate interior vertical lines only (11 lines for 12 columns)
   const verticalLines = Array.from({ length: columns - 1 }, (_, i) => {
@@ -26,11 +24,12 @@ export const GridOverlay: React.FC<GridOverlayProps> = ({ isVisible, activeSnapP
     return { x };
   });
 
-  // Generate interior horizontal lines only (3 lines for 4 rows)
-  const horizontalLines = Array.from({ length: rows - 1 }, (_, i) => {
-    const y = (i + 1) * rowHeight;
-    return { y };
-  });
+  // Custom horizontal lines to match original text positions
+  // Positioned at y: 200 (title) and y: 520 (accent label)
+  const horizontalLines = [
+    { y: 200 },
+    { y: 520 },
+  ];
 
   return (
     <div className="grid-overlay">
