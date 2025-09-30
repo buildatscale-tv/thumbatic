@@ -89,4 +89,5 @@ export const LOGO_LIBRARY: LogoLibraryItem[] = [
   { value: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/OpenAI_logo_2025_%28symbol%29.svg/1024px-OpenAI_logo_2025_%28symbol%29.svg.png", label: "OpenAI", category: "AI" },
   { value: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/OpenAI_logo_2025_%28symbol%29.svg/1024px-OpenAI_logo_2025_%28symbol%29.svg.png#inverted", label: "OpenAI (Inverted)", category: "AI", invert: true },
   { value: "/src/assets/logos/claude-ai-icon.svg", label: "Claude AI", category: "AI" },
+  { value: "/src/assets/logos/claude-code.svg", label: "Claude Code", category: "AI" },
 ];
