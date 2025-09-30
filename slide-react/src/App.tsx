@@ -33,7 +33,7 @@ function App() {
       snapThreshold: 100,
       showGuides: true,
       canvasCenter: {
-        enabled: true,
+        enabled: centerSnapMode, // Only enable canvas center in center snap mode
         vertical: true,
         horizontal: true,
       },
