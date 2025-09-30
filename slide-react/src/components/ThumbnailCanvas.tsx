@@ -26,7 +26,7 @@ interface ThumbnailCanvasProps {
 }
 
 export const ThumbnailCanvas: React.FC<ThumbnailCanvasProps> = ({ dragState, dragCallbacks, snapThreshold = 100 }) => {
-  const { theme, selectElement, setEditingElementId, showGridGuides } = useThumbnailStore();
+  const { theme, selectElement, setEditingElementId, showGridGuides, snappingEnabled } = useThumbnailStore();
 
   const themeClass = `${theme}-theme`;
 
@@ -59,7 +59,7 @@ export const ThumbnailCanvas: React.FC<ThumbnailCanvasProps> = ({ dragState, dra
       </div>
       <AlignmentGuides
         activeSnaps={dragState?.activeSnaps || []}
-        isVisible={dragState?.isDragging || false}
+        isVisible={(dragState?.isDragging && snappingEnabled) || false}
         dragPosition={dragState?.position}
         snapThreshold={snapThreshold}
       />
