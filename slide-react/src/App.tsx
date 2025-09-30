@@ -1,7 +1,9 @@
 import React from 'react';
 import { ThumbnailGenerator } from './components/ThumbnailGenerator';
+import PreviewMode from './components/PreviewMode';
 import { useThumbnailStore } from './store/thumbnailStore';
 import { useSnapping } from './hooks/useSnapping';
+import { snapToGrid } from './utils/gridSnapUtils';
 import type { ActiveSnap } from './types/snapping';
 import './styles/thumbnail.css';
 import './styles/editor-layout.css';
@@ -13,16 +15,18 @@ function App() {
   const updateElementPosition = useThumbnailStore(state => state.updateElementPosition);
   const updateElementZIndex = useThumbnailStore(state => state.updateElementZIndex);
   const removeElement = useThumbnailStore(state => state.removeElement);
+  const previewMode = useThumbnailStore(state => state.previewMode);
+  const showGridGuides = useThumbnailStore(state => state.showGridGuides);
 
   const textElements = React.useMemo(
     () => allElements.filter(el => el.type === 'text'),
     [allElements]
   );
 
-  // Initialize snapping system
+  // Initialize snapping system - disable regular snapping when grid is active
   const snapping = useSnapping({
     config: {
-      enabled: true,
+      enabled: !showGridGuides, // Disable regular snapping when grid is active
       proximityThreshold: 200, // Default for text edges
       snapThreshold: 100,
       showGuides: true,
@@ -52,7 +56,8 @@ function App() {
     activeId: string | null;
     position?: { x: number; y: number };
     activeSnaps: ActiveSnap[];
-  }>({ activeId: null, activeSnaps: [] });
+    gridSnapPoint?: { x: number; y: number } | null;
+  }>({ activeId: null, activeSnaps: [], gridSnapPoint: null });
 
 
   // Subscribe to editing state
@@ -184,11 +189,25 @@ function App() {
           if (!selection) {
             selection = { elementId: editingElementId, start: cursor, end: newPos };
           } else {
-            // Keep the anchor point, move the end
-            selection = { ...selection, end: newPos };
+            // Determine which end is the anchor based on cursor position
+            // If cursor is at the start of the normalized selection, the end is the anchor
+            // If cursor is at the end of the normalized selection, the start is the anchor
+            const isAnchorAtEnd = cursor === selection.start;
+            const isAnchorAtStart = cursor === selection.end;
+
+            if (isAnchorAtEnd) {
+              // Anchor is at end, move start
+              selection = { elementId: editingElementId, start: newPos, end: selection.end };
+            } else if (isAnchorAtStart) {
+              // Anchor is at start, move end
+              selection = { elementId: editingElementId, start: selection.start, end: newPos };
+            } else {
+              // Cursor is not at either end, start new selection
+              selection = { elementId: editingElementId, start: cursor, end: newPos };
+            }
           }
 
-          // Store the actual selection for proper rendering
+          // Store the actual selection for proper rendering (normalized)
           setTextSelection({
             elementId: editingElementId,
             start: Math.min(selection.start, selection.end),
@@ -339,9 +358,13 @@ function App() {
   React.useEffect(() => {
     const {
       setShowLogoLibrary,
+      setShowIconLibrary,
       setShowGridGuides,
       addTextElement,
       showGridGuides,
+      setPreviewMode,
+      previewMode,
+      selectElement,
     } = useThumbnailStore.getState();
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -349,6 +372,13 @@ function App() {
       if (event.target instanceof HTMLInputElement ||
           event.target instanceof HTMLTextAreaElement ||
           useThumbnailStore.getState().editingElementId) {
+        return;
+      }
+
+      // Handle ESC to deselect
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        selectElement(null);
         return;
       }
 
@@ -360,10 +390,24 @@ function App() {
             setShowLogoLibrary(true);
           }
           break;
+        case 'i':
+          if (!event.ctrlKey && !event.metaKey) {
+            event.preventDefault();
+            setShowIconLibrary(true);
+          }
+          break;
         case 'g':
           if (!event.ctrlKey && !event.metaKey) {
             event.preventDefault();
-            setShowGridGuides(!showGridGuides);
+            const currentShowGridGuides = useThumbnailStore.getState().showGridGuides;
+            setShowGridGuides(!currentShowGridGuides);
+          }
+          break;
+        case 'p':
+          if (!event.ctrlKey && !event.metaKey) {
+            event.preventDefault();
+            const currentPreviewMode = useThumbnailStore.getState().previewMode;
+            setPreviewMode(!currentPreviewMode);
           }
           break;
       }
@@ -460,7 +504,7 @@ function App() {
 
   // Drag callbacks to be passed to draggable elements
   const dragCallbacks = {
-    onDragStart: (elementId: string, position: { x: number; y: number }) => {
+    onDragStart: (elementId: string, position: { x: number; y: number }, anchor?: { x: number; y: number }) => {
       const currentElement = useThumbnailStore.getState().elements.find(el => el.id === elementId);
 
       if (currentElement) {
@@ -470,36 +514,89 @@ function App() {
         setDragState({
           activeId: elementId,
           position: position,
-          activeSnaps: []
+          activeSnaps: [],
+          gridSnapPoint: null
         });
       }
     },
 
-    onDragMove: (elementId: string, position: { x: number; y: number }) => {
+    onDragMove: (elementId: string, position: { x: number; y: number }, anchor?: { x: number; y: number }) => {
       const currentElement = useThumbnailStore.getState().elements.find(el => el.id === elementId);
+      const gridEnabled = useThumbnailStore.getState().showGridGuides;
 
       if (currentElement) {
-        // Update position in store immediately for visual feedback (manual drag)
-        useThumbnailStore.getState().updateElementPosition(elementId, position, true);
+        let finalPosition = position;
+        let gridSnapPoint: { x: number; y: number } | null = null;
 
-        // Update snapping system for all element types
-        if (snapping.isSnapping) {
-          snapping.updateDrag(position);
+        if (gridEnabled && anchor) {
+          // Calculate the anchor point in canvas space (element center + anchor offset)
+          const anchorPoint = {
+            x: position.x + anchor.x,
+            y: position.y + anchor.y
+          };
+
+          // Snap the anchor point to grid
+          const gridSnap = snapToGrid(anchorPoint);
+          gridSnapPoint = { x: gridSnap.x, y: gridSnap.y };
+
+          if (gridSnap.snapped) {
+            // Calculate new element center by subtracting anchor offset from snapped point
+            finalPosition = {
+              x: gridSnap.x - anchor.x,
+              y: gridSnap.y - anchor.y
+            };
+          }
+
+          console.log('Grid snap:', { position, anchor, anchorPoint, gridSnap, gridSnapPoint, snapped: gridSnap.snapped });
+        } else if (gridEnabled) {
+          // Fallback: snap center if no anchor provided
+          const gridSnap = snapToGrid(position);
+          gridSnapPoint = { x: gridSnap.x, y: gridSnap.y };
+
+          if (gridSnap.snapped) {
+            finalPosition = { x: gridSnap.x, y: gridSnap.y };
+          }
+        } else {
+          // Update snapping system for regular snapping
+          if (snapping.isSnapping) {
+            snapping.updateDrag(position);
+          }
         }
+
+        // Update position in store immediately for visual feedback (manual drag)
+        useThumbnailStore.getState().updateElementPosition(elementId, finalPosition, true);
 
         setDragState(prev => ({
           ...prev,
-          position: position,
-          activeSnaps: snapping.activeSnapTargets
+          position: finalPosition,
+          activeSnaps: gridEnabled ? [] : snapping.activeSnapTargets,
+          gridSnapPoint: gridSnapPoint
         }));
       }
     },
 
-    onDragEnd: (elementId: string, finalPosition: { x: number; y: number }) => {
+    onDragEnd: (elementId: string, finalPosition: { x: number; y: number }, anchor?: { x: number; y: number }) => {
       const currentElement = useThumbnailStore.getState().elements.find(el => el.id === elementId);
+      const gridEnabled = useThumbnailStore.getState().showGridGuides;
 
-      if (currentElement && snapping.isSnapping) {
-        // Try to get snapped position from snapping system for all element types
+      if (gridEnabled && anchor) {
+        // Use grid snapping with anchor when grid is enabled
+        const anchorPoint = {
+          x: finalPosition.x + anchor.x,
+          y: finalPosition.y + anchor.y
+        };
+        const gridSnap = snapToGrid(anchorPoint);
+        const snappedPosition = {
+          x: gridSnap.x - anchor.x,
+          y: gridSnap.y - anchor.y
+        };
+        useThumbnailStore.getState().updateElementPosition(elementId, snappedPosition, true);
+      } else if (gridEnabled) {
+        // Fallback: snap center if no anchor provided
+        const gridSnap = snapToGrid(finalPosition);
+        useThumbnailStore.getState().updateElementPosition(elementId, { x: gridSnap.x, y: gridSnap.y }, true);
+      } else if (currentElement && snapping.isSnapping) {
+        // Use regular snapping system when grid is disabled
         const snappedPosition = snapping.finalizeDrag();
 
         if (snappedPosition) {
@@ -516,7 +613,7 @@ function App() {
 
       // Clean up snapping session and reset drag state
       snapping.stopSnapping();
-      setDragState({ activeId: null, activeSnaps: [] });
+      setDragState({ activeId: null, activeSnaps: [], gridSnapPoint: null });
     }
   };
 
@@ -526,11 +623,13 @@ function App() {
         dragState={{
           isDragging: !!dragState.activeId,
           position: dragState.position,
-          activeSnaps: dragState.activeSnaps
+          activeSnaps: dragState.activeSnaps,
+          gridSnapPoint: dragState.gridSnapPoint
         }}
         dragCallbacks={dragCallbacks}
         snapThreshold={snapping.config.snapThreshold}
       />
+      {previewMode && <PreviewMode />}
     </div>
   );
 }

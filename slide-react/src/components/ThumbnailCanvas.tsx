@@ -5,6 +5,7 @@ import { LogoElements } from './thumbnail/LogoElements';
 import { IconElements } from './thumbnail/IconElements';
 import { AccentShapes } from './thumbnail/AccentShapes';
 import { AlignmentGuides } from './thumbnail/AlignmentGuides';
+import { GridOverlay } from './GridOverlay';
 import type { ActiveSnap } from '../types/snapping';
 
 interface DragCallbacks {
@@ -18,13 +19,14 @@ interface ThumbnailCanvasProps {
     isDragging: boolean;
     position?: { x: number; y: number };
     activeSnaps: ActiveSnap[];
+    gridSnapPoint?: { x: number; y: number } | null;
   };
   dragCallbacks: DragCallbacks;
   snapThreshold?: number;
 }
 
 export const ThumbnailCanvas: React.FC<ThumbnailCanvasProps> = ({ dragState, dragCallbacks, snapThreshold = 100 }) => {
-  const { theme, selectElement, setEditingElementId } = useThumbnailStore();
+  const { theme, selectElement, setEditingElementId, showGridGuides } = useThumbnailStore();
 
   const themeClass = `${theme}-theme`;
 
@@ -49,18 +51,22 @@ export const ThumbnailCanvas: React.FC<ThumbnailCanvasProps> = ({ dragState, dra
         overflow: 'visible'
       }}
     >
-      <AlignmentGuides 
-        activeSnaps={dragState?.activeSnaps || []}
-        isVisible={dragState?.isDragging || false}
-        dragPosition={dragState?.position}
-        snapThreshold={snapThreshold}
-      />
       <div className="thumbnail-content" onClick={handleThumbnailClick}>
         <LogoElements dragCallbacks={dragCallbacks} />
         <TextElements dragCallbacks={dragCallbacks} />
         <AccentShapes />
         <IconElements dragCallbacks={dragCallbacks} />
       </div>
+      <AlignmentGuides
+        activeSnaps={dragState?.activeSnaps || []}
+        isVisible={dragState?.isDragging || false}
+        dragPosition={dragState?.position}
+        snapThreshold={snapThreshold}
+      />
+      <GridOverlay
+        isVisible={showGridGuides}
+        activeSnapPoint={showGridGuides && dragState?.isDragging ? dragState?.gridSnapPoint : null}
+      />
     </div>
   );
 };

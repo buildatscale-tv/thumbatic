@@ -1,5 +1,4 @@
 import React from 'react';
-import { useThumbnailStore } from '../store/thumbnailStore';
 import { Toolbar } from './Toolbar';
 import { PropertiesPanel } from './PropertiesPanel';
 import { StatusBar } from './StatusBar';
@@ -19,19 +18,18 @@ interface ThumbnailGeneratorProps {
     isDragging: boolean;
     position?: { x: number; y: number };
     activeSnaps: ActiveSnap[];
+    gridSnapPoint?: { x: number; y: number } | null;
   };
   dragCallbacks: DragCallbacks;
   snapThreshold?: number;
 }
 
 export const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({ dragState, dragCallbacks, snapThreshold }) => {
-  const { showGridGuides } = useThumbnailStore();
-
   return (
     <div className="editor-layout">
       <Toolbar />
       <div className="editor-main">
-        <div className={`canvas-container ${showGridGuides ? 'canvas-container--with-guides' : ''}`}>
+        <div className="canvas-container">
           <ThumbnailCanvas dragState={dragState} dragCallbacks={dragCallbacks} snapThreshold={snapThreshold} />
         </div>
         <PropertiesPanel />
