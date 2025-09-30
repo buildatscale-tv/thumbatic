@@ -102,7 +102,7 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
       measureEl.style.fontWeight = '600';
     } else {
       measureEl.style.fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
-      measureEl.style.fontWeight = '900';
+      measureEl.style.fontWeight = '800';
     }
 
     measureEl.style.visibility = 'hidden';
@@ -205,7 +205,7 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
                   measureEl.style.fontWeight = '600';
                 } else {
                   measureEl.style.fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
-                  measureEl.style.fontWeight = '900';
+                  measureEl.style.fontWeight = '800';
                 }
 
                 measureEl.style.visibility = 'hidden';
@@ -236,7 +236,7 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
                   measureEl.style.fontWeight = '600';
                 } else {
                   measureEl.style.fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
-                  measureEl.style.fontWeight = '900';
+                  measureEl.style.fontWeight = '800';
                 }
 
                 measureEl.style.visibility = 'hidden';

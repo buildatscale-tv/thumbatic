@@ -5,6 +5,13 @@
   box-sizing: border-box;
 }
 
+/* High-quality rendering for all elements */
+body, #root {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 /* Cursor blink animation */
 @keyframes blink {
   0%, 50% { opacity: 1; }
@@ -132,6 +139,9 @@
 .selectable-element.subtitle {
   font-family: 'Geist', sans-serif;
   font-weight: 600;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* Claude Theme - Subtitle */
@@ -172,12 +182,18 @@
   letter-spacing: 1px;
   font-weight: 800;
   font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .accent-label,
 .selectable-element.accent-label {
   font-weight: 800;
   font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* Corner Style Classes - Higher specificity to override theme and global styles */

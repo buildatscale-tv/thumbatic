@@ -305,7 +305,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
         measureEl.style.visibility = 'hidden';
         measureEl.style.fontSize = `${textProps.fontSize}px`;
         measureEl.style.fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
-        measureEl.style.fontWeight = '900';
+        measureEl.style.fontWeight = '800';
         measureEl.style.whiteSpace = 'nowrap';
         measureEl.textContent = properties.content as string || '';
 
