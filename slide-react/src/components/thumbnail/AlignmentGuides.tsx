@@ -43,7 +43,7 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
-        zIndex: 1000, // Above everything else during drag
+        zIndex: 15000, // Above all elements including dragged elements (10000)
       }}
       viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
       preserveAspectRatio="none"
@@ -230,12 +230,12 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               />
             </line>
 
-            {/* Central highlight section */}
+            {/* Central highlight section - extends to 10% from edges for independent axis snapping */}
             <line
               x1={x}
-              y1={CANVAS_HEIGHT * 0.3}
+              y1={CANVAS_HEIGHT * 0.1}
               x2={x}
-              y2={CANVAS_HEIGHT * 0.7}
+              y2={CANVAS_HEIGHT * 0.9}
               stroke={solidColor}
               strokeWidth="2"
               opacity="1"
@@ -425,11 +425,11 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               />
             </line>
 
-            {/* Central highlight section */}
+            {/* Central highlight section - extends to 10% from edges for independent axis snapping */}
             <line
-              x1={CANVAS_WIDTH * 0.3}
+              x1={CANVAS_WIDTH * 0.1}
               y1={y}
-              x2={CANVAS_WIDTH * 0.7}
+              x2={CANVAS_WIDTH * 0.9}
               y2={y}
               stroke={solidColor}
               strokeWidth="2"
