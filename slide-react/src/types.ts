@@ -85,7 +85,10 @@ export interface ThumbnailState {
   // New UI states
   activeTool: ToolType;
   showLogoLibrary: boolean;
+  showIconLibrary: boolean;
   showGridGuides: boolean;
+  snappingEnabled: boolean;
+  centerSnapMode: boolean;
   previewMode: boolean;
 
   // Actions
@@ -114,5 +117,7 @@ export interface ThumbnailState {
   setActiveTool: (tool: ToolType) => void;
   setShowLogoLibrary: (show: boolean) => void;
   setShowGridGuides: (show: boolean) => void;
+  setSnappingEnabled: (enabled: boolean) => void;
+  setCenterSnapMode: (enabled: boolean) => void;
   setPreviewMode: (previewMode: boolean) => void;
 }

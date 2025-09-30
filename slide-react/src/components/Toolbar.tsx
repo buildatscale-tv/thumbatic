@@ -6,9 +6,13 @@ export const Toolbar: React.FC = () => {
   const {
     theme,
     showGridGuides,
+    snappingEnabled,
+    centerSnapMode,
     setTheme,
     setShowLogoLibrary,
     setShowGridGuides,
+    setSnappingEnabled,
+    setCenterSnapMode,
     addTextElement,
   } = useThumbnailStore();
 
@@ -133,6 +137,33 @@ export const Toolbar: React.FC = () => {
         </div>
 
         <div className="toolbar__divider" />
+
+        <button
+          className={`toolbar__icon-button ${snappingEnabled ? 'toolbar__icon-button--active' : ''}`}
+          onClick={() => setSnappingEnabled(!snappingEnabled)}
+          title="Toggle Snapping (S)"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2L12 22M2 12L22 12"/>
+            <circle cx="12" cy="12" r="2" fill="currentColor"/>
+          </svg>
+        </button>
+
+        <button
+          className={`toolbar__icon-button ${centerSnapMode ? 'toolbar__icon-button--active' : ''}`}
+          onClick={() => {
+            if (!centerSnapMode && showGridGuides) {
+              setShowGridGuides(false);
+            }
+            setCenterSnapMode(!centerSnapMode);
+          }}
+          title="Toggle Center Snap Mode (C)"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="8"/>
+            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+          </svg>
+        </button>
 
         <button
           className={`toolbar__icon-button ${showGridGuides ? 'toolbar__icon-button--active' : ''}`}

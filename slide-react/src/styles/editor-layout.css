@@ -658,7 +658,12 @@
 
 .status-bar__hints {
   display: flex;
-  gap: 16px;
+  gap: 32px;
+}
+
+.status-bar__hint-group {
+  display: flex;
+  gap: 8px;
 }
 
 .status-bar__hint {

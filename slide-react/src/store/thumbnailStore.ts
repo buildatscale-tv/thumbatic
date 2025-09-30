@@ -137,6 +137,8 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     showLogoLibrary: false,
     showIconLibrary: false,
     showGridGuides: false,
+    snappingEnabled: true,
+    centerSnapMode: false, // False = neighbor snapping (default), True = center snapping
     previewMode: false,
 
   // Actions
@@ -533,7 +535,11 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
   setShowLogoLibrary: (show) => set({ showLogoLibrary: show }),
   setShowIconLibrary: (show) => set({ showIconLibrary: show }),
 
-  setShowGridGuides: (show) => set({ showGridGuides: show }),
+  setShowGridGuides: (show) => set({ showGridGuides: show, centerSnapMode: show ? false : get().centerSnapMode }),
+
+  setSnappingEnabled: (enabled) => set({ snappingEnabled: enabled, centerSnapMode: enabled ? get().centerSnapMode : false }),
+
+  setCenterSnapMode: (enabled) => set({ centerSnapMode: enabled }),
 
   setPreviewMode: (previewMode) => set({ previewMode }),
   };

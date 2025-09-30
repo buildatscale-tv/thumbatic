@@ -13,6 +13,7 @@ export interface UseSnappingOptions {
   config?: Partial<SnapConfiguration>;
   elementId?: string; // ID of the element being dragged
   textElements?: ThumbnailElement[]; // Text elements to generate alignment guides from
+  centerSnapMode?: boolean; // Explicit mode toggle: false = neighbor (default), true = center
 }
 
 export interface UseSnappingReturn {
@@ -45,9 +46,10 @@ export const useSnapping = (options: UseSnappingOptions = {}): UseSnappingReturn
   const [draggingElementId, setDraggingElementId] = useState<string | undefined>();
 
   // Get all available snap targets (memoized to avoid recalculation)
-  const snapTargets = useMemo(() => 
-    getAllSnapTargets(config, options.textElements || [], draggingElementId), 
-    [config, options.textElements, draggingElementId]
+  // Recalculate when centerSnapMode changes to switch between center/neighbor modes
+  const snapTargets = useMemo(() =>
+    getAllSnapTargets(config, options.textElements || [], draggingElementId, options.centerSnapMode ?? false),
+    [config, options.textElements, draggingElementId, options.centerSnapMode]
   );
 
   /**
@@ -61,9 +63,9 @@ export const useSnapping = (options: UseSnappingOptions = {}): UseSnappingReturn
 
     // Get the DOM element to calculate dimensions
     const domElement = document.querySelector(`[data-element-id="${elementId}"]`) as HTMLElement;
-    
+
     let elementDimensions: ElementDimensions;
-    
+
     if (domElement) {
       elementDimensions = calculateElementDimensions(domElement, initialPosition);
     } else {

@@ -7,7 +7,22 @@ export const CANVAS_HEIGHT = 720;
 export const CANVAS_CENTER_X = CANVAS_WIDTH / 2;  // 640
 export const CANVAS_CENTER_Y = CANVAS_HEIGHT / 2; // 360
 
+// Zone detection constants
+export const CENTER_ZONE_THRESHOLD = 120; // Distance from center lines to show canvas center guides
+
 // No scaling functions needed - we use direct 1280x720 pixel coordinates
+
+/**
+ * Determine if a position is near center lines (checks each axis independently)
+ */
+export const isInCenterZone = (position: { x: number; y: number }): boolean => {
+  const distanceFromVerticalCenter = Math.abs(position.x - CANVAS_CENTER_X);
+  const distanceFromHorizontalCenter = Math.abs(position.y - CANVAS_CENTER_Y);
+
+  // Near center if within threshold of EITHER axis (not both required)
+  return distanceFromVerticalCenter <= CENTER_ZONE_THRESHOLD ||
+         distanceFromHorizontalCenter <= CENTER_ZONE_THRESHOLD;
+};
 
 // Default configuration
 export const DEFAULT_SNAP_CONFIG: SnapConfiguration = {
@@ -469,22 +484,26 @@ export const calculateSnapPosition = (
 export const getAllSnapTargets = (
   config: SnapConfiguration = DEFAULT_SNAP_CONFIG,
   textElements: ThumbnailElement[] = [],
-  excludeElementId?: string
+  excludeElementId?: string,
+  centerSnapMode: boolean = false // Explicit mode toggle: false = neighbor, true = center
 ): SnapTarget[] => {
   const targets: SnapTarget[] = [];
 
-  // Canvas center targets
-  const centerConfig = {
-    ...config,
-    proximityThreshold: 100 // Increase center snap proximity to 100px
-  };
-  targets.push(...createCanvasCenterTargets(centerConfig));
+  if (centerSnapMode) {
+    // CENTER SNAP MODE: Only show canvas center guides
+    const centerConfig = {
+      ...config,
+      proximityThreshold: 150 // Wider snap range for strong magnetic feel
+    };
+    targets.push(...createCanvasCenterTargets(centerConfig));
+  } else {
+    // NEIGHBOR SNAP MODE (default): Only show text element guides
+    // Add text element edge targets (excluding the dragged element)
+    targets.push(...createTextElementSnapTargets(textElements, config, excludeElementId));
 
-  // Add text element edge targets (excluding the dragged element)
-  targets.push(...createTextElementSnapTargets(textElements, config, excludeElementId));
-
-  // Add text element center targets (excluding the dragged element)
-  targets.push(...createTextElementCenterTargets(textElements, config, excludeElementId));
+    // Add text element center targets (excluding the dragged element)
+    targets.push(...createTextElementCenterTargets(textElements, config, excludeElementId));
+  }
 
   return targets;
 };

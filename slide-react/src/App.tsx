@@ -17,16 +17,18 @@ function App() {
   const removeElement = useThumbnailStore(state => state.removeElement);
   const previewMode = useThumbnailStore(state => state.previewMode);
   const showGridGuides = useThumbnailStore(state => state.showGridGuides);
+  const snappingEnabled = useThumbnailStore(state => state.snappingEnabled);
+  const centerSnapMode = useThumbnailStore(state => state.centerSnapMode);
 
   const textElements = React.useMemo(
     () => allElements.filter(el => el.type === 'text'),
     [allElements]
   );
 
-  // Initialize snapping system - disable regular snapping when grid is active
+  // Initialize snapping system - disable when snapping is off or grid is active
   const snapping = useSnapping({
     config: {
-      enabled: !showGridGuides, // Disable regular snapping when grid is active
+      enabled: snappingEnabled && !showGridGuides, // Disable when snapping off or grid active
       proximityThreshold: 200, // Default for text edges
       snapThreshold: 100,
       showGuides: true,
@@ -49,6 +51,7 @@ function App() {
       },
     },
     textElements,
+    centerSnapMode,
   });
 
   // State for active dragging element and position
@@ -69,7 +72,7 @@ function App() {
 
     const handleKeyDown = (event: KeyboardEvent) => {
       const store = useThumbnailStore.getState();
-      const { elements, updateElementProperties, setEditingElementId, setCursorPosition, setTextSelection } = store;
+      const { elements, updateElementProperties, setEditingElementId, setCursorPosition, setTextSelection, selectElement } = store;
 
       const element = elements.find(el => el.id === editingElementId);
       if (!element || element.type !== 'text') return;
@@ -338,12 +341,13 @@ function App() {
         });
         setCursorPosition({ elementId: editingElementId, position: content.length });
       }
-      // Handle Enter/Escape - exit editing
+      // Handle Enter/Escape - exit editing and deselect
       else if (event.key === 'Enter' || event.key === 'Escape') {
         event.preventDefault();
         setEditingElementId(null);
         setCursorPosition(null);
         setTextSelection(null);
+        selectElement(null);
       }
     };
 
@@ -403,11 +407,42 @@ function App() {
             setShowGridGuides(!currentShowGridGuides);
           }
           break;
+        case 's':
+          if (!event.ctrlKey && !event.metaKey) {
+            event.preventDefault();
+            const currentSnappingEnabled = useThumbnailStore.getState().snappingEnabled;
+            const { setSnappingEnabled } = useThumbnailStore.getState();
+            setSnappingEnabled(!currentSnappingEnabled);
+          }
+          break;
+        case 'c':
+          if (!event.ctrlKey && !event.metaKey) {
+            event.preventDefault();
+            const { centerSnapMode, showGridGuides, setCenterSnapMode, setShowGridGuides } = useThumbnailStore.getState();
+
+            // If trying to enable center snap while grid is active, disable grid first
+            if (!centerSnapMode && showGridGuides) {
+              setShowGridGuides(false);
+            }
+
+            setCenterSnapMode(!centerSnapMode);
+          }
+          break;
         case 'p':
           if (!event.ctrlKey && !event.metaKey) {
             event.preventDefault();
             const currentPreviewMode = useThumbnailStore.getState().previewMode;
             setPreviewMode(!currentPreviewMode);
+          }
+          break;
+        case 'd':
+          if (!event.ctrlKey && !event.metaKey) {
+            event.preventDefault();
+            // Trigger download by clicking the export button
+            const exportButton = document.querySelector('.download-button--compact') as HTMLButtonElement;
+            if (exportButton) {
+              exportButton.click();
+            }
           }
           break;
       }
@@ -523,12 +558,13 @@ function App() {
     onDragMove: (elementId: string, position: { x: number; y: number }, anchor?: { x: number; y: number }) => {
       const currentElement = useThumbnailStore.getState().elements.find(el => el.id === elementId);
       const gridEnabled = useThumbnailStore.getState().showGridGuides;
+      const snappingEnabled = useThumbnailStore.getState().snappingEnabled;
 
       if (currentElement) {
         let finalPosition = position;
         let gridSnapPoint: { x: number; y: number } | null = null;
 
-        if (gridEnabled && anchor) {
+        if (snappingEnabled && gridEnabled && anchor) {
           // Calculate the anchor point in canvas space (element center + anchor offset)
           const anchorPoint = {
             x: position.x + anchor.x,
@@ -546,7 +582,7 @@ function App() {
               y: gridSnap.y - anchor.y
             };
           }
-        } else if (gridEnabled) {
+        } else if (snappingEnabled && gridEnabled) {
           // Fallback: snap center if no anchor provided
           const gridSnap = snapToGrid(position);
           gridSnapPoint = { x: gridSnap.x, y: gridSnap.y };
@@ -554,7 +590,7 @@ function App() {
           if (gridSnap.snapped) {
             finalPosition = { x: gridSnap.x, y: gridSnap.y };
           }
-        } else {
+        } else if (snappingEnabled) {
           // Update snapping system for regular snapping
           if (snapping.isSnapping) {
             snapping.updateDrag(position);
@@ -576,8 +612,9 @@ function App() {
     onDragEnd: (elementId: string, finalPosition: { x: number; y: number }, anchor?: { x: number; y: number }) => {
       const currentElement = useThumbnailStore.getState().elements.find(el => el.id === elementId);
       const gridEnabled = useThumbnailStore.getState().showGridGuides;
+      const snappingEnabled = useThumbnailStore.getState().snappingEnabled;
 
-      if (gridEnabled && anchor) {
+      if (snappingEnabled && gridEnabled && anchor) {
         // Use grid snapping with anchor when grid is enabled
         const anchorPoint = {
           x: finalPosition.x + anchor.x,
@@ -589,11 +626,11 @@ function App() {
           y: gridSnap.y - anchor.y
         };
         useThumbnailStore.getState().updateElementPosition(elementId, snappedPosition, true);
-      } else if (gridEnabled) {
+      } else if (snappingEnabled && gridEnabled) {
         // Fallback: snap center if no anchor provided
         const gridSnap = snapToGrid(finalPosition);
         useThumbnailStore.getState().updateElementPosition(elementId, { x: gridSnap.x, y: gridSnap.y }, true);
-      } else if (currentElement && snapping.isSnapping) {
+      } else if (snappingEnabled && currentElement && snapping.isSnapping) {
         // Use regular snapping system when grid is disabled
         const snappedPosition = snapping.finalizeDrag();
 

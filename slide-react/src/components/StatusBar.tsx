@@ -6,6 +6,9 @@ export const StatusBar: React.FC = () => {
   const {
     elements,
     selectedElement,
+    snappingEnabled,
+    centerSnapMode,
+    showGridGuides,
   } = useThumbnailStore();
 
   const textElements = elements.filter(el => el.type === 'text').length;
@@ -35,25 +38,49 @@ export const StatusBar: React.FC = () => {
             </div>
           </>
         )}
+        <div className="status-bar__divider" />
+        <div className="status-bar__info">
+          <span className="status-bar__label">Snap:</span>
+          <span className="status-bar__value">
+            {!snappingEnabled ? 'Disabled' : showGridGuides ? 'Grid' : centerSnapMode ? 'Center' : 'Neighbor'}
+          </span>
+        </div>
       </div>
 
       <div className="status-bar__center">
         <div className="status-bar__hints">
-          <span className="status-bar__hint">
-            <kbd>L</kbd> Logo
-          </span>
-          <span className="status-bar__hint">
-            <kbd>I</kbd> Icon
-          </span>
-          <span className="status-bar__hint">
-            <kbd>P</kbd> Preview
-          </span>
-          <span className="status-bar__hint">
-            <kbd>G</kbd> Grid
-          </span>
-          <span className="status-bar__hint">
-            <kbd>Del</kbd> Remove
-          </span>
+          <div className="status-bar__hint-group">
+            <span className="status-bar__hint">
+              <kbd>L</kbd> Logo
+            </span>
+            <span className="status-bar__hint">
+              <kbd>I</kbd> Icon
+            </span>
+          </div>
+          <div className="status-bar__hint-group">
+            <span className="status-bar__hint">
+              <kbd>S</kbd> Snap
+            </span>
+            <span className="status-bar__hint">
+              <kbd>C</kbd> Center
+            </span>
+            <span className="status-bar__hint">
+              <kbd>G</kbd> Grid
+            </span>
+          </div>
+          <div className="status-bar__hint-group">
+            <span className="status-bar__hint">
+              <kbd>Del</kbd> Remove
+            </span>
+          </div>
+          <div className="status-bar__hint-group">
+            <span className="status-bar__hint">
+              <kbd>P</kbd> Preview
+            </span>
+            <span className="status-bar__hint">
+              <kbd>D</kbd> Download
+            </span>
+          </div>
         </div>
       </div>
 
