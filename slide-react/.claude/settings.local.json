@@ -16,7 +16,8 @@
       "Bash(npx eslint:*)",
       "Bash(git mv:*)",
       "Bash(awk:*)",
-      "SlashCommand(/commit)"
+      "SlashCommand(/commit)",
+      "Read(//Users/ronnie/Development/lab/claude-fun/slide/**)"
     ],
     "deny": []
   }
