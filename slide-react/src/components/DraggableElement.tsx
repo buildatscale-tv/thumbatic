@@ -2,9 +2,9 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useThumbnailStore } from '../store/thumbnailStore';
 
 interface DragCallbacks {
-  onDragStart: (elementId: string, position: { x: number; y: number }) => void;
-  onDragMove: (elementId: string, position: { x: number; y: number }) => void;
-  onDragEnd: (elementId: string, position: { x: number; y: number }) => void;
+  onDragStart: (elementId: string, position: { x: number; y: number }, anchor?: { x: number; y: number }) => void;
+  onDragMove: (elementId: string, position: { x: number; y: number }, anchor?: { x: number; y: number }) => void;
+  onDragEnd: (elementId: string, position: { x: number; y: number }, anchor?: { x: number; y: number }) => void;
 }
 
 interface DraggableElementProps {
@@ -22,17 +22,20 @@ interface DraggableElementProps {
 
 // Helper function to convert center coordinates to top-left coordinates
 const centerToTopLeft = (centerPos: { x: number; y: number }, element: HTMLElement): { x: number; y: number } => {
-  const rect = element.getBoundingClientRect();
+  // Use offsetWidth/offsetHeight instead of getBoundingClientRect()
+  // because offset values use layout dimensions, not visual (scaled) dimensions
+  const width = element.offsetWidth;
+  const height = element.offsetHeight;
 
   // Guard against invalid element dimensions
-  if (rect.width === 0 || rect.height === 0) {
+  if (width === 0 || height === 0) {
     // Return a fallback position if element not properly rendered
     return { x: centerPos.x - 50, y: centerPos.y - 25 }; // Assume 100x50 as fallback
   }
 
   return {
-    x: centerPos.x - rect.width / 2,
-    y: centerPos.y - rect.height / 2,
+    x: centerPos.x - width / 2,
+    y: centerPos.y - height / 2,
   };
 };
 
@@ -54,6 +57,7 @@ export function DraggableElement({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [initialCenterPosition, setInitialCenterPosition] = useState({ x: 0, y: 0 });
   const [topLeftPosition, setTopLeftPosition] = useState({ x: 0, y: 0 });
+  const [dragAnchor, setDragAnchor] = useState({ x: 0, y: 0 }); // Anchor point in element-local coordinates
   const currentPositionRef = useRef(position);
   const elementRef = useRef<HTMLDivElement>(null);
   const previousAlignment = useRef(alignment);
@@ -62,10 +66,12 @@ export function DraggableElement({
   const calculateAlignedPosition = React.useCallback(() => {
     if (!elementRef.current || !alignment) return position;
 
-    const rect = elementRef.current.getBoundingClientRect();
+    // Use offsetWidth/offsetHeight for layout dimensions (not affected by scale)
+    const width = elementRef.current.offsetWidth;
+    const height = elementRef.current.offsetHeight;
 
-    // Guard against invalid rect dimensions that could corrupt position
-    if (rect.width === 0 || rect.height === 0) {
+    // Guard against invalid dimensions that could corrupt position
+    if (width === 0 || height === 0) {
       return position; // Return current position if element not properly rendered
     }
 
@@ -84,11 +90,11 @@ export function DraggableElement({
       switch (alignment.horizontal) {
         case 'left':
           // Account for drop shadow extending to the left
-          newPosition.x = rect.width / 2 + dropShadowOffset.x;
+          newPosition.x = width / 2 + dropShadowOffset.x;
           break;
         case 'right':
           // Right edge should be at canvas width (no drop shadow on right)
-          newPosition.x = canvasWidth - rect.width / 2;
+          newPosition.x = canvasWidth - width / 2;
           break;
         case 'center':
           newPosition.x = canvasWidth / 2;
@@ -100,11 +106,11 @@ export function DraggableElement({
       switch (alignment.vertical) {
         case 'top':
           // Top edge should be at 0 (no drop shadow on top)
-          newPosition.y = rect.height / 2;
+          newPosition.y = height / 2;
           break;
         case 'bottom':
           // Account for drop shadow extending below
-          newPosition.y = canvasHeight - rect.height / 2 - dropShadowOffset.y;
+          newPosition.y = canvasHeight - height / 2 - dropShadowOffset.y;
           break;
         case 'middle':
           newPosition.y = canvasHeight / 2;
@@ -189,6 +195,30 @@ export function DraggableElement({
       return;
     }
 
+    if (!elementRef.current) return;
+
+    // Calculate where user clicked relative to element
+    const rect = elementRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left; // Click position within element
+
+    // Determine anchor based on horizontal position only
+    const clickRatio = clickX / rect.width;
+
+    let anchorOffsetX = 0; // Default: center anchor
+
+    if (clickRatio < 0.25) {
+      // Clicked in leftmost 25% - snap left edge
+      anchorOffsetX = -rect.width / 2;
+    } else if (clickRatio > 0.75) {
+      // Clicked in rightmost 25% - snap right edge
+      anchorOffsetX = rect.width / 2;
+    }
+    // else: middle 50% keeps center anchor (anchorOffsetX = 0)
+
+    // Always use vertical center (anchorOffsetY = 0)
+    const anchor = { x: anchorOffsetX, y: 0 };
+    setDragAnchor(anchor);
+
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
     setInitialCenterPosition(position); // position is stored as center coordinates
@@ -199,8 +229,8 @@ export function DraggableElement({
     // Prevent text selection while dragging
     e.preventDefault();
 
-    // Call the drag start callback with center coordinates
-    dragCallbacks.onDragStart(id, position);
+    // Call the drag start callback with center coordinates and anchor offset
+    dragCallbacks.onDragStart(id, position, anchor);
   };
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
@@ -210,14 +240,14 @@ export function DraggableElement({
     const deltaY = e.clientY - dragStart.y;
 
     // Get current element dimensions to calculate proper constraints
+    // Use offsetWidth/offsetHeight for layout dimensions (not affected by scale)
     const element = elementRef.current;
     let elementWidth = 100; // fallback
     let elementHeight = 50; // fallback
 
     if (element) {
-      const rect = element.getBoundingClientRect();
-      elementWidth = rect.width;
-      elementHeight = rect.height;
+      elementWidth = element.offsetWidth;
+      elementHeight = element.offsetHeight;
     }
 
     // Calculate new center position from drag delta
@@ -266,17 +296,17 @@ export function DraggableElement({
     // Store current position for use in handleMouseUp
     currentPositionRef.current = constrainedCenterPosition;
 
-    dragCallbacks.onDragMove(id, constrainedCenterPosition);
-  }, [isDragging, dragStart.x, dragStart.y, initialCenterPosition.x, initialCenterPosition.y, dragCallbacks, id]);
+    dragCallbacks.onDragMove(id, constrainedCenterPosition, dragAnchor);
+  }, [isDragging, dragStart.x, dragStart.y, initialCenterPosition.x, initialCenterPosition.y, dragCallbacks, id, dragAnchor]);
 
   const handleMouseUp = useCallback(() => {
     if (isDragging) {
       setIsDragging(false);
 
       // Use the last constrained position from mousemove
-      dragCallbacks.onDragEnd(id, currentPositionRef.current);
+      dragCallbacks.onDragEnd(id, currentPositionRef.current, dragAnchor);
     }
-  }, [isDragging, dragCallbacks, id]);
+  }, [isDragging, dragCallbacks, id, dragAnchor]);
 
   React.useEffect(() => {
     if (isDragging) {
