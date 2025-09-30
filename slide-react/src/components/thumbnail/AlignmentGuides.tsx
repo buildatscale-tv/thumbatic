@@ -80,12 +80,12 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
         </linearGradient>
       </defs>
 
-      {/* Vertical alignment guides - all proximity snaps with global winner coloring */}
-      {filteredVerticalSnaps.map((snap, index) => {
+      {/* Vertical alignment guides - only show winners */}
+      {filteredVerticalSnaps.filter(snap => snap.isGlobalWinner).map((snap, index) => {
         const x = snap.target.position.x!;
         const willSnap = snap.isGlobalWinner;
-        const gradientId = willSnap ? 'url(#verticalGuideGradient)' : 'url(#verticalSnapGradient)';
-        const solidColor = willSnap ? '#ff3b94' : '#027BFF';
+        const gradientId = 'url(#verticalGuideGradient)';
+        const solidColor = '#22c55e';
 
         // Different rendering for text edge guides vs canvas center guides
         const isTextEdge = snap.target.type === 'text-edge';
@@ -97,6 +97,10 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
           let elementBottom = CANVAS_HEIGHT * 0.8;
           let elementHeight = elementBottom - elementTop;
           let elementCenterY = elementTop + elementHeight / 2;
+          let elementLeft = CANVAS_WIDTH * 0.2;
+          let elementRight = CANVAS_WIDTH * 0.8;
+          let elementWidth = elementRight - elementLeft;
+          let elementCenterX = elementLeft + elementWidth / 2;
 
           if (sourceElement) {
             const rect = sourceElement.getBoundingClientRect();
@@ -107,6 +111,10 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               elementBottom = (rect.bottom - slideRect.top) * scale;
               elementHeight = rect.height * scale;
               elementCenterY = elementTop + elementHeight / 2;
+              elementLeft = (rect.left - slideRect.left) * scale;
+              elementRight = (rect.right - slideRect.left) * scale;
+              elementWidth = rect.width * scale;
+              elementCenterX = elementLeft + elementWidth / 2;
             }
           }
 
@@ -115,69 +123,55 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
           const guideTop = elementCenterY - guideHeight / 2;
           const guideBottom = elementCenterY + guideHeight / 2;
 
-
           return (
             <g key={`vertical-edge-${snap.target.id}-${index}`}>
-              {/* Proportional guide line centered on element center vertically */}
+              {/* Proportional guide line - green for snap */}
               <line
                 x1={x}
                 y1={guideTop}
                 x2={x}
                 y2={guideBottom}
-                stroke={solidColor}
-                strokeWidth="2"
-                opacity="0.9"
-                strokeDasharray="5,5"
-              >
-                <animate
-                  attributeName="opacity"
-                  from="0"
-                  to="0.9"
-                  dur="0.2s"
-                  fill="freeze"
-                />
-              </line>
-
-              {/* Element edge indicator - positioned at actual edge Y position */}
-              <rect
-                x={x - 1.5}
-                y={elementCenterY - 2}
-                width="3"
-                height="4"
-                fill={solidColor}
-                opacity="0.8"
-              >
-                <animate
-                  attributeName="opacity"
-                  from="0"
-                  to="0.8"
-                  dur="0.2s"
-                  fill="freeze"
-                />
-              </rect>
-
-              {/* Edge type indicator */}
-              <circle
-                cx={x}
-                cy={elementCenterY}
-                r="3"
-                fill={solidColor}
+                stroke="#22c55e"
+                strokeWidth="3"
                 opacity="1"
               >
                 <animate
                   attributeName="opacity"
                   from="0"
                   to="1"
-                  dur="0.3s"
+                  dur="0.2s"
                   fill="freeze"
                 />
-                <animate
-                  attributeName="r"
-                  values="3;5;3"
-                  dur="2s"
-                  repeatCount="indefinite"
-                />
-              </circle>
+              </line>
+
+              {/* Green snap indicator at guide intersection with dragged element */}
+              {dragPosition && (
+                <>
+                  {/* Large pulsing green circle at snap point */}
+                  <circle
+                    cx={x}
+                    cy={dragPosition.y}
+                    r="8"
+                    fill="rgba(34, 197, 94, 0.3)"
+                    stroke="rgba(34, 197, 94, 1)"
+                    strokeWidth="2"
+                  >
+                    <animate
+                      attributeName="r"
+                      values="8;12;8"
+                      dur="1s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                  {/* Inner solid green dot */}
+                  <circle
+                    cx={x}
+                    cy={dragPosition.y}
+                    r="4"
+                    fill="rgba(34, 197, 94, 1)"
+                  />
+                </>
+              )}
 
             </g>
           );
@@ -216,71 +210,56 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               y1={0}
               x2={x}
               y2={CANVAS_HEIGHT}
-              stroke={gradientId}
-              strokeWidth="1.5"
-              opacity="0.9"
+              stroke="#22c55e"
+              strokeWidth="2"
+              opacity="0.8"
             >
               {/* Smooth fade in animation */}
               <animate
                 attributeName="opacity"
                 from="0"
-                to="0.9"
+                to="0.8"
                 dur="0.2s"
                 fill="freeze"
               />
             </line>
 
-            {/* Central highlight section - extends to 10% from edges for independent axis snapping */}
-            <line
-              x1={x}
-              y1={CANVAS_HEIGHT * 0.1}
-              x2={x}
-              y2={CANVAS_HEIGHT * 0.9}
-              stroke={solidColor}
-              strokeWidth="2"
-              opacity="1"
-            >
-              <animate
-                attributeName="opacity"
-                from="0"
-                to="1"
-                dur="0.2s"
-                fill="freeze"
+            {/* Green snap indicator */}
+            <>
+              {/* Large pulsing green circle at snap point */}
+              <circle
+                cx={x}
+                cy={dotCenterY}
+                r="8"
+                fill="rgba(34, 197, 94, 0.3)"
+                stroke="rgba(34, 197, 94, 1)"
+                strokeWidth="2"
+              >
+                <animate
+                  attributeName="r"
+                  values="8;12;8"
+                  dur="1s"
+                  repeatCount="indefinite"
+                />
+              </circle>
+              {/* Inner solid green dot */}
+              <circle
+                cx={x}
+                cy={dotCenterY}
+                r="4"
+                fill="rgba(34, 197, 94, 1)"
               />
-            </line>
-
-            {/* Center indicator dot - positioned at element center for text guides */}
-            <circle
-              cx={x}
-              cy={dotCenterY}
-              r="3"
-              fill={solidColor}
-              opacity="1"
-            >
-              <animate
-                attributeName="opacity"
-                from="0"
-                to="1"
-                dur="0.3s"
-                fill="freeze"
-              />
-              <animate
-                attributeName="r"
-                values="3;5;3"
-                dur="2s"
-                repeatCount="indefinite"
-              />
-            </circle>
+            </>
           </g>
         );
       })}
 
-      {/* Horizontal alignment guides - all proximity snaps with global winner coloring */}
-      {filteredHorizontalSnaps.map((snap, index) => {
+      {/* Horizontal alignment guides - only show winners */}
+      {filteredHorizontalSnaps.filter(snap => snap.isGlobalWinner).map((snap, index) => {
         const y = snap.target.position.y!;
         const willSnap = snap.isGlobalWinner;
-        const gradientId = willSnap ? 'url(#horizontalGuideGradient)' : 'url(#horizontalSnapGradient)';
-        const solidColor = willSnap ? '#ff3b94' : '#027BFF';
+        const gradientId = 'url(#horizontalGuideGradient)';
+        const solidColor = '#22c55e';
 
         // Different rendering for text edge guides vs canvas center guides
         const isTextEdge = snap.target.type === 'text-edge';
@@ -292,6 +271,10 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
           let elementRight = CANVAS_WIDTH * 0.8;
           let elementWidth = elementRight - elementLeft;
           let elementCenterX = elementLeft + elementWidth / 2;
+          let elementTop = CANVAS_HEIGHT * 0.2;
+          let elementBottom = CANVAS_HEIGHT * 0.8;
+          let elementHeight = elementBottom - elementTop;
+          let elementCenterY = elementTop + elementHeight / 2;
 
           if (sourceElement) {
             const rect = sourceElement.getBoundingClientRect();
@@ -302,6 +285,10 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               elementRight = (rect.right - slideRect.left) * scale;
               elementWidth = rect.width * scale;
               elementCenterX = elementLeft + elementWidth / 2;
+              elementTop = (rect.top - slideRect.top) * scale;
+              elementBottom = (rect.bottom - slideRect.top) * scale;
+              elementHeight = rect.height * scale;
+              elementCenterY = elementTop + elementHeight / 2;
             }
           }
 
@@ -310,69 +297,55 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
           const guideLeft = elementCenterX - guideWidth / 2;
           const guideRight = elementCenterX + guideWidth / 2;
 
-
           return (
             <g key={`horizontal-edge-${snap.target.id}-${index}`}>
-              {/* Proportional guide line centered on element center horizontally */}
+              {/* Proportional guide line - green for snap */}
               <line
                 x1={guideLeft}
                 y1={y}
                 x2={guideRight}
                 y2={y}
-                stroke={solidColor}
-                strokeWidth="2"
-                opacity="0.9"
-                strokeDasharray="5,5"
-              >
-                <animate
-                  attributeName="opacity"
-                  from="0"
-                  to="0.9"
-                  dur="0.2s"
-                  fill="freeze"
-                />
-              </line>
-
-              {/* Element edge indicator - positioned at actual edge X position */}
-              <rect
-                x={elementCenterX - 2}
-                y={y - 1.5}
-                width="4"
-                height="3"
-                fill={solidColor}
-                opacity="0.8"
-              >
-                <animate
-                  attributeName="opacity"
-                  from="0"
-                  to="0.8"
-                  dur="0.2s"
-                  fill="freeze"
-                />
-              </rect>
-
-              {/* Edge type indicator */}
-              <circle
-                cx={elementCenterX}
-                cy={y}
-                r="3"
-                fill={solidColor}
+                stroke="#22c55e"
+                strokeWidth="3"
                 opacity="1"
               >
                 <animate
                   attributeName="opacity"
                   from="0"
                   to="1"
-                  dur="0.3s"
+                  dur="0.2s"
                   fill="freeze"
                 />
-                <animate
-                  attributeName="r"
-                  values="3;5;3"
-                  dur="2s"
-                  repeatCount="indefinite"
-                />
-              </circle>
+              </line>
+
+              {/* Green snap indicator at guide intersection with dragged element */}
+              {dragPosition && (
+                <>
+                  {/* Large pulsing green circle at snap point */}
+                  <circle
+                    cx={dragPosition.x}
+                    cy={y}
+                    r="8"
+                    fill="rgba(34, 197, 94, 0.3)"
+                    stroke="rgba(34, 197, 94, 1)"
+                    strokeWidth="2"
+                  >
+                    <animate
+                      attributeName="r"
+                      values="8;12;8"
+                      dur="1s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                  {/* Inner solid green dot */}
+                  <circle
+                    cx={dragPosition.x}
+                    cy={y}
+                    r="4"
+                    fill="rgba(34, 197, 94, 1)"
+                  />
+                </>
+              )}
 
             </g>
           );
@@ -411,61 +384,46 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               y1={y}
               x2={CANVAS_WIDTH}
               y2={y}
-              stroke={gradientId}
-              strokeWidth="1.5"
-              opacity="0.9"
+              stroke="#22c55e"
+              strokeWidth="2"
+              opacity="0.8"
             >
               {/* Smooth fade in animation */}
               <animate
                 attributeName="opacity"
                 from="0"
-                to="0.9"
+                to="0.8"
                 dur="0.2s"
                 fill="freeze"
               />
             </line>
 
-            {/* Central highlight section - extends to 10% from edges for independent axis snapping */}
-            <line
-              x1={CANVAS_WIDTH * 0.1}
-              y1={y}
-              x2={CANVAS_WIDTH * 0.9}
-              y2={y}
-              stroke={solidColor}
-              strokeWidth="2"
-              opacity="1"
-            >
-              <animate
-                attributeName="opacity"
-                from="0"
-                to="1"
-                dur="0.2s"
-                fill="freeze"
+            {/* Green snap indicator */}
+            <>
+              {/* Large pulsing green circle at snap point */}
+              <circle
+                cx={dotCenterX}
+                cy={y}
+                r="8"
+                fill="rgba(34, 197, 94, 0.3)"
+                stroke="rgba(34, 197, 94, 1)"
+                strokeWidth="2"
+              >
+                <animate
+                  attributeName="r"
+                  values="8;12;8"
+                  dur="1s"
+                  repeatCount="indefinite"
+                />
+              </circle>
+              {/* Inner solid green dot */}
+              <circle
+                cx={dotCenterX}
+                cy={y}
+                r="4"
+                fill="rgba(34, 197, 94, 1)"
               />
-            </line>
-
-            {/* Center indicator dot - positioned at element center for text guides */}
-            <circle
-              cx={dotCenterX}
-              cy={y}
-              r="3"
-              fill={solidColor}
-              opacity="1"
-            >
-              <animate
-                attributeName="opacity"
-                from="0"
-                to="1"
-                dur="0.3s"
-                fill="freeze"
-              />
-              <animate
-                attributeName="r"
-                values="3;5;3"
-                dur="2s"
-                repeatCount="indefinite"
-              />
-            </circle>
+            </>
           </g>
         );
       })}
