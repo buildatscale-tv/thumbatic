@@ -14,7 +14,8 @@
       "Bash(mkdir:*)",
       "Bash(git rm:*)",
       "Bash(npx eslint:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(awk:*)"
     ],
     "deny": []
   }
