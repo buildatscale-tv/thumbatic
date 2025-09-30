@@ -47,7 +47,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
       id: 'text-title',
       type: 'text',
       name: 'Title',
-      position: { x: 640, y: 200 },
+      position: { x: 640, y: 180 },
       zIndex: 5000,
       properties: {
         fontSize: 128,
@@ -85,7 +85,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
       id: 'text-accent-label',
       type: 'text',
       name: 'Accent Label',
-      position: { x: 640, y: 520 },
+      position: { x: 640, y: 540 },
       zIndex: 5200,
       properties: {
         fontSize: 60,
@@ -137,6 +137,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     showLogoLibrary: false,
     showIconLibrary: false,
     showGridGuides: false,
+    previewMode: false,
 
   // Actions
   setTheme: (theme) => set({ theme }),
@@ -533,5 +534,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
   setShowIconLibrary: (show) => set({ showIconLibrary: show }),
 
   setShowGridGuides: (show) => set({ showGridGuides: show }),
+
+  setPreviewMode: (previewMode) => set({ previewMode }),
   };
 });
