@@ -4,86 +4,139 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a web-based YouTube intro slide generator that creates professional slides with flat design and rectangular highlights. The application is built with vanilla HTML, CSS, and JavaScript, using html2canvas for image export functionality.
+This is a React TypeScript application that generates professional YouTube thumbnails with flat design, rectangular highlights, and theme-based styling. The project is built with Vite, React 19, TypeScript, and uses Zustand for state management, modern-screenshot for image export, and a custom snapping system for element positioning.
 
 ## Development Commands
 
-Since this is a static web application, there are no build commands required. To develop and test:
-
-1. **Run the application**: Open `index.html` in your web browser
-2. **Development server**: Use any local server (e.g., `python -m http.server 8000` or `npx serve`)
-3. **Testing**: Manual testing through the browser interface
+- **Development server**: `npm run dev` - Start Vite development server with HMR
+- **Build**: `npm run build` - TypeScript compilation followed by production build
+- **Lint**: `npm run lint` - Run ESLint with TypeScript rules
+- **Preview**: `npm run preview` - Preview production build locally
 
 ## Architecture
 
-### Core Components
+### State Management
+The application uses Zustand for centralized state management in `src/store/thumbnailStore.ts`. The store manages:
+- Theme and styling configuration (themes, corner styles)
+- Logo and icon management (library selection, custom URLs, positioning)
+- Element management (text, logos, icons) with drag-and-drop positioning
+- Text layout modes and element properties
 
-- **index.html**: Main HTML structure with form controls and slide preview
-- **script.js**: JavaScript application logic for slide generation, theme management, and download functionality
-- **styles.css**: Complete styling for all themes and responsive design
+### Core Architecture Patterns
 
-### Key Features
+#### Element System
+All thumbnail elements follow a unified structure defined in `src/types.ts`:
+```typescript
+interface ThumbnailElement {
+  id: string;
+  type: 'text' | 'logo' | 'icon';
+  name: string;
+  position: { x: number; y: number }; // Center-based coordinates
+  properties: ElementProperties;
+}
+```
 
-- **Real-time preview**: Changes update instantly as users edit
-- **Multiple themes**: Claude Code (default), Tech Blue, Dark Mode, and Blueprint Build
-- **Logo system**: Supports both custom URLs and a comprehensive logo library (50+ tech logos)
-- **Decorative elements**: Randomizable icons and shapes for visual enhancement
-- **Export functionality**: Downloads slides as 1280x720 PNG images using html2canvas
+Elements use center-based positioning (x, y coordinates represent the center) but are rendered using top-left positioning. The store handles this conversion automatically.
+
+#### Drag and Drop System
+Uses a custom implementation built around React state and DOM events:
+- **App.tsx**: Contains drag callbacks and snapping logic
+- **DraggableElement.tsx**: Wrapper component for draggable functionality
+- **useSnapping hook**: Provides intelligent snapping to canvas center and other elements
+- Only text elements participate in snapping; logos and icons have free positioning
+
+#### Safe Positioning Algorithm
+The `generateSafePosition()` function in thumbnailStore ensures logos/icons don't overlap with the text center zone:
+- Defines an 900x400px exclusion zone in the thumbnail center
+- Uses up to 50 attempts to find non-overlapping positions
+- Fallback positioning if safe position can't be found
+
+### Component Structure
+- **App.tsx**: Root component with drag handling and snapping integration
+- **ThumbnailGenerator.tsx**: Main layout container with Toolbar, ThumbnailCanvas, PropertiesPanel, and StatusBar
+- **ThumbnailCanvas.tsx**: 1280x720 thumbnail preview with theme classes and element rendering
+- **Toolbar.tsx**: Top toolbar with add element tools and theme selection
+- **PropertiesPanel.tsx**: Right sidebar for editing selected element properties
+- **StatusBar.tsx**: Bottom bar with export functionality
+
+Key rendering components:
+- **controls/**: Export button component
+- **thumbnail/**: Thumbnail rendering components (TextElements, LogoElements, IconElements, AccentShapes)
+- **ui/**: Reusable UI components (Button, Input, Select, Slider, etc.)
 
 ### Theme System
+Four built-in themes with CSS class switching:
+- `claude-theme`: Orange/navy default theme
+- `tech-theme`: Blue gradient theme  
+- `dark-theme`: Green/dark theme
+- `blueprint-theme`: Blue angular theme
 
-The application uses a CSS class-based theme system:
-- `.claude-theme`: Orange and navy theme with Claude branding
-- `.tech-theme`: Blue gradient theme for tech content
-- `.dark-theme`: Green and dark theme for modern look
-- `.blueprint-theme`: Blue angular theme with skewed elements
+Themes are applied via CSS classes on the thumbnail container and support both rounded and sharp corner styles.
 
-### Slide Structure
+### Export System
+Uses modern-screenshot library for PNG export at exact 1280x720 YouTube thumbnail dimensions. Exports are CORS-friendly and don't require additional server configuration.
 
-All slides follow a consistent 1280x720 layout with:
-- **Text section**: Configurable title (before/highlight/after) and subtitle
-- **Logo section**: Single custom logo or multiple library logos
-- **Decorative elements**: Randomized icons and shapes
-- **Accent shapes**: Theme-specific background elements
+## Key Technologies
 
-### JavaScript Architecture
-
-The main script (`script.js`) is organized around:
-- **Event-driven updates**: All form inputs trigger real-time slide updates
-- **Theme management**: Dynamic class switching for different visual styles
-- **Logo system**: Handles both single custom logos and multiple library logos
-- **Drag and drop**: Interactive positioning of logos and decorative elements
-- **Export system**: Uses html2canvas to generate downloadable PNG images
-
-### Styling Approach
-
-- **Responsive design**: Mobile-friendly with flexible scaling
-- **CSS transforms**: Extensive use of skew() and rotate() for dynamic effects
-- **Positioned elements**: Absolute positioning for precise layout control
-- **Theme-specific overrides**: Each theme has its own color and style variants
-
-## Important Implementation Details
-
-- **Logo positioning**: Uses percentage-based positioning with center exclusion zones to avoid text overlap
-- **Image export**: Scales slide content to exact 1280x720 dimensions for YouTube compatibility
-- **Drag interaction**: Custom drag-and-drop implementation for repositioning elements
-- **CDN dependency**: Relies on html2canvas CDN for export functionality
-- **Icon library**: Embedded SVG icons and devicons CDN for logo library
+- **React 19**: Latest React with new features and improved performance
+- **TypeScript**: Strict typing with comprehensive type definitions
+- **Vite**: Fast build tool with HMR and optimized builds
+- **Zustand**: Lightweight state management (no providers needed)
+- **modern-screenshot**: Client-side image export without canvas security issues
 
 ## File Structure
 
 ```
-/
-├── index.html          # Main application interface
-├── script.js           # Core application logic
-├── styles.css          # Complete styling system
-└── README.md          # User documentation
+src/
+├── App.tsx                 # Root component with drag/snap logic
+├── store/thumbnailStore.ts # Zustand state management
+├── types.ts               # Core TypeScript type definitions
+├── components/
+│   ├── ThumbnailGenerator.tsx # Main layout container
+│   ├── ThumbnailCanvas.tsx # 1280x720 thumbnail preview
+│   ├── Toolbar.tsx         # Top toolbar with tools and theme
+│   ├── PropertiesPanel.tsx # Right sidebar with element properties
+│   ├── StatusBar.tsx       # Bottom status bar with export
+│   ├── DraggableElement.tsx # Drag wrapper component
+│   ├── controls/           # Export button component
+│   ├── thumbnail/          # Thumbnail rendering components
+│   └── ui/                 # Reusable UI components
+├── hooks/
+│   └── useSnapping.ts     # Smart snapping system
+├── utils/
+│   └── snapUtils.ts       # Snapping calculations
+├── constants/             # Logo and icon libraries
+└── styles/               # CSS styling
 ```
 
-## Customization Points
+## Important Implementation Details
 
-When modifying the application:
-- **Adding themes**: Create new CSS classes following the pattern `.theme-name`
-- **Logo library**: Extend the logo checkboxes in index.html and update the library
-- **Icon system**: Add new icon sets to the `iconLibrary` object in script.js
-- **Export settings**: Modify canvas dimensions and quality in the download function
+### Element Positioning
+- All elements use center-based coordinates internally
+- Rendering converts center coordinates to top-left for CSS positioning  
+- Text elements snap to canvas center (640, 360) and other alignment guides
+- Logo/icon elements have free positioning with safe zone avoidance
+
+### Logo System
+- Supports both custom URL logos and curated library of 50+ tech logos
+- Library logos use devicons CDN for consistent styling
+- Automatic positioning prevents overlap with text content area
+
+### Snapping System
+- Text elements snap to canvas center lines and other text elements
+- 200px proximity threshold for showing guides, 100px threshold for snapping
+- Visual guides appear during drag operations for text elements
+- Snapping only applies to text elements; logos/icons have free movement
+
+### TypeScript Configuration
+- Strict mode enabled with comprehensive type checking
+- ESLint configured for React hooks and TypeScript best practices
+- Project uses Vite's optimized TypeScript compilation
+
+## Development Notes
+
+- Elements are rendered at exact 1280x720 dimensions for YouTube compatibility
+- The application is fully client-side with no server dependencies
+- All positioning calculations account for the fixed thumbnail dimensions
+- Theme switching preserves element positions and properties
+- Export functionality captures the exact thumbnail canvas without UI controls

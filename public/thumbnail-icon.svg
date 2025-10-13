@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- 16:9 Rectangle background -->
+  <rect x="4" y="8" width="24" height="16" rx="2" fill="#FF0000"/>
+
+  <!-- Play button triangle -->
+  <polygon points="14,12 14,20 20,16" fill="#FFFFFF"/>
+</svg>

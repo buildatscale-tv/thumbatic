@@ -7,7 +7,20 @@
       "Bash(npm create:*)",
       "Bash(npm install:*)",
       "Bash(npm run dev:*)",
-      "Bash(grep:*)"
+      "Bash(npm run build:*)",
+      "Bash(grep:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "WebFetch(domain:docs.astral.sh)",
+      "WebFetch(domain:cursor.com)",
+      "WebFetch(domain:commons.wikimedia.org)",
+      "WebFetch(domain:pip.pypa.io)",
+      "WebFetch(domain:cdn.jsdelivr.net)",
+      "Bash(mkdir:*)",
+      "Bash(npx eslint:*)",
+      "Bash(git mv:*)",
+      "Bash(awk:*)",
+      "SlashCommand(/commit)"
     ],
     "deny": []
   }
