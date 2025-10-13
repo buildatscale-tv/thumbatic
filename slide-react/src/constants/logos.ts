@@ -13,6 +13,7 @@ export const LOGO_LIBRARY: LogoLibraryItem[] = [
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cloudflare/cloudflare-original.svg", label: "Cloudflare", category: "Cloud" },
 
   // Frontend Frameworks & Libraries
+  { value: "/astro-icon-light-gradient.svg", label: "Astro", category: "Frontend" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg", label: "React", category: "Frontend" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angular/angular-original.svg", label: "Angular", category: "Frontend" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg", label: "Vue.js", category: "Frontend" },
