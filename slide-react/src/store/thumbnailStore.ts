@@ -66,10 +66,10 @@ const createInitialTextElements = (): ThumbnailElement[] => {
       id: 'text-subtitle',
       type: 'text',
       name: 'Subtitle',
-      position: { x: 640, y: 360 },
+      position: { x: 640, y: 380 },
       zIndex: 5100,
       properties: {
-        fontSize: 72,
+        fontSize: 80,
         fontColor: '#000000',
         backgroundColor: '#FEBC0A',
         backgroundStyle: 'drop-shadow',
