@@ -32,6 +32,9 @@
   padding: 40px;
   overflow: auto;
   position: relative;
+  /* Ensure minimum dimensions to prevent canvas squishing */
+  min-width: 1360px; /* 1280px thumbnail + 80px padding */
+  min-height: 800px; /* 720px thumbnail + 80px padding */
 }
 
 /* Toolbar Styles */
