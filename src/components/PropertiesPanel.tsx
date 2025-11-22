@@ -316,7 +316,7 @@ const LogoIconProperties: React.FC<LogoIconPropertiesProps> = ({ properties, onC
             value={properties.rotation}
             min={-180}
             max={180}
-            step={5}
+            step={1}
             unit="°"
             onChange={(value) => onChange('rotation', value)}
           />
