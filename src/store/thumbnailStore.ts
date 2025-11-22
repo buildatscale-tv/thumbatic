@@ -88,7 +88,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
       position: { x: 640, y: 520 },
       zIndex: 5200,
       properties: {
-        fontSize: 60,
+        fontSize: 52,
         fontColor: '#ffffff',
         backgroundColor: '#017cff',
         backgroundStyle: 'drop-shadow',
@@ -442,7 +442,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     const defaultStyles = {
       title: { fontSize: 128, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'sharp' as const, horizontalAlign: 'center' as const },
       subtitle: { fontSize: 76, fontColor: '#000000', backgroundStyle: 'drop-shadow' as const, backgroundColor: '#FEBC0A', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const },
-      'accent-label': { fontSize: 60, fontColor: '#ffffff', backgroundStyle: 'drop-shadow' as const, backgroundColor: '#017cff', cornerStyle: 'sharp' as const, horizontalAlign: 'center' as const },
+      'accent-label': { fontSize: 52, fontColor: '#ffffff', backgroundStyle: 'drop-shadow' as const, backgroundColor: '#017cff', cornerStyle: 'sharp' as const, horizontalAlign: 'center' as const },
       custom: { fontSize: 48, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'sharp' as const, horizontalAlign: 'center' as const },
     };
 
