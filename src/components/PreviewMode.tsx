@@ -9,10 +9,10 @@ interface PreviewSize {
 }
 
 const previewSizes: PreviewSize[] = [
-  { width: 640, height: 360, label: 'Large (640×360)' },
-  { width: 480, height: 270, label: 'Medium (480×270)' },
-  { width: 320, height: 180, label: 'Small (320×180)' },
   { width: 120, height: 68, label: 'Tiny (120×68)' },
+  { width: 320, height: 180, label: 'Small (320×180)' },
+  { width: 480, height: 270, label: 'Medium (480×270)' },
+  { width: 640, height: 360, label: 'Large (640×360)' },
 ];
 
 export default function PreviewMode() {
@@ -59,7 +59,39 @@ export default function PreviewMode() {
       </div>
 
       <div className="preview-grid">
-        {previewSizes.map((size) => {
+        {/* Tiny and Small on same row */}
+        <div className="preview-row">
+          {previewSizes.slice(0, 2).map((size) => {
+            const scale = size.width / 1280;
+            return (
+              <div key={size.label} className="preview-item">
+                <div className="preview-label">{size.label}</div>
+                <div
+                  className="preview-thumbnail-container"
+                  style={{
+                    width: `${size.width}px`,
+                    height: `${size.height}px`,
+                  }}
+                >
+                  <div
+                    className="preview-thumbnail-wrapper"
+                    style={{
+                      transform: `scale(${scale})`,
+                      transformOrigin: 'top left',
+                    }}
+                  >
+                    <div style={{ width: '1280px', height: '720px' }}>
+                      <ThumbnailCanvas dragCallbacks={dummyCallbacks} />
+                    </div>
+                  </div>
+                  <div className="preview-timecode">12:34</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {/* Medium and Large on their own rows */}
+        {previewSizes.slice(2).map((size) => {
           const scale = size.width / 1280;
           return (
             <div key={size.label} className="preview-item">
