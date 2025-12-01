@@ -377,12 +377,29 @@
 
 .properties-panel__color-input input[type="color"] {
   width: 40px;
+  min-width: 40px;
   height: 32px;
-  padding: 2px;
-  background: #222;
+  padding: 0;
+  background: transparent;
   border: 1px solid #444;
   border-radius: 4px;
   cursor: pointer;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.properties-panel__color-input input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.properties-panel__color-input input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 2px;
+}
+
+.properties-panel__color-input input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: 2px;
 }
 
 .properties-panel__color-input input[type="text"] {

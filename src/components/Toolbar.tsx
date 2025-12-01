@@ -132,8 +132,8 @@ export const Toolbar: React.FC = () => {
             onChange={(e) => setTheme(e.target.value as Theme)}
           >
             <option value="claude">Claude Code</option>
-            <option value="tech">Tech Blue</option>
-            <option value="dark">Dark Mode</option>
+            <option value="tech">Cloudflare</option>
+            <option value="dark">Supabase</option>
           </select>
         </div>
 
