@@ -173,27 +173,45 @@ const Arrow: React.FC<ArrowProps> = ({ element, isSelected }) => {
         />
       )}
 
-      {/* End arrowhead */}
-      {props.arrowheadEnd && (
-        <Arrowhead
-          point={props.endPoint}
-          angle={endAngle}
-          style={props.arrowheadStyle}
-          color={props.color}
-          size={props.strokeWidth * 2.5}
-        />
-      )}
+      {/* End arrowhead - offset back for sharp/rounded to close gap */}
+      {props.arrowheadEnd && (() => {
+        const size = props.strokeWidth * 2.5;
+        const offset = props.arrowheadStyle === 'filled' ? 0 : props.arrowheadStyle === 'rounded' ? size * 0.5 : size * 0.3;
+        const angleRad = endAngle * Math.PI / 180;
+        const offsetPoint = {
+          x: props.endPoint.x - Math.cos(angleRad) * offset,
+          y: props.endPoint.y - Math.sin(angleRad) * offset,
+        };
+        return (
+          <Arrowhead
+            point={offsetPoint}
+            angle={endAngle}
+            style={props.arrowheadStyle}
+            color={props.color}
+            size={size}
+          />
+        );
+      })()}
 
-      {/* Start arrowhead */}
-      {props.arrowheadStart && (
-        <Arrowhead
-          point={props.startPoint}
-          angle={startAngle}
-          style={props.arrowheadStyle}
-          color={props.color}
-          size={props.strokeWidth * 2.5}
-        />
-      )}
+      {/* Start arrowhead - offset back for sharp/rounded to close gap */}
+      {props.arrowheadStart && (() => {
+        const size = props.strokeWidth * 2.5;
+        const offset = props.arrowheadStyle === 'filled' ? 0 : props.arrowheadStyle === 'rounded' ? size * 0.5 : size * 0.3;
+        const angleRad = startAngle * Math.PI / 180;
+        const offsetPoint = {
+          x: props.startPoint.x - Math.cos(angleRad) * offset,
+          y: props.startPoint.y - Math.sin(angleRad) * offset,
+        };
+        return (
+          <Arrowhead
+            point={offsetPoint}
+            angle={startAngle}
+            style={props.arrowheadStyle}
+            color={props.color}
+            size={size}
+          />
+        );
+      })()}
     </g>
   );
 };

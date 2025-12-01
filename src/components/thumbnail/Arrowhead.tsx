@@ -27,26 +27,30 @@ export const Arrowhead: React.FC<ArrowheadProps> = ({ point, angle, style, color
       );
 
     case 'sharp':
-      // Chevron-style - base extends back into the stroke to avoid gap
-      const sharpWidth = size * 0.35;
-      const sharpBack = -size * 0.15;  // Extend back into stroke
+      // Chevron-style - shallow notch
+      const sharpWidth = size * 0.5;
+      const sharpBack = -size * 0.3;  // Moderate back extension
+      const notchDepth = size * 0.1;  // Shallow notch
       return (
         <polygon
-          points={`${size},0 ${sharpBack},${sharpWidth} ${size * 0.3},0 ${sharpBack},${-sharpWidth}`}
+          points={`${size},0 ${sharpBack},${sharpWidth} ${notchDepth},0 ${sharpBack},${-sharpWidth}`}
           fill={color}
           transform={transform}
         />
       );
 
     case 'rounded':
-      // Curved style - less round, more pointed
-      const roundWidth = size * 0.35;
+      // Angular V-shape with slightly rounded ends
+      const roundWidth = size * 0.55;
+      const roundBack = -size * 0.3;  // Moderate back extension
+      const roundTip = size * 0.75;   // Shorter tip
       return (
         <path
-          d={`M -${size * 0.1} ${roundWidth} Q ${size * 0.85} 0 -${size * 0.1} ${-roundWidth}`}
+          d={`M ${roundBack} ${roundWidth} L ${roundTip} 0 L ${roundBack} ${-roundWidth}`}
           stroke={color}
-          strokeWidth={Math.max(size / 3, 3)}
+          strokeWidth={Math.max(size / 4, 3)}
           strokeLinecap="round"
+          strokeLinejoin="round"
           fill="none"
           transform={transform}
         />
