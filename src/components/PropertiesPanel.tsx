@@ -2,7 +2,7 @@ import React from 'react';
 import { useThumbnailStore } from '../store/thumbnailStore';
 import { Slider } from './ui/Slider';
 import { Select } from './ui/Select';
-import type { TextElementProperties, LogoIconElementProperties } from '../types';
+import type { TextElementProperties, LogoIconElementProperties, ArrowElementProperties } from '../types';
 
 export const PropertiesPanel: React.FC = () => {
   const {
@@ -60,7 +60,7 @@ export const PropertiesPanel: React.FC = () => {
             <div className="properties-panel__type">
               {selectedElement.type === 'text' && '📝 Text'}
               {selectedElement.type === 'logo' && '🖼️ Logo'}
-              {selectedElement.type === 'icon' && '✨ Icon'}
+              {selectedElement.type === 'arrow' && '➡️ Arrow'}
             </div>
           </div>
 
@@ -77,9 +77,16 @@ export const PropertiesPanel: React.FC = () => {
           />
         )}
 
-        {(selectedElement.type === 'logo' || selectedElement.type === 'icon') && (
+        {selectedElement.type === 'logo' && (
           <LogoIconProperties
             properties={selectedElement.properties as LogoIconElementProperties}
+            onChange={handlePropertyChange}
+          />
+        )}
+
+        {selectedElement.type === 'arrow' && (
+          <ArrowProperties
+            properties={selectedElement.properties as ArrowElementProperties}
             onChange={handlePropertyChange}
           />
         )}
@@ -342,6 +349,102 @@ const LogoIconProperties: React.FC<LogoIconPropertiesProps> = ({ properties, onC
             </div>
           </div>
         )}
+      </div>
+    </>
+  );
+};
+
+interface ArrowPropertiesProps {
+  properties: ArrowElementProperties;
+  onChange: (property: string, value: any) => void;
+}
+
+const ArrowProperties: React.FC<ArrowPropertiesProps> = ({ properties, onChange }) => {
+  return (
+    <>
+      <div className="properties-panel__section">
+        <h4>Arrow Style</h4>
+
+        <div className="properties-panel__field">
+          <label>Color</label>
+          <div className="properties-panel__color-input">
+            <input
+              type="color"
+              value={properties.color}
+              onChange={(e) => onChange('color', e.target.value)}
+            />
+            <input
+              type="text"
+              value={properties.color}
+              onChange={(e) => onChange('color', e.target.value)}
+              pattern="^#[0-9A-Fa-f]{6}$"
+            />
+          </div>
+        </div>
+
+        <div className="properties-panel__field">
+          <Slider
+            label="Stroke Width"
+            value={properties.strokeWidth}
+            min={24}
+            max={48}
+            step={2}
+            unit="px"
+            onChange={(value) => onChange('strokeWidth', value)}
+          />
+        </div>
+
+        <div className="properties-panel__field">
+          <Slider
+            label="Opacity"
+            value={properties.opacity}
+            min={0}
+            max={100}
+            step={5}
+            unit="%"
+            onChange={(value) => onChange('opacity', value)}
+          />
+        </div>
+      </div>
+
+      <div className="properties-panel__section">
+        <h4>Arrowheads</h4>
+
+        <div className="properties-panel__field">
+          <div className="properties-panel__checkbox-row">
+            <label className="properties-panel__checkbox-label">
+              <input
+                type="checkbox"
+                checked={properties.arrowheadStart}
+                onChange={(e) => onChange('arrowheadStart', e.target.checked)}
+              />
+              <span>Start</span>
+            </label>
+            <label className="properties-panel__checkbox-label">
+              <input
+                type="checkbox"
+                checked={properties.arrowheadEnd}
+                onChange={(e) => onChange('arrowheadEnd', e.target.checked)}
+              />
+              <span>End</span>
+            </label>
+          </div>
+        </div>
+
+        <div className="properties-panel__field">
+          <label>Style</label>
+          <div className="properties-panel__button-group">
+            {(['filled', 'sharp', 'rounded'] as const).map((style) => (
+              <button
+                key={style}
+                className={`properties-panel__style-btn ${properties.arrowheadStyle === style ? 'active' : ''}`}
+                onClick={() => onChange('arrowheadStyle', style)}
+              >
+                {style.charAt(0).toUpperCase() + style.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </>
   );

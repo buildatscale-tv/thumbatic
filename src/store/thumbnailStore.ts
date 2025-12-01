@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ThumbnailState, ThumbnailElement, TextElementType, LogoIconElementProperties } from '../types';
+import type { ThumbnailState, ThumbnailElement, TextElementType, LogoIconElementProperties, ArrowElementProperties } from '../types';
 
 
 // Helper function to generate safe positions outside center exclusion zone (pixel-based)
@@ -121,9 +121,9 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     selectedLogos: [],
     logoSize: 256,
 
-    // Initial decorative icons
-    iconType: 'none',
-    iconSize: 48,
+    // Arrow draw mode
+    isDrawingArrow: false,
+    arrowDrawStart: null,
 
     // Initial element management - include text elements
     elements: initialElements,
@@ -132,10 +132,9 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     textSelection: null,
     cursorPosition: null,
 
-    // New UI states
+    // UI states
     activeTool: 'text' as const,
     showLogoLibrary: false,
-    showIconLibrary: false,
     showGridGuides: false,
     snappingEnabled: true,
     centerSnapMode: false, // False = neighbor snapping (default), True = center snapping
@@ -221,19 +220,6 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     );
 
     set({ logoSize, elements: updatedElements });
-  },
-
-  setIconType: (iconType) => set({ iconType }),
-
-  setIconSize: (iconSize) => {
-    const state = get();
-    const updatedElements = state.elements.map(element =>
-      element.type === 'icon'
-        ? { ...element, properties: { ...element.properties, size: iconSize } }
-        : element
-    );
-
-    set({ iconSize, elements: updatedElements });
   },
 
   selectElement: (selectedElement) => {
@@ -508,32 +494,92 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     set({ elements: updatedElements });
   },
 
-  randomizeIconPositions: () => {
-    const state = get();
-    const updatedElements = state.elements.map(element =>
-      element.type === 'icon'
-        ? {
-            ...element,
-            position: {
-              x: Math.random() * (1280 + 100) - 50, // Allow 50px protrusion on each side
-              y: Math.random() * (720 + 100) - 50   // Allow 50px protrusion on each side
-            },
-            properties: {
-              ...element.properties,
-              rotation: Math.random() * 360
-            }
-          }
-        : element
-    );
+  // Arrow actions
+  setDrawingArrow: (drawing) => set({ isDrawingArrow: drawing }),
 
-    set({ elements: updatedElements });
+  setArrowDrawStart: (point) => set({ arrowDrawStart: point }),
+
+  addArrowElement: (start, end) => {
+    const state = get();
+    const midX = (start.x + end.x) / 2;
+    const midY = (start.y + end.y) / 2;
+
+    // Get next z-index
+    const maxZIndex = Math.max(...state.elements.map(el => el.zIndex), 5000);
+
+    const arrow: ThumbnailElement = {
+      id: `arrow-${Date.now()}`,
+      type: 'arrow',
+      name: 'Arrow',
+      position: { x: midX, y: midY },  // Center for selection purposes
+      zIndex: maxZIndex + 100,
+      properties: {
+        startPoint: start,
+        endPoint: end,
+        controlPoint: { x: midX, y: midY },  // Starts straight
+        color: '#FF0000',
+        strokeWidth: 24,  // Bold marker style
+        opacity: 100,
+        arrowheadStart: false,
+        arrowheadEnd: true,
+        arrowheadStyle: 'filled',
+      } as ArrowElementProperties,
+    };
+
+    set({
+      elements: [...state.elements, arrow],
+      selectedElement: arrow,
+      isDrawingArrow: false,
+      arrowDrawStart: null,
+    });
   },
 
-  // New UI actions
+  updateArrowPoint: (elementId, pointType, point) => {
+    const state = get();
+
+    const updatedElements = state.elements.map(element => {
+      if (element.id === elementId && element.type === 'arrow') {
+        const props = element.properties as ArrowElementProperties;
+        const updatedProps = { ...props };
+
+        switch (pointType) {
+          case 'start':
+            updatedProps.startPoint = point;
+            break;
+          case 'end':
+            updatedProps.endPoint = point;
+            break;
+          case 'control':
+            updatedProps.controlPoint = point;
+            break;
+        }
+
+        // Update the element's center position too
+        const newMidX = (updatedProps.startPoint.x + updatedProps.endPoint.x) / 2;
+        const newMidY = (updatedProps.startPoint.y + updatedProps.endPoint.y) / 2;
+
+        return {
+          ...element,
+          position: { x: newMidX, y: newMidY },
+          properties: updatedProps,
+        };
+      }
+      return element;
+    });
+
+    set({ elements: updatedElements });
+
+    // Update selected element if it's the one being modified
+    if (state.selectedElement?.id === elementId) {
+      const updatedElement = updatedElements.find(el => el.id === elementId);
+      set({ selectedElement: updatedElement || null });
+    }
+  },
+
+  // UI actions
   setActiveTool: (tool) => set({ activeTool: tool }),
 
   setShowLogoLibrary: (show) => set({ showLogoLibrary: show }),
-  setShowIconLibrary: (show) => set({ showIconLibrary: show }),
 
   setShowGridGuides: (show) => set({ showGridGuides: show, centerSnapMode: show ? false : get().centerSnapMode }),
 

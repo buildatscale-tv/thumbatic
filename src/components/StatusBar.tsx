@@ -13,7 +13,7 @@ export const StatusBar: React.FC = () => {
 
   const textElements = elements.filter(el => el.type === 'text').length;
   const logoElements = elements.filter(el => el.type === 'logo').length;
-  const iconElements = elements.filter(el => el.type === 'icon').length;
+  const arrowElements = elements.filter(el => el.type === 'arrow').length;
 
   return (
     <div className="status-bar">
@@ -26,7 +26,7 @@ export const StatusBar: React.FC = () => {
         <div className="status-bar__info">
           <span className="status-bar__label">Elements:</span>
           <span className="status-bar__value">
-            {textElements} text, {logoElements} logos, {iconElements} icons
+            {textElements} text, {logoElements} logos, {arrowElements} arrows
           </span>
         </div>
         {selectedElement && (

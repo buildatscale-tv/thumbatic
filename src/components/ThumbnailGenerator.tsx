@@ -3,7 +3,6 @@ import { Toolbar } from './Toolbar';
 import { PropertiesPanel } from './PropertiesPanel';
 import { StatusBar } from './StatusBar';
 import { LogoLibraryModal } from './LogoLibraryModal';
-import { IconLibraryModal } from './IconLibraryModal';
 import { ThumbnailCanvas } from './ThumbnailCanvas';
 import type { ActiveSnap } from '../types/snapping';
 
@@ -36,7 +35,6 @@ export const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({ dragStat
       </div>
       <StatusBar />
       <LogoLibraryModal />
-      <IconLibraryModal />
     </div>
   );
 };

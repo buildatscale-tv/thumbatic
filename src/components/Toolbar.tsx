@@ -8,11 +8,13 @@ export const Toolbar: React.FC = () => {
     showGridGuides,
     snappingEnabled,
     centerSnapMode,
+    isDrawingArrow,
     setTheme,
     setShowLogoLibrary,
     setShowGridGuides,
     setSnappingEnabled,
     setCenterSnapMode,
+    setDrawingArrow,
     addTextElement,
   } = useThumbnailStore();
 
@@ -50,9 +52,8 @@ export const Toolbar: React.FC = () => {
     setShowLogoLibrary(true);
   };
 
-  const handleAddIcon = () => {
-    const { setShowIconLibrary } = useThumbnailStore.getState();
-    setShowIconLibrary(true);
+  const handleToggleDrawArrow = () => {
+    setDrawingArrow(!isDrawingArrow);
   };
 
   return (
@@ -106,14 +107,14 @@ export const Toolbar: React.FC = () => {
         </button>
 
         <button
-          className="toolbar__button"
-          onClick={handleAddIcon}
-          title="Add Icon (I)"
+          className={`toolbar__button ${isDrawingArrow ? 'toolbar__button--active' : ''}`}
+          onClick={handleToggleDrawArrow}
+          title={isDrawingArrow ? 'Cancel drawing (Esc)' : 'Draw Arrow (A)'}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            <path d="M5 12H19M19 12L14 7M19 12L14 17"/>
           </svg>
-          <span>Add Icon</span>
+          <span>{isDrawingArrow ? 'Drawing...' : 'Add Arrow'}</span>
         </button>
       </div>
 

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useThumbnailStore } from '../store/thumbnailStore';
 import { TextElements } from './thumbnail/TextElements';
 import { LogoElements } from './thumbnail/LogoElements';
-import { IconElements } from './thumbnail/IconElements';
+import { ArrowElements } from './thumbnail/ArrowElements';
+import { ArrowHandles } from './thumbnail/ArrowHandles';
 import { AccentShapes } from './thumbnail/AccentShapes';
 import { AlignmentGuides } from './thumbnail/AlignmentGuides';
 import { GridOverlay } from './GridOverlay';
@@ -26,11 +27,28 @@ interface ThumbnailCanvasProps {
 }
 
 export const ThumbnailCanvas: React.FC<ThumbnailCanvasProps> = ({ dragState, dragCallbacks, snapThreshold = 100 }) => {
-  const { theme, selectElement, setEditingElementId, showGridGuides, snappingEnabled } = useThumbnailStore();
+  const {
+    theme,
+    selectElement,
+    setEditingElementId,
+    showGridGuides,
+    snappingEnabled,
+    isDrawingArrow,
+    arrowDrawStart,
+    setArrowDrawStart,
+    addArrowElement,
+    setDrawingArrow,
+    selectedElement,
+  } = useThumbnailStore();
+
+  const [arrowPreview, setArrowPreview] = useState<{ x: number; y: number } | null>(null);
 
   const themeClass = `${theme}-theme`;
 
   const handleThumbnailClick = (event: React.MouseEvent) => {
+    // Don't clear selection if in drawing mode
+    if (isDrawingArrow) return;
+
     // Only clear selection if clicking directly on the thumbnail background
     if (event.target === event.currentTarget ||
         (event.target as HTMLElement).classList.contains('thumbnail-content')) {
@@ -39,24 +57,112 @@ export const ThumbnailCanvas: React.FC<ThumbnailCanvasProps> = ({ dragState, dra
     }
   };
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!isDrawingArrow) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    setArrowDrawStart({ x, y });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDrawingArrow || !arrowDrawStart) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    setArrowPreview({ x, y });
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!isDrawingArrow || !arrowDrawStart) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Minimum distance to create arrow (20px)
+    const dist = Math.hypot(x - arrowDrawStart.x, y - arrowDrawStart.y);
+    if (dist > 20) {
+      addArrowElement(arrowDrawStart, { x, y });
+    }
+
+    setArrowDrawStart(null);
+    setArrowPreview(null);
+  };
+
+  // Handle ESC key to cancel drawing mode
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isDrawingArrow) {
+        setDrawingArrow(false);
+        setArrowDrawStart(null);
+        setArrowPreview(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDrawingArrow, setDrawingArrow]);
+
   return (
     <div
       id="thumbnail"
-      className={`thumbnail ${themeClass}`.trim()}
+      className={`thumbnail ${themeClass} ${isDrawingArrow ? 'drawing-mode' : ''}`.trim()}
       onClick={handleThumbnailClick}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
       style={{
         position: 'relative',
         width: '1280px',
         height: '720px',
-        overflow: 'visible'
+        overflow: 'visible',
+        cursor: isDrawingArrow ? 'crosshair' : 'default',
       }}
     >
       <div className="thumbnail-content" onClick={handleThumbnailClick}>
         <LogoElements dragCallbacks={dragCallbacks} />
         <TextElements dragCallbacks={dragCallbacks} />
         <AccentShapes />
-        <IconElements dragCallbacks={dragCallbacks} />
+        <ArrowElements dragCallbacks={dragCallbacks} />
       </div>
+
+      {/* Arrow preview while drawing */}
+      {arrowDrawStart && arrowPreview && (
+        <svg
+          className="arrow-preview"
+          width="1280"
+          height="720"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            pointerEvents: 'none',
+            zIndex: 8000,
+          }}
+        >
+          <line
+            x1={arrowDrawStart.x}
+            y1={arrowDrawStart.y}
+            x2={arrowPreview.x}
+            y2={arrowPreview.y}
+            stroke="#FF0000"
+            strokeWidth={24}
+            strokeLinecap="round"
+            opacity={0.7}
+          />
+        </svg>
+      )}
+
+      {/* Show handles for selected arrow */}
+      {selectedElement?.type === 'arrow' && !isDrawingArrow && (
+        <ArrowHandles element={selectedElement} />
+      )}
+
       <AlignmentGuides
         activeSnaps={dragState?.activeSnaps || []}
         isVisible={(dragState?.isDragging && snappingEnabled) || false}

@@ -23,13 +23,34 @@ export interface LogoIconElementProperties {
   src?: string;
 }
 
+// Arrow element properties for drawable arrows
+export interface ArrowElementProperties {
+  // Path definition
+  startPoint: { x: number; y: number };
+  endPoint: { x: number; y: number };
+  controlPoint: { x: number; y: number };  // Bezier control point
+  // Styling
+  color: string;
+  strokeWidth: number;
+  opacity: number;
+  // Arrowheads
+  arrowheadStart: boolean;
+  arrowheadEnd: boolean;
+  arrowheadStyle: 'sharp' | 'rounded' | 'filled';
+}
+
+// Type guard for arrow elements
+export function isArrowElement(props: ElementProperties): props is ArrowElementProperties {
+  return 'startPoint' in props && 'endPoint' in props;
+}
+
 // Union type for element properties
-export type ElementProperties = TextElementProperties | LogoIconElementProperties;
+export type ElementProperties = TextElementProperties | LogoIconElementProperties | ArrowElementProperties;
 
 // Thumbnail element interface
 export interface ThumbnailElement {
   id: string;
-  type: 'text' | 'logo' | 'icon';
+  type: 'text' | 'logo' | 'arrow';
   name: string;
   position: { x: number; y: number };
   zIndex: number;
@@ -44,20 +65,12 @@ export interface LogoLibraryItem {
   invert?: boolean;
 }
 
-// Icon library structure
-export interface IconSet {
-  tech: string[];
-  shapes: string[];
-  arrows: string[];
-}
-
 // Theme and style types
 export type Theme = 'claude' | 'tech' | 'dark';
 export type LogoType = 'url' | 'library';
-export type IconType = 'none' | 'tech' | 'shapes' | 'arrows' | 'mixed';
 
 // Tool types for the new UI
-export type ToolType = 'text' | 'logo' | 'icon';
+export type ToolType = 'text' | 'logo' | 'arrow';
 
 // Main store state interface
 export interface ThumbnailState {
@@ -71,9 +84,9 @@ export interface ThumbnailState {
   selectedLogos: string[];
   logoSize: number;
 
-  // Decorative icons
-  iconType: IconType;
-  iconSize: number;
+  // Arrow draw mode
+  isDrawingArrow: boolean;
+  arrowDrawStart: { x: number; y: number } | null;
 
   // Element management
   elements: ThumbnailElement[];
@@ -82,10 +95,9 @@ export interface ThumbnailState {
   textSelection: { elementId: string; start: number; end: number } | null;
   cursorPosition: { elementId: string; position: number } | null;
 
-  // New UI states
+  // UI states
   activeTool: ToolType;
   showLogoLibrary: boolean;
-  showIconLibrary: boolean;
   showGridGuides: boolean;
   snappingEnabled: boolean;
   centerSnapMode: boolean;
@@ -97,8 +109,6 @@ export interface ThumbnailState {
   setLogoUrl: (url: string) => void;
   setSelectedLogos: (logos: string[]) => void;
   setLogoSize: (size: number) => void;
-  setIconType: (type: IconType) => void;
-  setIconSize: (size: number) => void;
   selectElement: (element: ThumbnailElement | null) => void;
   setEditingElementId: (elementId: string | null) => void;
   setTextSelection: (selection: { elementId: string; start: number; end: number } | null) => void;
@@ -111,9 +121,14 @@ export interface ThumbnailState {
   removeElement: (elementId: string) => void;
   reorderElements: (elementIds: string[]) => void;
   randomizeLogoPositions: () => void;
-  randomizeIconPositions: () => void;
 
-  // New UI actions
+  // Arrow actions
+  setDrawingArrow: (drawing: boolean) => void;
+  setArrowDrawStart: (point: { x: number; y: number } | null) => void;
+  addArrowElement: (start: { x: number; y: number }, end: { x: number; y: number }) => void;
+  updateArrowPoint: (elementId: string, pointType: 'start' | 'end' | 'control', point: { x: number; y: number }) => void;
+
+  // UI actions
   setActiveTool: (tool: ToolType) => void;
   setShowLogoLibrary: (show: boolean) => void;
   setShowGridGuides: (show: boolean) => void;

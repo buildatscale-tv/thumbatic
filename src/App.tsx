@@ -362,8 +362,8 @@ function App() {
   React.useEffect(() => {
     const {
       setShowLogoLibrary,
-      setShowIconLibrary,
       setShowGridGuides,
+      setDrawingArrow,
       addTextElement,
       showGridGuides,
       setPreviewMode,
@@ -394,10 +394,11 @@ function App() {
             setShowLogoLibrary(true);
           }
           break;
-        case 'i':
+        case 'a':
           if (!event.ctrlKey && !event.metaKey) {
             event.preventDefault();
-            setShowIconLibrary(true);
+            const currentDrawingArrow = useThumbnailStore.getState().isDrawingArrow;
+            setDrawingArrow(!currentDrawingArrow);
           }
           break;
         case 'g':

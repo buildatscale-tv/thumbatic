@@ -1318,3 +1318,69 @@
     gap: 32px;
   }
 }
+
+/* Arrow Properties Styles */
+.properties-panel__checkbox-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.properties-panel__checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #ddd;
+}
+
+.properties-panel__checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #3b82f6;
+  cursor: pointer;
+}
+
+.properties-panel__button-group {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.properties-panel__style-btn {
+  flex: 1;
+  min-width: 60px;
+  padding: 6px 10px;
+  background: #2a2a2a;
+  color: #999;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.properties-panel__style-btn:hover {
+  background: #333;
+  color: #ddd;
+  border-color: #555;
+}
+
+.properties-panel__style-btn.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+/* Toolbar Button Active State */
+.toolbar__button--active {
+  background: #3b82f6 !important;
+  color: white !important;
+  border-color: #3b82f6 !important;
+}
+
+.toolbar__button--active:hover {
+  background: #2563eb !important;
+}
