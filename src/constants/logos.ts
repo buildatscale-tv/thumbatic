@@ -82,7 +82,7 @@ export const LOGO_LIBRARY: LogoLibraryItem[] = [
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/playwright/playwright-original.svg", label: "Playwright", category: "Testing" },
 
   // Design & Creative
-  { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg", label: "Figma", category: "Design" },
+  { value: "https://upload.wikimedia.org/wikipedia/commons/3/33/Figma-logo.svg", label: "Figma", category: "Design" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/sketch/sketch-original.svg", label: "Sketch", category: "Design" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/photoshop/photoshop-plain.svg", label: "Photoshop", category: "Design" },
 
