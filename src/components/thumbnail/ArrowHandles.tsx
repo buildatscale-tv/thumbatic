@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useThumbnailStore } from '../../store/thumbnailStore';
 import type { ArrowElementProperties, ThumbnailElement } from '../../types';
 
@@ -7,8 +7,9 @@ interface ArrowHandlesProps {
 }
 
 export const ArrowHandles: React.FC<ArrowHandlesProps> = ({ element }) => {
-  const { updateArrowPoint } = useThumbnailStore();
+  const { updateArrowPoint, moveArrow } = useThumbnailStore();
   const props = element.properties as ArrowElementProperties;
+  const lastPosRef = useRef<{ x: number; y: number } | null>(null);
 
   const handleDrag = (pointType: 'start' | 'end' | 'control', e: React.MouseEvent) => {
     e.stopPropagation();
@@ -32,6 +33,76 @@ export const ArrowHandles: React.FC<ArrowHandlesProps> = ({ element }) => {
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const handleMoveAll = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    const canvas = document.getElementById('thumbnail');
+    const rect = canvas?.getBoundingClientRect();
+    if (!rect) return;
+
+    lastPosRef.current = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!lastPosRef.current) return;
+
+      const currentX = moveEvent.clientX - rect.left;
+      const currentY = moveEvent.clientY - rect.top;
+
+      const delta = {
+        x: currentX - lastPosRef.current.x,
+        y: currentY - lastPosRef.current.y,
+      };
+
+      moveArrow(element.id, delta);
+
+      lastPosRef.current = { x: currentX, y: currentY };
+    };
+
+    const handleMouseUp = () => {
+      lastPosRef.current = null;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  // Calculate center point for move handle
+  let centerX = (props.startPoint.x + props.endPoint.x + props.controlPoint.x) / 3;
+  let centerY = (props.startPoint.y + props.endPoint.y + props.controlPoint.y) / 3;
+
+  // If move handle is too close to control handle, offset it perpendicular to the arrow
+  const distToControl = Math.sqrt(
+    Math.pow(centerX - props.controlPoint.x, 2) + Math.pow(centerY - props.controlPoint.y, 2)
+  );
+  if (distToControl < 25) {
+    // Get perpendicular direction to arrow
+    const dx = props.endPoint.x - props.startPoint.x;
+    const dy = props.endPoint.y - props.startPoint.y;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    // Perpendicular offset (pick direction away from control or just down/right)
+    const perpX = -dy / len;
+    const perpY = dx / len;
+    centerX = props.controlPoint.x + perpX * 30;
+    centerY = props.controlPoint.y + perpY * 30;
+  }
+
+  // Reset bezier curve to straight line (control point at midpoint)
+  const handleResetBezier = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const midPoint = {
+      x: (props.startPoint.x + props.endPoint.x) / 2,
+      y: (props.startPoint.y + props.endPoint.y) / 2,
+    };
+    updateArrowPoint(element.id, 'control', midPoint);
   };
 
   return (
@@ -93,7 +164,29 @@ export const ArrowHandles: React.FC<ArrowHandlesProps> = ({ element }) => {
         onMouseDown={(e) => handleDrag('end', e)}
       />
 
-      {/* Control handle - diamond (rotated square) */}
+      {/* Center move handle - move entire arrow (rendered first so control is on top) */}
+      <circle
+        cx={centerX}
+        cy={centerY}
+        r={12}
+        fill="white"
+        stroke="#0066FF"
+        strokeWidth={2}
+        style={{ cursor: 'grab', pointerEvents: 'auto' }}
+        onMouseDown={handleMoveAll}
+      />
+      <g transform={`translate(${centerX}, ${centerY})`} style={{ pointerEvents: 'none' }}>
+        {/* Four-way arrow move icon */}
+        <path
+          d="M 0 -5 L 2 -2 M 0 -5 L -2 -2 M 0 -5 L 0 5 M 0 5 L 2 2 M 0 5 L -2 2 M -5 0 L 5 0 M -5 0 L -2 -2 M -5 0 L -2 2 M 5 0 L 2 -2 M 5 0 L 2 2"
+          stroke="#0066FF"
+          strokeWidth={1.5}
+          strokeLinecap="round"
+          fill="none"
+        />
+      </g>
+
+      {/* Control handle - diamond (rotated square) - double-click to reset (on top) */}
       <rect
         x={props.controlPoint.x - 6}
         y={props.controlPoint.y - 6}
@@ -105,6 +198,7 @@ export const ArrowHandles: React.FC<ArrowHandlesProps> = ({ element }) => {
         transform={`rotate(45 ${props.controlPoint.x} ${props.controlPoint.y})`}
         style={{ cursor: 'move', pointerEvents: 'auto' }}
         onMouseDown={(e) => handleDrag('control', e)}
+        onDoubleClick={handleResetBezier}
       />
     </svg>
   );

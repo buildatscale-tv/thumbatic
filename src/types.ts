@@ -127,6 +127,7 @@ export interface ThumbnailState {
   setArrowDrawStart: (point: { x: number; y: number } | null) => void;
   addArrowElement: (start: { x: number; y: number }, end: { x: number; y: number }) => void;
   updateArrowPoint: (elementId: string, pointType: 'start' | 'end' | 'control', point: { x: number; y: number }) => void;
+  moveArrow: (elementId: string, delta: { x: number; y: number }) => void;
 
   // UI actions
   setActiveTool: (tool: ToolType) => void;

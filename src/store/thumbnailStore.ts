@@ -576,6 +576,52 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     }
   },
 
+  moveArrow: (elementId, delta) => {
+    const state = get();
+
+    const updatedElements = state.elements.map(element => {
+      if (element.id === elementId && element.type === 'arrow') {
+        const props = element.properties as ArrowElementProperties;
+
+        // Move all three points by the delta
+        const updatedProps = {
+          ...props,
+          startPoint: {
+            x: Math.max(0, Math.min(1280, props.startPoint.x + delta.x)),
+            y: Math.max(0, Math.min(720, props.startPoint.y + delta.y)),
+          },
+          endPoint: {
+            x: Math.max(0, Math.min(1280, props.endPoint.x + delta.x)),
+            y: Math.max(0, Math.min(720, props.endPoint.y + delta.y)),
+          },
+          controlPoint: {
+            x: Math.max(0, Math.min(1280, props.controlPoint.x + delta.x)),
+            y: Math.max(0, Math.min(720, props.controlPoint.y + delta.y)),
+          },
+        };
+
+        // Update center position
+        const newMidX = (updatedProps.startPoint.x + updatedProps.endPoint.x) / 2;
+        const newMidY = (updatedProps.startPoint.y + updatedProps.endPoint.y) / 2;
+
+        return {
+          ...element,
+          position: { x: newMidX, y: newMidY },
+          properties: updatedProps,
+        };
+      }
+      return element;
+    });
+
+    set({ elements: updatedElements });
+
+    // Update selected element if it's the one being modified
+    if (state.selectedElement?.id === elementId) {
+      const updatedElement = updatedElements.find(el => el.id === elementId);
+      set({ selectedElement: updatedElement || null });
+    }
+  },
+
   // UI actions
   setActiveTool: (tool) => set({ activeTool: tool }),
 
