@@ -173,10 +173,10 @@ const Arrow: React.FC<ArrowProps> = ({ element, isSelected }) => {
         />
       )}
 
-      {/* End arrowhead - offset back for sharp/rounded to close gap */}
+      {/* End arrowhead - offset back to close gap */}
       {props.arrowheadEnd && (() => {
         const size = props.strokeWidth * 2.5;
-        const offset = props.arrowheadStyle === 'filled' ? 0 : props.arrowheadStyle === 'rounded' ? size * 0.5 : size * 0.3;
+        const offset = props.arrowheadStyle === 'filled' ? size * 0.08 : props.arrowheadStyle === 'rounded' ? size * 0.5 : size * 0.3;
         const angleRad = endAngle * Math.PI / 180;
         const offsetPoint = {
           x: props.endPoint.x - Math.cos(angleRad) * offset,
@@ -193,10 +193,10 @@ const Arrow: React.FC<ArrowProps> = ({ element, isSelected }) => {
         );
       })()}
 
-      {/* Start arrowhead - offset back for sharp/rounded to close gap */}
+      {/* Start arrowhead - offset back to close gap */}
       {props.arrowheadStart && (() => {
         const size = props.strokeWidth * 2.5;
-        const offset = props.arrowheadStyle === 'filled' ? 0 : props.arrowheadStyle === 'rounded' ? size * 0.5 : size * 0.3;
+        const offset = props.arrowheadStyle === 'filled' ? size * 0.08 : props.arrowheadStyle === 'rounded' ? size * 0.5 : size * 0.3;
         const angleRad = startAngle * Math.PI / 180;
         const offsetPoint = {
           x: props.startPoint.x - Math.cos(angleRad) * offset,

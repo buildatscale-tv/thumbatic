@@ -518,7 +518,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
         endPoint: end,
         controlPoint: { x: midX, y: midY },  // Starts straight
         color: '#FF0000',
-        strokeWidth: 24,  // Bold marker style
+        strokeWidth: 36,  // Bold marker style
         opacity: 100,
         arrowheadStart: false,
         arrowheadEnd: true,

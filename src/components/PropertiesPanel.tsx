@@ -386,7 +386,7 @@ const ArrowProperties: React.FC<ArrowPropertiesProps> = ({ properties, onChange 
           <Slider
             label="Stroke Width"
             value={properties.strokeWidth}
-            min={24}
+            min={36}
             max={48}
             step={2}
             unit="px"
