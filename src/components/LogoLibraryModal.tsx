@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useThumbnailStore } from '../store/thumbnailStore';
 import { LOGO_LIBRARY } from '../constants/logos';
 import { Input } from './ui/Input';
@@ -19,6 +19,28 @@ export const LogoLibraryModal: React.FC = () => {
   const [tempSelectedLogos, setTempSelectedLogos] = useState<string[]>(selectedLogos);
   const [customUrl, setCustomUrl] = useState(logoUrl);
   const [activeTab, setActiveTab] = useState<'library' | 'url'>('library');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      setCustomUrl(dataUrl);
+    };
+    reader.readAsDataURL(file);
+
+    // Reset input so same file can be selected again
+    event.target.value = '';
+  };
 
   // Get unique categories and their counts
   const { categories, logoCounts } = useMemo(() => {
@@ -242,6 +264,30 @@ export const LogoLibraryModal: React.FC = () => {
             </>
           ) : (
             <div className="modal__url-section">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                style={{ display: 'none' }}
+              />
+
+              <div className="modal__upload-row">
+                <button
+                  type="button"
+                  className="modal__upload-button"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  Upload Local Image
+                </button>
+                <span className="modal__upload-or">or</span>
+              </div>
+
               <Input
                 type="url"
                 label="Logo URL"
