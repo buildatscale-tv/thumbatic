@@ -792,6 +792,104 @@ body, #root {
   color: rgba(16, 185, 129, 0.4);
 }
 
+/* Gemini Theme - Google's gradient colors */
+.gemini-theme {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+}
+
+.gemini-theme .logo-section {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+}
+
+.gemini-theme .text-section {
+  z-index: 10;
+}
+
+.gemini-theme .title-highlight {
+  background: linear-gradient(90deg, #4285f4 0%, #9b72cb 50%, #d96570 100%);
+  box-shadow: 0 4px 16px rgba(155, 114, 203, 0.4);
+}
+
+.gemini-theme .title-wrapper {
+  background: linear-gradient(90deg, #4285f4 0%, #9b72cb 50%, #d96570 100%);
+  padding: 12px 24px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  transform: skew(-2deg);
+  box-shadow: 0 4px 16px rgba(155, 114, 203, 0.4);
+}
+
+.gemini-theme .title-text {
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transform: skew(2deg);
+  display: inline-block;
+}
+
+/* Gemini Theme - Subtitle */
+.gemini-theme .subtitle-text,
+.gemini-theme .subtitle,
+.gemini-theme .selectable-element.subtitle {
+  color: #ffffff;
+  font-size: 42px;
+}
+
+.gemini-theme .accent-shapes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.gemini-theme .shape {
+  position: absolute;
+  border-radius: 8px;
+}
+
+.gemini-theme .shape-1 {
+  width: 200px;
+  height: 45px;
+  background: linear-gradient(90deg, rgba(66, 133, 244, 0.08) 0%, rgba(155, 114, 203, 0.08) 100%);
+  bottom: 120px;
+  left: 40px;
+  transform: rotate(12deg);
+}
+
+.gemini-theme .shape-2 {
+  width: 180px;
+  height: 180px;
+  background: rgba(155, 114, 203, 0.06);
+  top: 30px;
+  right: -50px;
+  border-radius: 50%;
+}
+
+.gemini-theme .shape-3 {
+  width: 120px;
+  height: 120px;
+  background: rgba(217, 101, 112, 0.06);
+  bottom: 50px;
+  right: 180px;
+  border-radius: 50%;
+}
+
+.gemini-theme .decorative-icon.icon-1 {
+  color: rgba(66, 133, 244, 0.6);
+}
+
+.gemini-theme .decorative-icon.icon-3 {
+  color: rgba(217, 101, 112, 0.4);
+}
+
 
 @media (max-width: 768px) {
   .container {
