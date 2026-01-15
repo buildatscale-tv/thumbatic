@@ -47,10 +47,10 @@ const createInitialTextElements = (): ThumbnailElement[] => {
       id: 'text-title',
       type: 'text',
       name: 'Title',
-      position: { x: 640, y: 200 },
+      position: { x: 640, y: 188 },
       zIndex: 5000,
       properties: {
-        fontSize: 128,
+        fontSize: 148,
         fontColor: '#ffffff',
         backgroundColor: '#ff6b35',
         backgroundStyle: 'none',
@@ -69,7 +69,7 @@ const createInitialTextElements = (): ThumbnailElement[] => {
       position: { x: 640, y: 380 },
       zIndex: 5100,
       properties: {
-        fontSize: 80,
+        fontSize: 88,
         fontColor: '#000000',
         backgroundColor: '#FEBC0A',
         backgroundStyle: 'drop-shadow',
@@ -419,15 +419,15 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
 
   addTextElement: (textType: TextElementType, content: string, position?: { x: number; y: number }) => {
     const defaultPositions = {
-      title: { x: 640, y: 208 },
+      title: { x: 640, y: 188 },
       subtitle: { x: 640, y: 396 },
       'accent-label': { x: 640, y: 676 },
       custom: { x: 640, y: 360 },
     };
 
     const defaultStyles = {
-      title: { fontSize: 128, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'sharp' as const, horizontalAlign: 'center' as const },
-      subtitle: { fontSize: 76, fontColor: '#000000', backgroundStyle: 'drop-shadow' as const, backgroundColor: '#FEBC0A', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const },
+      title: { fontSize: 148, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'sharp' as const, horizontalAlign: 'center' as const },
+      subtitle: { fontSize: 88, fontColor: '#000000', backgroundStyle: 'drop-shadow' as const, backgroundColor: '#FEBC0A', cornerStyle: 'rounded' as const, horizontalAlign: 'center' as const },
       'accent-label': { fontSize: 52, fontColor: '#ffffff', backgroundStyle: 'drop-shadow' as const, backgroundColor: '#017cff', cornerStyle: 'sharp' as const, horizontalAlign: 'center' as const },
       custom: { fontSize: 48, fontColor: '#ffffff', backgroundStyle: 'none' as const, backgroundColor: '#ff6b35', cornerStyle: 'sharp' as const, horizontalAlign: 'center' as const },
     };

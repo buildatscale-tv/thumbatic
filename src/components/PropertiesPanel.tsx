@@ -190,6 +190,21 @@ const TextProperties: React.FC<TextPropertiesProps> = ({ properties, onChange })
           />
         </div>
 
+        {/* Line spacing - only show for multi-line text */}
+        {properties.content.includes('\n') && (
+          <div className="properties-panel__field">
+            <Slider
+              label="Line Spacing"
+              value={properties.lineSpacing ?? -15}
+              min={-30}
+              max={20}
+              step={1}
+              unit="px"
+              onChange={(value) => onChange('lineSpacing', value)}
+            />
+          </div>
+        )}
+
         <div className="properties-panel__field">
           <label>Font Color</label>
           <div className="properties-panel__color-input">

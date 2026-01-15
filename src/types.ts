@@ -14,6 +14,7 @@ export interface TextElementProperties {
   textType: TextElementType;
   horizontalAlign?: 'left' | 'center' | 'right';
   verticalAlign?: 'top' | 'middle' | 'bottom';
+  lineSpacing?: number; // Spacing between lines for multi-line text (negative values bring lines closer)
 }
 
 export interface LogoIconElementProperties {
@@ -21,6 +22,7 @@ export interface LogoIconElementProperties {
   rotation: number;
   opacity: number;
   src?: string;
+  aspectRatio?: number; // width / height - when undefined, defaults to 1 (square)
 }
 
 // Arrow element properties for drawable arrows

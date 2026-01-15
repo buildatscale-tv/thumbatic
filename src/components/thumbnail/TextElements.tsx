@@ -214,9 +214,23 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
                    props.textType === 'subtitle' ? 'subtitle' :
                    props.textType === 'title' ? 'title' : 'text-element';
 
+  // Check if this is multi-line text (any text type)
+  const isMultiLine = content.includes('\n');
+
+  // Get font properties based on text type
+  const getFontProps = () => {
+    if (props.textType === 'subtitle') {
+      return { fontFamily: 'Geist, sans-serif', fontWeight: '600' };
+    }
+    return { fontFamily: 'Inter, system-ui, -apple-system, sans-serif', fontWeight: '800' };
+  };
+  const fontProps = getFontProps();
+
   let classes = `${baseClass} selectable-element`;
 
-  if (props.backgroundStyle !== 'none') {
+  // Only apply background style to outer element for single-line text
+  // Multi-line elements get per-line backgrounds instead
+  if (props.backgroundStyle !== 'none' && !isMultiLine) {
     classes += ` bg-style-${props.backgroundStyle}`;
   }
 
@@ -249,119 +263,229 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
           : undefined
       }
     >
-      <div
-        data-element-type="text"
-        data-element-name={element.name}
-        style={{ position: 'relative', display: 'inline-block' }}
-      >
-        {hasSelection && textSelection && (
-          <div
-            className="text-selection"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: `${(() => {
-                // Calculate selection start position
-                const textBeforeSelection = content.substring(0, textSelection.start);
+      {isMultiLine ? (
+        // Multi-line text: render each line with its own background
+        <div
+          data-element-type="text"
+          data-element-name={element.name}
+          style={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: props.horizontalAlign === 'left' ? 'flex-start' :
+                       props.horizontalAlign === 'right' ? 'flex-end' : 'center',
+            // Single unified drop shadow for entire shape (only for drop-shadow style)
+            filter: props.backgroundStyle === 'drop-shadow'
+              ? `drop-shadow(-7px 7px 0px ${shadowColor})`
+              : 'none',
+          }}
+        >
+          {(() => {
+            const lines = content.split('\n');
+
+            // Calculate which line the cursor is on and offset within that line
+            let cursorLineIndex = -1;
+            let cursorOffsetInLine = 0;
+            if (isEditing && !hasSelection && hasCursor && cursorPosition) {
+              let charCount = 0;
+              for (let i = 0; i < lines.length; i++) {
+                const lineEnd = charCount + lines[i].length;
+                if (cursorPosition.position <= lineEnd) {
+                  cursorLineIndex = i;
+                  cursorOffsetInLine = cursorPosition.position - charCount;
+                  break;
+                }
+                charCount = lineEnd + 1; // +1 for newline
+              }
+              // Handle cursor at very end
+              if (cursorLineIndex === -1) {
+                cursorLineIndex = lines.length - 1;
+                cursorOffsetInLine = lines[lines.length - 1].length;
+              }
+            }
+
+            return lines.map((line, index) => {
+              // Include baseClass for font styling, don't add bg-style class - shadow is handled by parent filter
+              const lineClasses = `${baseClass} ${baseClass}-line ${props.cornerStyle === 'sharp' ? 'corner-style-sharp' : 'corner-style-rounded'}`;
+
+              // Calculate cursor offset for this line
+              let lineCursorOffset = 0;
+              if (cursorLineIndex === index) {
+                const textBeforeCursor = line.substring(0, cursorOffsetInLine);
                 const measureEl = document.createElement('span');
                 measureEl.style.fontSize = `${props.fontSize}px`;
-
-                if (props.textType === 'subtitle') {
-                  measureEl.style.fontFamily = 'Geist, sans-serif';
-                  measureEl.style.fontWeight = '600';
-                } else {
-                  measureEl.style.fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
-                  measureEl.style.fontWeight = '800';
-                }
-
+                measureEl.style.fontFamily = fontProps.fontFamily;
+                measureEl.style.fontWeight = fontProps.fontWeight;
                 measureEl.style.visibility = 'hidden';
                 measureEl.style.position = 'absolute';
-                measureEl.style.whiteSpace = 'pre'; // Preserve spaces
-                measureEl.textContent = textBeforeSelection;
-
+                measureEl.style.whiteSpace = 'pre';
+                measureEl.textContent = textBeforeCursor;
                 document.body.appendChild(measureEl);
-                let startPos = measureEl.offsetWidth;
+                lineCursorOffset = measureEl.offsetWidth;
                 document.body.removeChild(measureEl);
+              }
 
-                // Apply title offset if needed
-                if (props.textType === 'title' && textBeforeSelection.length > 0) {
-                  const offsetPerChar = 8 / content.length;
-                  startPos += offsetPerChar * textBeforeSelection.length;
-                }
+              const hasBackground = props.backgroundStyle !== 'none';
+              const borderRadius = hasBackground && props.cornerStyle === 'rounded' ? '4px' : '0';
 
-                return startPos;
-              })()}px`,
-              width: `${(() => {
-                // Calculate selection width
-                const selectedText = content.substring(textSelection.start, textSelection.end);
-                const measureEl = document.createElement('span');
-                measureEl.style.fontSize = `${props.fontSize}px`;
+              return (
+                <span
+                  key={index}
+                  className={lineClasses}
+                  style={{
+                    position: 'relative',
+                    display: 'inline-block',
+                    fontSize: `${props.fontSize}px`,
+                    padding: hasBackground ? '8px 24px' : '0',
+                    marginTop: index > 0 ? `${props.lineSpacing ?? -15}px` : 0,
+                    backgroundColor: hasBackground ? props.backgroundColor : 'transparent',
+                    color: textColor,
+                    borderRadius,
+                    whiteSpace: 'nowrap',
+                    // Highlight style gets individual glow on each line
+                    boxShadow: props.backgroundStyle === 'highlight'
+                      ? `0 0 20px ${props.backgroundColor}40`
+                      : 'none',
+                  }}
+                >
+                  {line || '\u00A0'}
+                  {cursorLineIndex === index && (
+                    <span
+                      className="text-cursor"
+                      style={{
+                        position: 'absolute',
+                        left: `${(hasBackground ? 24 : 0) + lineCursorOffset}px`,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: '2px',
+                        height: '1.2em',
+                        backgroundColor: textColor,
+                        animation: 'blink 1s infinite',
+                        pointerEvents: 'none'
+                      }}
+                    />
+                  )}
+                </span>
+              );
+            });
+          })()}
+        </div>
+      ) : (
+        // Single-line text: use original rendering
+        <div
+          data-element-type="text"
+          data-element-name={element.name}
+          style={{ position: 'relative', display: 'inline-block' }}
+        >
+          {hasSelection && textSelection && (
+            <div
+              className="text-selection"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: `${(() => {
+                  // Calculate selection start position
+                  const textBeforeSelection = content.substring(0, textSelection.start);
+                  const measureEl = document.createElement('span');
+                  measureEl.style.fontSize = `${props.fontSize}px`;
 
-                if (props.textType === 'subtitle') {
-                  measureEl.style.fontFamily = 'Geist, sans-serif';
-                  measureEl.style.fontWeight = '600';
-                } else {
-                  measureEl.style.fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
-                  measureEl.style.fontWeight = '800';
-                }
+                  if (props.textType === 'subtitle') {
+                    measureEl.style.fontFamily = 'Geist, sans-serif';
+                    measureEl.style.fontWeight = '600';
+                  } else {
+                    measureEl.style.fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
+                    measureEl.style.fontWeight = '800';
+                  }
 
-                measureEl.style.visibility = 'hidden';
-                measureEl.style.position = 'absolute';
-                measureEl.style.whiteSpace = 'pre'; // Preserve spaces
-                measureEl.textContent = selectedText;
+                  measureEl.style.visibility = 'hidden';
+                  measureEl.style.position = 'absolute';
+                  measureEl.style.whiteSpace = 'pre'; // Preserve spaces
+                  measureEl.textContent = textBeforeSelection;
 
-                document.body.appendChild(measureEl);
-                let width = measureEl.offsetWidth;
-                document.body.removeChild(measureEl);
+                  document.body.appendChild(measureEl);
+                  let startPos = measureEl.offsetWidth;
+                  document.body.removeChild(measureEl);
 
-                return width;
-              })()}px`,
-              bottom: 0,
-              backgroundColor: textColor,
-              opacity: 1,
-              pointerEvents: 'none',
-              borderRadius: props.cornerStyle === 'rounded' ? '2px' : '0',
-              zIndex: -1
-            }}
-          />
-        )}
-        <span ref={textRef} style={{ position: 'relative', whiteSpace: 'nowrap' }}>
-          {hasSelection && textSelection ? (
-            <>
-              {/* Text before selection */}
-              <span>{content.substring(0, textSelection.start)}</span>
-              {/* Selected text - use background color when text has background, otherwise use contrasting color */}
-              <span style={{
-                color: props.backgroundStyle !== 'none' ? props.backgroundColor : '#000000',
-                position: 'relative',
-                zIndex: 1
-              }}>
-                {content.substring(textSelection.start, textSelection.end)}
-              </span>
-              {/* Text after selection */}
-              <span>{content.substring(textSelection.end)}</span>
-            </>
-          ) : (
-            content || (isEditing ? '\u00A0' : '')
+                  // Apply title offset if needed
+                  if (props.textType === 'title' && textBeforeSelection.length > 0) {
+                    const offsetPerChar = 8 / content.length;
+                    startPos += offsetPerChar * textBeforeSelection.length;
+                  }
+
+                  return startPos;
+                })()}px`,
+                width: `${(() => {
+                  // Calculate selection width
+                  const selectedText = content.substring(textSelection.start, textSelection.end);
+                  const measureEl = document.createElement('span');
+                  measureEl.style.fontSize = `${props.fontSize}px`;
+
+                  if (props.textType === 'subtitle') {
+                    measureEl.style.fontFamily = 'Geist, sans-serif';
+                    measureEl.style.fontWeight = '600';
+                  } else {
+                    measureEl.style.fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
+                    measureEl.style.fontWeight = '800';
+                  }
+
+                  measureEl.style.visibility = 'hidden';
+                  measureEl.style.position = 'absolute';
+                  measureEl.style.whiteSpace = 'pre'; // Preserve spaces
+                  measureEl.textContent = selectedText;
+
+                  document.body.appendChild(measureEl);
+                  let width = measureEl.offsetWidth;
+                  document.body.removeChild(measureEl);
+
+                  return width;
+                })()}px`,
+                bottom: 0,
+                backgroundColor: textColor,
+                opacity: 1,
+                pointerEvents: 'none',
+                borderRadius: props.cornerStyle === 'rounded' ? '2px' : '0',
+                zIndex: -1
+              }}
+            />
           )}
-        </span>
-        {isEditing && !hasSelection && hasCursor && (
-          <span
-            className="text-cursor"
-            style={{
-              position: 'absolute',
-              left: `${getCursorOffset}px`,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: '2px',
-              height: '1.2em',
-              backgroundColor: textColor,
-              animation: 'blink 1s infinite',
-              pointerEvents: 'none'
-            }}
-          />
-        )}
-      </div>
+          <span ref={textRef} style={{ position: 'relative', whiteSpace: 'nowrap' }}>
+            {hasSelection && textSelection ? (
+              <>
+                {/* Text before selection */}
+                <span>{content.substring(0, textSelection.start)}</span>
+                {/* Selected text - use background color when text has background, otherwise use contrasting color */}
+                <span style={{
+                  color: props.backgroundStyle !== 'none' ? props.backgroundColor : '#000000',
+                  position: 'relative',
+                  zIndex: 1
+                }}>
+                  {content.substring(textSelection.start, textSelection.end)}
+                </span>
+                {/* Text after selection */}
+                <span>{content.substring(textSelection.end)}</span>
+              </>
+            ) : (
+              content || (isEditing ? '\u00A0' : '')
+            )}
+          </span>
+          {isEditing && !hasSelection && hasCursor && (
+            <span
+              className="text-cursor"
+              style={{
+                position: 'absolute',
+                left: `${getCursorOffset}px`,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '2px',
+                height: '1.2em',
+                backgroundColor: textColor,
+                animation: 'blink 1s infinite',
+                pointerEvents: 'none'
+              }}
+            />
+          )}
+        </div>
+      )}
     </DraggableElement>
   );
 };

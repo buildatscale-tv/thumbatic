@@ -341,8 +341,25 @@ function App() {
         });
         setCursorPosition({ elementId: editingElementId, position: content.length });
       }
-      // Handle Enter/Escape - exit editing and deselect
-      else if (event.key === 'Enter' || event.key === 'Escape') {
+      // Handle Enter - insert newline for all text types
+      else if (event.key === 'Enter') {
+        event.preventDefault();
+        // Insert newline at cursor position
+        if (selection) {
+          const start = Math.min(selection.start, selection.end);
+          const end = Math.max(selection.start, selection.end);
+          content = content.slice(0, start) + '\n' + content.slice(end);
+          cursor = start + 1;
+          setTextSelection(null);
+        } else {
+          content = content.slice(0, cursor) + '\n' + content.slice(cursor);
+          cursor = cursor + 1;
+        }
+        updateElementProperties(editingElementId, { content });
+        setCursorPosition({ elementId: editingElementId, position: cursor });
+      }
+      // Handle Escape - always exit editing and deselect
+      else if (event.key === 'Escape') {
         event.preventDefault();
         setEditingElementId(null);
         setCursorPosition(null);
