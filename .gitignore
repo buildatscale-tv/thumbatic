@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 thumby
+
+# Secrets
+.env
+.dev.vars
