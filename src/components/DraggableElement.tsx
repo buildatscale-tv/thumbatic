@@ -271,13 +271,13 @@ export function DraggableElement({
     const isLogoOrIcon = id.startsWith('logo-') || id.startsWith('icon-');
     const isTextElement = id.startsWith('text-');
 
-    // For logos and icons, allow 50px protrusion off canvas
+    // For logos and icons, allow 300px protrusion off canvas
     // For text elements, account for drop shadow if present
     let protrusionAllowance = 0;
     let dropShadowOffset = { x: 0, y: 0 };
 
     if (isLogoOrIcon) {
-      protrusionAllowance = 50;
+      protrusionAllowance = 300;
     } else if (isTextElement) {
       // Check if element has drop shadow by looking at class names
       const element = elementRef.current;
