@@ -104,9 +104,9 @@ export const ExportButton: React.FC<ExportButtonProps> = ({ compact = false }) =
       thumbnailElement.style.transform = 'scale(1)';
       thumbnailElement.style.transformOrigin = 'top left';
 
-      // Use modern-screenshot with optimized options for smooth rendering
+      // Use modern-screenshot with 2x scale for crisp text rendering
       const canvas = await domToCanvas(thumbnailElement, {
-        scale: 1,
+        scale: 2,
         backgroundColor: null,
         quality: 1,
         debug: false
