@@ -21,6 +21,12 @@ const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
   };
 
   const logoSize = props.size || 64;
+  const aspectRatio = props.aspectRatio || 1;
+
+  // Calculate dimensions based on aspect ratio
+  // size is used as the height, width is calculated from aspect ratio
+  const logoHeight = logoSize;
+  const logoWidth = logoSize * aspectRatio;
 
   // Check if this logo should be inverted
   const logoInfo = LOGO_LIBRARY.find(logo => logo.value === props.src);
@@ -34,8 +40,8 @@ const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
       dragCallbacks={dragCallbacks}
       className="random-logo selectable-element"
       style={{
-        width: `${logoSize}px`,
-        height: `${logoSize}px`,
+        width: `${logoWidth}px`,
+        height: `${logoHeight}px`,
         opacity: props.opacity / 100,
         touchAction: 'none',
       }}

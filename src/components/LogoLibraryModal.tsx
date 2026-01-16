@@ -18,6 +18,7 @@ export const LogoLibraryModal: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [tempSelectedLogos, setTempSelectedLogos] = useState<string[]>(selectedLogos);
   const [customUrl, setCustomUrl] = useState(logoUrl);
+  const [customAspectRatio, setCustomAspectRatio] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<'library' | 'url'>('library');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -35,6 +36,14 @@ export const LogoLibraryModal: React.FC = () => {
     reader.onload = (e) => {
       const dataUrl = e.target?.result as string;
       setCustomUrl(dataUrl);
+
+      // Load image to get its dimensions for aspect ratio
+      const img = new Image();
+      img.onload = () => {
+        const ratio = img.naturalWidth / img.naturalHeight;
+        setCustomAspectRatio(ratio);
+      };
+      img.src = dataUrl;
     };
     reader.readAsDataURL(file);
 
@@ -123,6 +132,7 @@ export const LogoLibraryModal: React.FC = () => {
             rotation: 0,
             opacity: 100,
             src: customUrl,
+            aspectRatio: customAspectRatio,
           },
         });
         setLogoUrl(customUrl);
@@ -318,6 +328,10 @@ export const LogoLibraryModal: React.FC = () => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'block';
                         target.nextElementSibling?.classList.add('hidden');
+                        // Capture aspect ratio from loaded image
+                        if (target.naturalWidth && target.naturalHeight) {
+                          setCustomAspectRatio(target.naturalWidth / target.naturalHeight);
+                        }
                       }}
                     />
                     <div className="modal__url-error hidden">
