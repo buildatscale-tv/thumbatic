@@ -133,7 +133,7 @@ export const Toolbar: React.FC = () => {
           >
             <option value="claude">Claude Code</option>
             <option value="tech">Cloudflare</option>
-            <option value="dark">Supabase</option>
+            <option value="codex">Codex</option>
             <option value="gemini">Gemini</option>
             <option value="pencil">Pencil</option>
           </select>
