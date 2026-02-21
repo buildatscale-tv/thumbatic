@@ -69,6 +69,15 @@ export interface LogoLibraryItem {
 
 // Theme and style types
 export type Theme = 'claude' | 'tech' | 'codex' | 'gemini' | 'pencil';
+export type ThemeType = 'light' | 'dark';
+export const THEME_TYPES: Record<Theme, ThemeType> = {
+  claude: 'dark',
+  tech:   'dark',
+  codex:  'dark',
+  gemini: 'dark',
+  pencil: 'light',
+};
+
 export type LogoType = 'url' | 'library';
 
 // Tool types for the new UI

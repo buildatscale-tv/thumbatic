@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { ThumbnailState, ThumbnailElement, TextElementType, LogoIconElementProperties, ArrowElementProperties } from '../types';
+import { THEME_TYPES } from '../types';
 
 
 // Helper function to generate safe positions outside center exclusion zone (pixel-based)
@@ -141,7 +142,24 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     previewMode: false,
 
   // Actions
-  setTheme: (theme) => set({ theme }),
+  setTheme: (theme) => {
+    const titleColor = THEME_TYPES[theme] === 'light' ? '#000000' : '#ffffff';
+
+    const state = get();
+    const updatedElements = state.elements.map(el => {
+      if (el.type === 'text' && (el.properties as any).textType === 'title') {
+        return { ...el, properties: { ...el.properties, fontColor: titleColor } };
+      }
+      return el;
+    });
+
+    const updatedSelected = state.selectedElement?.type === 'text' &&
+      (state.selectedElement.properties as any).textType === 'title'
+        ? updatedElements.find(el => el.id === state.selectedElement!.id) ?? state.selectedElement
+        : state.selectedElement;
+
+    set({ theme, elements: updatedElements, selectedElement: updatedSelected });
+  },
 
   setLogoType: (logoType) => set({ logoType }),
 
