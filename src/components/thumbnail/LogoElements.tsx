@@ -11,7 +11,7 @@ interface DragCallbacks {
 }
 
 const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
-  const { selectElement } = useThumbnailStore();
+  const { selectElement, updateElementProperties } = useThumbnailStore();
   const props = element.properties as LogoIconElementProperties;
 
   const handleLogoClick = (event: React.MouseEvent) => {
@@ -27,6 +27,18 @@ const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
   // size is used as the height, width is calculated from aspect ratio
   const logoHeight = logoSize;
   const logoWidth = logoSize * aspectRatio;
+
+  // Auto-detect aspect ratio from loaded image
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    if (img.naturalWidth && img.naturalHeight) {
+      const naturalAspectRatio = img.naturalWidth / img.naturalHeight;
+      // Only update if aspect ratio differs meaningfully from current
+      if (Math.abs(naturalAspectRatio - aspectRatio) > 0.05) {
+        updateElementProperties(element.id, { aspectRatio: naturalAspectRatio });
+      }
+    }
+  };
 
   // Check if this logo should be inverted
   const logoInfo = LOGO_LIBRARY.find(logo => logo.value === props.src);
@@ -54,6 +66,7 @@ const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
         <img
           src={props.src?.replace('#inverted', '')}
           alt={element.name}
+          onLoad={handleImageLoad}
           style={{
             width: '100%',
             height: '100%',

@@ -112,8 +112,6 @@ export const ExportButton: React.FC<ExportButtonProps> = ({ compact = false }) =
         debug: false
       });
 
-      // Restore original styles (removed font cleanup)
-
       thumbnailElement.style.transform = originalTransform;
       originalStyles.forEach(({element, originalFontWeight, originalFontFamily}) => {
         element.style.fontWeight = originalFontWeight;

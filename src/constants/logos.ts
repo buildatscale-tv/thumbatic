@@ -92,4 +92,7 @@ export const LOGO_LIBRARY: LogoLibraryItem[] = [
   { value: "/src/assets/logos/claude-ai-icon.svg", label: "Claude AI", category: "AI" },
   { value: "/src/assets/logos/claude-code.svg", label: "Claude Code", category: "AI" },
   { value: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Google_Gemini_icon_2025.svg/2560px-Google_Gemini_icon_2025.svg.png", label: "Gemini", category: "AI" },
+  { value: "/remotion-logo.svg", label: "Remotion", category: "AI" },
+  { value: "/elevenlabs-logo-white.svg", label: "ElevenLabs", category: "AI" },
+  { value: "/pencil-icon.svg", label: "Pencil", category: "Design" },
 ];
