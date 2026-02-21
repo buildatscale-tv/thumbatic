@@ -135,6 +135,7 @@ export const Toolbar: React.FC = () => {
             <option value="tech">Cloudflare</option>
             <option value="dark">Supabase</option>
             <option value="gemini">Gemini</option>
+            <option value="pencil">Pencil</option>
           </select>
         </div>
 

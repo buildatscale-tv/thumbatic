@@ -891,6 +891,103 @@ body, #root {
 }
 
 
+/* Light Theme - Pencil-inspired clean white with yellow accents */
+.pencil-theme {
+  background: #f5f3ef;
+}
+
+.pencil-theme .title-highlight {
+  background: #141414;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+}
+
+.pencil-theme .title-wrapper {
+  background: #141414;
+  padding: 12px 24px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  transform: skew(-2deg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.pencil-theme .title-text {
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transform: skew(2deg);
+  display: inline-block;
+}
+
+/* Light Theme - Subtitle (dark text on light bg) */
+.pencil-theme .subtitle-text,
+.pencil-theme .subtitle,
+.pencil-theme .selectable-element.subtitle {
+  color: #141414;
+  font-size: 42px;
+}
+
+/* Light theme - text elements need dark color by default */
+.pencil-theme .selectable-element:not(.bg-style-highlight):not(.bg-style-drop-shadow) {
+  color: #141414;
+}
+
+.pencil-theme .accent-shapes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.pencil-theme .shape {
+  position: absolute;
+}
+
+.pencil-theme .shape-1 {
+  width: 200px;
+  height: 45px;
+  background: rgba(255, 185, 0, 0.24);
+  bottom: 120px;
+  left: 40px;
+  border-radius: 8px;
+  transform: rotate(12deg);
+}
+
+.pencil-theme .shape-2 {
+  width: 180px;
+  height: 180px;
+  background: rgba(255, 210, 0, 0.10);
+  top: 30px;
+  right: -50px;
+  border-radius: 50%;
+}
+
+.pencil-theme .shape-3 {
+  width: 120px;
+  height: 120px;
+  background: rgba(255, 155, 0, 0.11);
+  bottom: 50px;
+  right: 180px;
+  border-radius: 50%;
+}
+
+.pencil-theme .decorative-icon.icon-1 {
+  color: rgba(255, 166, 0, 0.4);
+}
+
+.pencil-theme .decorative-icon.icon-2 {
+  color: rgba(20, 20, 20, 0.12);
+}
+
+.pencil-theme .decorative-icon.icon-3 {
+  color: rgba(255, 166, 0, 0.25);
+}
+
 @media (max-width: 768px) {
   .container {
     flex-direction: column;
