@@ -91,7 +91,7 @@ export const LOGO_LIBRARY: LogoLibraryItem[] = [
   { value: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/OpenAI_logo_2025_%28symbol%29.svg/1024px-OpenAI_logo_2025_%28symbol%29.svg.png#inverted", label: "OpenAI (Inverted)", category: "AI", invert: true },
   { value: "/src/assets/logos/claude-ai-icon.svg", label: "Claude AI", category: "AI" },
   { value: "/src/assets/logos/claude-code.svg", label: "Claude Code", category: "AI" },
-  { value: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Google_Gemini_icon_2025.svg/2560px-Google_Gemini_icon_2025.svg.png", label: "Gemini", category: "AI" },
+  { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/google-gemini.svg", label: "Gemini", category: "AI" },
   { value: "/remotion-logo.svg", label: "Remotion", category: "AI" },
   { value: "/elevenlabs-logo-white.svg", label: "ElevenLabs", category: "AI" },
   { value: "/pencil-icon.svg", label: "Pencil", category: "Design" },
