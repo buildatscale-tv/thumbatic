@@ -951,8 +951,8 @@ body, #root {
 .pencil-theme .shape-1 {
   width: 200px;
   height: 45px;
-  background: rgba(255, 185, 0, 0.24);
-  bottom: 120px;
+  background: rgba(220, 180, 50, 0.18);
+  bottom: 70px;
   left: 40px;
   border-radius: 8px;
   transform: rotate(12deg);
