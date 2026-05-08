@@ -27,3 +27,6 @@ thumby
 # Secrets
 .env
 .dev.vars
+
+# Wrangler
+.wrangler/

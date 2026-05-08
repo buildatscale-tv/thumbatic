@@ -130,7 +130,44 @@ npm run preview
 
 ## Deployment
 
-The application is fully static and can be deployed to any static hosting service:
+### Cloudflare Workers (Recommended)
+
+This project is configured for deployment to Cloudflare Workers with the custom domain **thumbatic.com**.
+
+**Prerequisites:**
+- A Cloudflare account
+- `thumbatic.com` added to your Cloudflare account
+- Wrangler CLI authenticated (`npx wrangler login`)
+
+**Deploy:**
+
+```bash
+# Build and deploy
+npm run deploy:prod
+
+# Or deploy an existing build
+npm run deploy
+```
+
+**Custom Domain Setup:**
+
+The `wrangler.toml` is pre-configured with routes for `thumbatic.com` and `www.thumbatic.com`. After your first deploy:
+
+1. Go to the Cloudflare Dashboard → Workers & Pages → thumbatic
+2. Navigate to Settings → Triggers → Custom Domains
+3. Ensure `thumbatic.com` and `www.thumbatic.com` are active
+
+Or add the domain via Wrangler:
+
+```bash
+npx wrangler deploy
+```
+
+The `[assets]` configuration in `wrangler.toml` handles SPA routing (all unmatched routes serve `index.html`).
+
+### Other Static Hosts
+
+The application is fully static and can also be deployed to:
 - Netlify
 - Vercel
 - GitHub Pages

@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "wrangler deploy",
+    "deploy:prod": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "modern-screenshot": "^4.6.5",
@@ -26,6 +28,7 @@
     "globals": "^16.3.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
-    "vite": "^7.0.4"
+    "vite": "^7.0.4",
+    "wrangler": "^4.88.0"
   }
 }

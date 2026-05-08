@@ -1,0 +1,30 @@
+name = "thumbatic"
+compatibility_date = "2024-09-23"
+main = "./src/worker/index.ts"
+
+# Durable Objects
+[[durable_objects.bindings]]
+name = "THUMBNAIL_DO"
+class_name = "ThumbnailDO"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ThumbnailDO"]
+
+# Serve static assets from the Vite build output directory
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+html_handling = "auto-trailing-slash"
+not_found_handling = "single-page-application"
+
+# Custom domain configuration for thumbatic.com
+# NOTE: Ensure thumbatic.com is added to your Cloudflare account
+# and DNS records are configured before deploying.
+[[routes]]
+pattern = "thumbatic.com"
+custom_domain = true
+
+[[routes]]
+pattern = "www.thumbatic.com"
+custom_domain = true
