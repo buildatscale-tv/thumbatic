@@ -5,6 +5,51 @@ export { ThumbnailDO };
 export interface Env {
   THUMBNAIL_DO: DurableObjectNamespace<ThumbnailDO>;
   ASSETS: Fetcher;
+  GATE_SECRET: string;
+}
+
+const GATE_COOKIE = 'auth';
+const GATE_REDIRECT = 'https://buildatscale.tv';
+const GATE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
+function readCookie(request: Request, name: string): string | null {
+  const header = request.headers.get('Cookie');
+  if (!header) return null;
+  for (const part of header.split(';')) {
+    const [k, ...rest] = part.trim().split('=');
+    if (k === name) return decodeURIComponent(rest.join('='));
+  }
+  return null;
+}
+
+function gate(request: Request, env: Env): Response | null {
+  const url = new URL(request.url);
+  const secret = env.GATE_SECRET;
+
+  if (!secret) return null;
+
+  if (url.searchParams.has('lock')) {
+    const clear = `${GATE_COOKIE}=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax`;
+    return new Response(null, {
+      status: 302,
+      headers: { Location: GATE_REDIRECT, 'Set-Cookie': clear },
+    });
+  }
+
+  const providedKey = url.searchParams.get('key');
+  if (providedKey && providedKey === secret) {
+    const clean = new URL(url.toString());
+    clean.searchParams.delete('key');
+    const cookie = `${GATE_COOKIE}=${encodeURIComponent(secret)}; Path=/; Max-Age=${GATE_COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=Lax`;
+    return new Response(null, {
+      status: 302,
+      headers: { Location: clean.pathname + clean.search, 'Set-Cookie': cookie },
+    });
+  }
+
+  if (readCookie(request, GATE_COOKIE) === secret) return null;
+
+  return Response.redirect(GATE_REDIRECT, 302);
 }
 
 function corsHeaders(): HeadersInit {
@@ -33,6 +78,9 @@ export default {
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders(), status: 204 });
     }
+
+    const blocked = gate(request, env);
+    if (blocked) return blocked;
 
     // Route API requests to the Durable Object
     if (url.pathname.startsWith('/api/')) {
