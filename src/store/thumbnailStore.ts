@@ -141,6 +141,12 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     centerSnapMode: false, // False = neighbor snapping (default), True = center snapping
     previewMode: false,
 
+    // Persistence
+    thumbnailId: null,
+    thumbnailName: 'Untitled Thumbnail',
+    isLoading: false,
+    lastSavedAt: null,
+
   // Actions
   setTheme: (theme) => {
     const titleColor = THEME_TYPES[theme] === 'light' ? '#000000' : '#ffffff';
@@ -652,5 +658,30 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
   setCenterSnapMode: (enabled) => set({ centerSnapMode: enabled }),
 
   setPreviewMode: (previewMode) => set({ previewMode }),
+
+  // Persistence actions
+  setThumbnailId: (id) => set({ thumbnailId: id }),
+
+  setThumbnailName: (name) => set({ thumbnailName: name }),
+
+  setIsLoading: (loading) => set({ isLoading: loading }),
+
+  setLastSavedAt: (timestamp) => set({ lastSavedAt: timestamp }),
+
+  loadPersistedState: (persisted) => {
+    set((state) => ({
+      ...state,
+      ...persisted,
+      // Keep transient UI state local
+      selectedElement: null,
+      editingElementId: null,
+      textSelection: null,
+      cursorPosition: null,
+      isDrawingArrow: false,
+      arrowDrawStart: null,
+      showLogoLibrary: false,
+      previewMode: false,
+    }));
+  },
   };
 });

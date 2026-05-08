@@ -114,6 +114,12 @@ export interface ThumbnailState {
   centerSnapMode: boolean;
   previewMode: boolean;
 
+  // Persistence
+  thumbnailId: string | null;
+  thumbnailName: string;
+  isLoading: boolean;
+  lastSavedAt: number | null;
+
   // Actions
   setTheme: (theme: Theme) => void;
   setLogoType: (type: LogoType) => void;
@@ -147,4 +153,11 @@ export interface ThumbnailState {
   setSnappingEnabled: (enabled: boolean) => void;
   setCenterSnapMode: (enabled: boolean) => void;
   setPreviewMode: (previewMode: boolean) => void;
+
+  // Persistence actions
+  setThumbnailId: (id: string | null) => void;
+  setThumbnailName: (name: string) => void;
+  setIsLoading: (loading: boolean) => void;
+  setLastSavedAt: (timestamp: number | null) => void;
+  loadPersistedState: (state: Partial<ThumbnailState>) => void;
 }

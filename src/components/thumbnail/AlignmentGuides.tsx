@@ -83,9 +83,6 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
       {/* Vertical alignment guides - only show winners */}
       {filteredVerticalSnaps.filter(snap => snap.isGlobalWinner).map((snap, index) => {
         const x = snap.target.position.x!;
-        const willSnap = snap.isGlobalWinner;
-        const gradientId = 'url(#verticalGuideGradient)';
-        const solidColor = '#22c55e';
 
         // Different rendering for text edge guides vs canvas center guides
         const isTextEdge = snap.target.type === 'text-edge';
@@ -97,10 +94,6 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
           let elementBottom = CANVAS_HEIGHT * 0.8;
           let elementHeight = elementBottom - elementTop;
           let elementCenterY = elementTop + elementHeight / 2;
-          let elementLeft = CANVAS_WIDTH * 0.2;
-          let elementRight = CANVAS_WIDTH * 0.8;
-          let elementWidth = elementRight - elementLeft;
-          let elementCenterX = elementLeft + elementWidth / 2;
 
           if (sourceElement) {
             const rect = sourceElement.getBoundingClientRect();
@@ -111,10 +104,6 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               elementBottom = (rect.bottom - slideRect.top) * scale;
               elementHeight = rect.height * scale;
               elementCenterY = elementTop + elementHeight / 2;
-              elementLeft = (rect.left - slideRect.left) * scale;
-              elementRight = (rect.right - slideRect.left) * scale;
-              elementWidth = rect.width * scale;
-              elementCenterX = elementLeft + elementWidth / 2;
             }
           }
 
@@ -257,9 +246,6 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
       {/* Horizontal alignment guides - only show winners */}
       {filteredHorizontalSnaps.filter(snap => snap.isGlobalWinner).map((snap, index) => {
         const y = snap.target.position.y!;
-        const willSnap = snap.isGlobalWinner;
-        const gradientId = 'url(#horizontalGuideGradient)';
-        const solidColor = '#22c55e';
 
         // Different rendering for text edge guides vs canvas center guides
         const isTextEdge = snap.target.type === 'text-edge';
@@ -271,10 +257,6 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
           let elementRight = CANVAS_WIDTH * 0.8;
           let elementWidth = elementRight - elementLeft;
           let elementCenterX = elementLeft + elementWidth / 2;
-          let elementTop = CANVAS_HEIGHT * 0.2;
-          let elementBottom = CANVAS_HEIGHT * 0.8;
-          let elementHeight = elementBottom - elementTop;
-          let elementCenterY = elementTop + elementHeight / 2;
 
           if (sourceElement) {
             const rect = sourceElement.getBoundingClientRect();
@@ -285,10 +267,6 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
               elementRight = (rect.right - slideRect.left) * scale;
               elementWidth = rect.width * scale;
               elementCenterX = elementLeft + elementWidth / 2;
-              elementTop = (rect.top - slideRect.top) * scale;
-              elementBottom = (rect.bottom - slideRect.top) * scale;
-              elementHeight = rect.height * scale;
-              elementCenterY = elementTop + elementHeight / 2;
             }
           }
 

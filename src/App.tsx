@@ -5,6 +5,7 @@ import { useThumbnailStore } from './store/thumbnailStore';
 import { useSnapping } from './hooks/useSnapping';
 import { snapToGrid } from './utils/gridSnapUtils';
 import type { ActiveSnap } from './types/snapping';
+import { thumbnailApi } from './api/thumbnails';
 import './styles/thumbnail.css';
 import './styles/editor-layout.css';
 
@@ -19,6 +20,77 @@ function App() {
   const showGridGuides = useThumbnailStore(state => state.showGridGuides);
   const snappingEnabled = useThumbnailStore(state => state.snappingEnabled);
   const centerSnapMode = useThumbnailStore(state => state.centerSnapMode);
+  const thumbnailId = useThumbnailStore(state => state.thumbnailId);
+  const thumbnailName = useThumbnailStore(state => state.thumbnailName);
+  const theme = useThumbnailStore(state => state.theme);
+  const logoType = useThumbnailStore(state => state.logoType);
+  const logoUrl = useThumbnailStore(state => state.logoUrl);
+  const selectedLogos = useThumbnailStore(state => state.selectedLogos);
+  const logoSize = useThumbnailStore(state => state.logoSize);
+  const setLastSavedAt = useThumbnailStore(state => state.setLastSavedAt);
+  const loadPersistedState = useThumbnailStore(state => state.loadPersistedState);
+
+  // Load thumbnail on mount
+  React.useEffect(() => {
+    const load = async () => {
+      try {
+        const list = await thumbnailApi.list();
+        if (list.length > 0) {
+          // Load the most recently updated thumbnail
+          const latest = list[0];
+          const thumb = await thumbnailApi.get(latest.id);
+          loadPersistedState({
+            thumbnailId: thumb.id,
+            thumbnailName: thumb.name,
+            elements: thumb.elements,
+            theme: thumb.theme,
+            logoType: thumb.logoType,
+            logoUrl: thumb.logoUrl,
+            selectedLogos: thumb.selectedLogos,
+            logoSize: thumb.logoSize,
+            activeTool: thumb.activeTool,
+            showLogoLibrary: thumb.showLogoLibrary,
+            showGridGuides: thumb.showGridGuides,
+            snappingEnabled: thumb.snappingEnabled,
+            centerSnapMode: thumb.centerSnapMode,
+            previewMode: thumb.previewMode,
+            lastSavedAt: thumb.updatedAt,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load thumbnails on mount:', err);
+        // Continue with default state if API is unavailable
+      }
+    };
+    load();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-save with debounce
+  const saveTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    if (!thumbnailId) return;
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        const state = useThumbnailStore.getState();
+        const saved = await thumbnailApi.save(thumbnailId, state);
+        setLastSavedAt(saved.updatedAt);
+      } catch (err) {
+        console.error('Auto-save failed:', err);
+      }
+    }, 2000); // 2 second debounce
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [thumbnailId, thumbnailName, allElements, theme, logoType, logoUrl, selectedLogos, logoSize, showGridGuides, snappingEnabled, centerSnapMode, previewMode, setLastSavedAt]);
 
   const textElements = React.useMemo(
     () => allElements.filter(el => el.type === 'text'),
@@ -381,10 +453,7 @@ function App() {
       setShowLogoLibrary,
       setShowGridGuides,
       setDrawingArrow,
-      addTextElement,
-      showGridGuides,
       setPreviewMode,
-      previewMode,
       selectElement,
     } = useThumbnailStore.getState();
 
@@ -400,6 +469,18 @@ function App() {
       if (event.key === 'Escape') {
         event.preventDefault();
         selectElement(null);
+        return;
+      }
+
+      // Ctrl+S to save
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        const state = useThumbnailStore.getState();
+        if (state.thumbnailId) {
+          thumbnailApi.save(state.thumbnailId, state)
+            .then(saved => state.setLastSavedAt(saved.updatedAt))
+            .catch(err => console.error('Save failed:', err));
+        }
         return;
       }
 
@@ -557,7 +638,7 @@ function App() {
 
   // Drag callbacks to be passed to draggable elements
   const dragCallbacks = {
-    onDragStart: (elementId: string, position: { x: number; y: number }, anchor?: { x: number; y: number }) => {
+    onDragStart: (elementId: string, position: { x: number; y: number }, _anchor?: { x: number; y: number }) => {
       const currentElement = useThumbnailStore.getState().elements.find(el => el.id === elementId);
 
       if (currentElement) {

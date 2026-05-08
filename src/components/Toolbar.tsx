@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useThumbnailStore } from '../store/thumbnailStore';
 import type { Theme, TextElementType } from '../types';
+import { thumbnailApi } from '../api/thumbnails';
+import type { ThumbnailSummary } from '../api/thumbnails';
 
 export const Toolbar: React.FC = () => {
   const {
@@ -9,6 +11,8 @@ export const Toolbar: React.FC = () => {
     snappingEnabled,
     centerSnapMode,
     isDrawingArrow,
+    thumbnailId,
+    thumbnailName,
     setTheme,
     setShowLogoLibrary,
     setShowGridGuides,
@@ -16,26 +20,156 @@ export const Toolbar: React.FC = () => {
     setCenterSnapMode,
     setDrawingArrow,
     addTextElement,
+    setThumbnailName,
+    setThumbnailId,
+    loadPersistedState,
   } = useThumbnailStore();
 
   const [showTextDropdown, setShowTextDropdown] = useState(false);
-  const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const [showThumbDropdown, setShowThumbDropdown] = useState(false);
+  const [thumbnails, setThumbnails] = useState<ThumbnailSummary[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const thumbDropdownRef = useRef<HTMLDivElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
-  // Close dropdown when clicking outside
-  React.useEffect(() => {
+  // Close dropdowns when clicking outside
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowTextDropdown(false);
       }
+      if (thumbDropdownRef.current && !thumbDropdownRef.current.contains(event.target as Node)) {
+        setShowThumbDropdown(false);
+      }
     };
 
-    if (showTextDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Load thumbnail list when dropdown opens
+  const loadThumbnails = useCallback(async () => {
+    try {
+      const list = await thumbnailApi.list();
+      setThumbnails(list);
+    } catch (err) {
+      console.error('Failed to load thumbnails:', err);
     }
-  }, [showTextDropdown]);
+  }, []);
+
+  const handleShowThumbDropdown = () => {
+    if (!showThumbDropdown) {
+      loadThumbnails();
+    }
+    setShowThumbDropdown(!showThumbDropdown);
+  };
+
+  const handleCreateNew = async () => {
+    try {
+      setIsSaving(true);
+      setSaveError(null);
+      const state = useThumbnailStore.getState();
+      const newThumb = await thumbnailApi.create('Untitled Thumbnail', state);
+      loadPersistedState({
+        thumbnailId: newThumb.id,
+        thumbnailName: newThumb.name,
+        elements: newThumb.elements,
+        theme: newThumb.theme,
+        logoType: newThumb.logoType,
+        logoUrl: newThumb.logoUrl,
+        selectedLogos: newThumb.selectedLogos,
+        logoSize: newThumb.logoSize,
+        activeTool: newThumb.activeTool,
+        showLogoLibrary: newThumb.showLogoLibrary,
+        showGridGuides: newThumb.showGridGuides,
+        snappingEnabled: newThumb.snappingEnabled,
+        centerSnapMode: newThumb.centerSnapMode,
+        previewMode: newThumb.previewMode,
+        lastSavedAt: newThumb.updatedAt,
+      });
+      setShowThumbDropdown(false);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to create thumbnail');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleLoadThumbnail = async (id: string) => {
+    try {
+      setIsSaving(true);
+      setSaveError(null);
+      const thumb = await thumbnailApi.get(id);
+      loadPersistedState({
+        thumbnailId: thumb.id,
+        thumbnailName: thumb.name,
+        elements: thumb.elements,
+        theme: thumb.theme,
+        logoType: thumb.logoType,
+        logoUrl: thumb.logoUrl,
+        selectedLogos: thumb.selectedLogos,
+        logoSize: thumb.logoSize,
+        activeTool: thumb.activeTool,
+        showLogoLibrary: thumb.showLogoLibrary,
+        showGridGuides: thumb.showGridGuides,
+        snappingEnabled: thumb.snappingEnabled,
+        centerSnapMode: thumb.centerSnapMode,
+        previewMode: thumb.previewMode,
+        lastSavedAt: thumb.updatedAt,
+      });
+      setShowThumbDropdown(false);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to load thumbnail');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!thumbnailId) {
+      // Create new if no ID
+      await handleCreateNew();
+      return;
+    }
+    try {
+      setIsSaving(true);
+      setSaveError(null);
+      const state = useThumbnailStore.getState();
+      const saved = await thumbnailApi.save(thumbnailId, state);
+      useThumbnailStore.getState().setLastSavedAt(saved.updatedAt);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save thumbnail');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteThumbnail = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Delete this thumbnail?')) return;
+    try {
+      await thumbnailApi.delete(id);
+      setThumbnails(prev => prev.filter(t => t.id !== id));
+      if (thumbnailId === id) {
+        setThumbnailId(null);
+        setThumbnailName('Untitled Thumbnail');
+      }
+    } catch (err) {
+      console.error('Failed to delete thumbnail:', err);
+    }
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setThumbnailName(e.target.value);
+  };
+
+  const handleNameBlur = () => {
+    if (thumbnailId) {
+      handleSave();
+    }
+  };
 
   const handleAddText = (textType: TextElementType) => {
     const defaultTexts = {
@@ -123,6 +257,133 @@ export const Toolbar: React.FC = () => {
       </div>
 
       <div className="toolbar__section toolbar__section--right">
+        {/* Thumbnail management */}
+        <div className="toolbar__thumbnail-mgmt" ref={thumbDropdownRef} style={{ position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <input
+              ref={nameInputRef}
+              type="text"
+              value={thumbnailName}
+              onChange={handleNameChange}
+              onBlur={handleNameBlur}
+              className="toolbar__name-input"
+              placeholder="Thumbnail name..."
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '4px',
+                padding: '4px 8px',
+                color: 'inherit',
+                fontSize: '13px',
+                width: '140px',
+                outline: 'none',
+              }}
+            />
+            <button
+              className="toolbar__icon-button"
+              onClick={handleSave}
+              disabled={isSaving}
+              title="Save thumbnail"
+              style={{ opacity: isSaving ? 0.5 : 1 }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+            </button>
+            <button
+              className="toolbar__icon-button"
+              onClick={handleShowThumbDropdown}
+              title="Open thumbnail"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+            </button>
+            <button
+              className="toolbar__icon-button"
+              onClick={handleCreateNew}
+              title="New thumbnail"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+          </div>
+          {showThumbDropdown && (
+            <div
+              className="toolbar__dropdown-menu"
+              style={{
+                right: '0',
+                left: 'auto',
+                minWidth: '240px',
+                maxHeight: '300px',
+                overflowY: 'auto',
+              }}
+            >
+              {thumbnails.length === 0 ? (
+                <div className="toolbar__dropdown-item" style={{ opacity: 0.6, cursor: 'default' }}>
+                  No saved thumbnails
+                </div>
+              ) : (
+                thumbnails.map(thumb => (
+                  <div
+                    key={thumb.id}
+                    className="toolbar__dropdown-item"
+                    onClick={() => handleLoadThumbnail(thumb.id)}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {thumb.name}
+                    </span>
+                    <button
+                      onClick={(e) => handleDeleteThumbnail(thumb.id, e)}
+                      className="toolbar__icon-button"
+                      style={{ padding: '2px', minWidth: 'auto' }}
+                      title="Delete"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+          {saveError && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              right: 0,
+              marginTop: '4px',
+              padding: '4px 8px',
+              background: '#ef4444',
+              color: 'white',
+              borderRadius: '4px',
+              fontSize: '12px',
+              whiteSpace: 'nowrap',
+              zIndex: 100,
+            }}>
+              {saveError}
+            </div>
+          )}
+        </div>
+
+        <div className="toolbar__divider" />
+
         <div className="toolbar__theme">
           <label htmlFor="theme-select" className="toolbar__label">Theme:</label>
           <select
