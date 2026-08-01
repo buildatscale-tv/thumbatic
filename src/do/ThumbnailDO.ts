@@ -88,7 +88,7 @@ export class ThumbnailDO implements DurableObject {
       id: string;
       name: string;
       updated_at: number;
-    }>(`SELECT id, name, updated_at FROM thumbnails ORDER BY updated_at DESC`);
+    }>(`SELECT id, name, updated_at FROM thumbnails ORDER BY created_at DESC`);
 
     const thumbnails: ThumbnailSummary[] = [];
     for (const row of rows) {
