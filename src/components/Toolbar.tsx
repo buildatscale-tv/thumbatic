@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { useThumbnailStore } from '../store/thumbnailStore';
+import { useThumbnailStore, createInitialTextElements } from '../store/thumbnailStore';
 import type { Theme, TextElementType } from '../types';
 import { thumbnailApi } from '../api/thumbnails';
 import type { ThumbnailSummary } from '../api/thumbnails';
@@ -70,6 +70,25 @@ export const Toolbar: React.FC = () => {
     try {
       setIsSaving(true);
       setSaveError(null);
+
+      // Reset to default state before creating
+      loadPersistedState({
+        elements: createInitialTextElements(),
+        theme: 'claude',
+        logoType: 'library',
+        logoUrl: '',
+        selectedLogos: [],
+        logoSize: 256,
+        activeTool: 'text',
+        showLogoLibrary: false,
+        showGridGuides: false,
+        snappingEnabled: true,
+        centerSnapMode: false,
+        previewMode: false,
+        thumbnailId: null,
+        thumbnailName: 'Untitled Thumbnail',
+      });
+
       const state = useThumbnailStore.getState();
       const newThumb = await thumbnailApi.create('Untitled Thumbnail', state);
       loadPersistedState({

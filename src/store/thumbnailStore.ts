@@ -42,7 +42,7 @@ const generateSafePosition = (forLogo: boolean = false): { x: number; y: number 
 };
 
 // Create initial text elements positioned centered on canvas
-const createInitialTextElements = (): ThumbnailElement[] => {
+export const createInitialTextElements = (): ThumbnailElement[] => {
   return [
     {
       id: 'text-title',
