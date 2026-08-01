@@ -76,6 +76,17 @@ Themes are applied via CSS classes on the thumbnail container and support both r
 ### Export System
 Uses modern-screenshot library for PNG export at exact 1280x720 YouTube thumbnail dimensions. Exports are CORS-friendly and don't require additional server configuration.
 
+### Storage System
+Thumbnail persistence uses a pluggable storage adapter pattern in `src/storage/`:
+- **StorageAdapter interface** (`src/storage/types.ts`): `list`, `get`, `create`, `save`, `delete` operations common to all backends
+- **LocalStorageAdapter** (`src/storage/local.ts`): Default backend. Stores all thumbnails as a JSON array under the `thumbatic-thumbnails` localStorage key. Works fully client-side with no server.
+- **DurableObjectAdapter** (`src/storage/durable-object.ts`): Optional backend. Delegates to the Cloudflare Worker API (`src/api/thumbnails.ts`) which routes to the ThumbnailDO Durable Object with SQLite storage.
+- **Backend selection** (`src/storage/config.ts`): Controlled by the build-time env var `VITE_STORAGE_BACKEND` (`local` default | `durable-objects`). Invalid/unset values fall back to `local`.
+- **Serialization** (`src/storage/serialize.ts`): `getStateToPersist` converts store state to a `ThumbnailRecord`; `persistedToState` converts a record back to store state.
+- Components access the singleton via `getStorageAdapter()` from `src/storage/index.ts`. To add a new backend, implement `StorageAdapter` and register it in the factory.
+
+The Zustand store itself remains in-memory; persistence is orchestrated in App.tsx (2-second debounced auto-save) and Toolbar.tsx (manual save/load/create/delete).
+
 ## Key Technologies
 
 - **React 19**: Latest React with new features and improved performance
@@ -88,9 +99,22 @@ Uses modern-screenshot library for PNG export at exact 1280x720 YouTube thumbnai
 
 ```
 src/
-├── App.tsx                 # Root component with drag/snap logic
+├── App.tsx                 # Root component with drag/snap logic and auto-save
 ├── store/thumbnailStore.ts # Zustand state management
 ├── types.ts               # Core TypeScript type definitions
+├── api/
+│   └── thumbnails.ts      # Cloudflare Worker API client (used by DurableObjectAdapter)
+├── storage/
+│   ├── types.ts           # StorageAdapter interface + ThumbnailRecord types
+│   ├── config.ts          # Backend selection via VITE_STORAGE_BACKEND
+│   ├── local.ts           # LocalStorageAdapter (default)
+│   ├── durable-object.ts  # DurableObjectAdapter (optional)
+│   ├── serialize.ts       # State <-> ThumbnailRecord conversion
+│   └── index.ts           # getStorageAdapter() factory
+├── do/
+│   └── ThumbnailDO.ts     # Cloudflare Durable Object (SQLite storage)
+├── worker/
+│   └── index.ts           # Cloudflare Worker entry point
 ├── components/
 │   ├── ThumbnailGenerator.tsx # Main layout container
 │   ├── ThumbnailCanvas.tsx # 1280x720 thumbnail preview
@@ -136,7 +160,7 @@ src/
 ## Development Notes
 
 - Elements are rendered at exact 1280x720 dimensions for YouTube compatibility
-- The application is fully client-side with no server dependencies
+- Default storage is fully client-side (localStorage); the durable-objects backend requires a Cloudflare Worker deployment
 - All positioning calculations account for the fixed thumbnail dimensions
 - Theme switching preserves element positions and properties
 - Export functionality captures the exact thumbnail canvas without UI controls

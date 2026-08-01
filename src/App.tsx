@@ -5,7 +5,8 @@ import { useThumbnailStore } from './store/thumbnailStore';
 import { useSnapping } from './hooks/useSnapping';
 import { snapToGrid } from './utils/gridSnapUtils';
 import type { ActiveSnap } from './types/snapping';
-import { thumbnailApi } from './api/thumbnails';
+import { getStorageAdapter } from './storage';
+import { persistedToState } from './storage/serialize';
 import './styles/thumbnail.css';
 import './styles/editor-layout.css';
 
@@ -33,34 +34,19 @@ function App() {
 
   // Load thumbnail on mount
   React.useEffect(() => {
+    const storage = getStorageAdapter();
     const load = async () => {
       try {
-        const list = await thumbnailApi.list();
+        const list = await storage.list();
         if (list.length > 0) {
           // Load the most recently updated thumbnail
           const latest = list[0];
-          const thumb = await thumbnailApi.get(latest.id);
-          loadPersistedState({
-            thumbnailId: thumb.id,
-            thumbnailName: thumb.name,
-            elements: thumb.elements,
-            theme: thumb.theme,
-            logoType: thumb.logoType,
-            logoUrl: thumb.logoUrl,
-            selectedLogos: thumb.selectedLogos,
-            logoSize: thumb.logoSize,
-            activeTool: thumb.activeTool,
-            showLogoLibrary: thumb.showLogoLibrary,
-            showGridGuides: thumb.showGridGuides,
-            snappingEnabled: thumb.snappingEnabled,
-            centerSnapMode: thumb.centerSnapMode,
-            previewMode: thumb.previewMode,
-            lastSavedAt: thumb.updatedAt,
-          });
+          const thumb = await storage.get(latest.id);
+          loadPersistedState(persistedToState(thumb));
         }
       } catch (err) {
         console.error('Failed to load thumbnails on mount:', err);
-        // Continue with default state if API is unavailable
+        // Continue with default state if storage is unavailable
       }
     };
     load().finally(() => {
@@ -81,7 +67,7 @@ function App() {
     saveTimeoutRef.current = setTimeout(async () => {
       try {
         const state = useThumbnailStore.getState();
-        const saved = await thumbnailApi.save(thumbnailId, state);
+        const saved = await getStorageAdapter().save(thumbnailId, state);
         setLastSavedAt(saved.updatedAt);
       } catch (err) {
         console.error('Auto-save failed:', err);
@@ -480,7 +466,7 @@ function App() {
         event.preventDefault();
         const state = useThumbnailStore.getState();
         if (state.thumbnailId) {
-          thumbnailApi.save(state.thumbnailId, state)
+          getStorageAdapter().save(state.thumbnailId, state)
             .then(saved => state.setLastSavedAt(saved.updatedAt))
             .catch(err => console.error('Save failed:', err));
         }

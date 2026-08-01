@@ -1,8 +1,9 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useThumbnailStore, createInitialTextElements } from '../store/thumbnailStore';
 import type { Theme, TextElementType } from '../types';
-import { thumbnailApi } from '../api/thumbnails';
-import type { ThumbnailSummary } from '../api/thumbnails';
+import { getStorageAdapter } from '../storage';
+import { persistedToState } from '../storage/serialize';
+import type { ThumbnailSummary } from '../storage/types';
 
 export const Toolbar: React.FC = () => {
   const {
@@ -52,7 +53,7 @@ export const Toolbar: React.FC = () => {
   // Load thumbnail list when dropdown opens
   const loadThumbnails = useCallback(async () => {
     try {
-      const list = await thumbnailApi.list();
+      const list = await getStorageAdapter().list();
       setThumbnails(list);
     } catch (err) {
       console.error('Failed to load thumbnails:', err);
@@ -90,24 +91,8 @@ export const Toolbar: React.FC = () => {
       });
 
       const state = useThumbnailStore.getState();
-      const newThumb = await thumbnailApi.create('Untitled Thumbnail', state);
-      loadPersistedState({
-        thumbnailId: newThumb.id,
-        thumbnailName: newThumb.name,
-        elements: newThumb.elements,
-        theme: newThumb.theme,
-        logoType: newThumb.logoType,
-        logoUrl: newThumb.logoUrl,
-        selectedLogos: newThumb.selectedLogos,
-        logoSize: newThumb.logoSize,
-        activeTool: newThumb.activeTool,
-        showLogoLibrary: newThumb.showLogoLibrary,
-        showGridGuides: newThumb.showGridGuides,
-        snappingEnabled: newThumb.snappingEnabled,
-        centerSnapMode: newThumb.centerSnapMode,
-        previewMode: newThumb.previewMode,
-        lastSavedAt: newThumb.updatedAt,
-      });
+      const newThumb = await getStorageAdapter().create('Untitled Thumbnail', state);
+      loadPersistedState(persistedToState(newThumb));
       setShowThumbDropdown(false);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to create thumbnail');
@@ -120,24 +105,8 @@ export const Toolbar: React.FC = () => {
     try {
       setIsSaving(true);
       setSaveError(null);
-      const thumb = await thumbnailApi.get(id);
-      loadPersistedState({
-        thumbnailId: thumb.id,
-        thumbnailName: thumb.name,
-        elements: thumb.elements,
-        theme: thumb.theme,
-        logoType: thumb.logoType,
-        logoUrl: thumb.logoUrl,
-        selectedLogos: thumb.selectedLogos,
-        logoSize: thumb.logoSize,
-        activeTool: thumb.activeTool,
-        showLogoLibrary: thumb.showLogoLibrary,
-        showGridGuides: thumb.showGridGuides,
-        snappingEnabled: thumb.snappingEnabled,
-        centerSnapMode: thumb.centerSnapMode,
-        previewMode: thumb.previewMode,
-        lastSavedAt: thumb.updatedAt,
-      });
+      const thumb = await getStorageAdapter().get(id);
+      loadPersistedState(persistedToState(thumb));
       setShowThumbDropdown(false);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to load thumbnail');
@@ -156,7 +125,7 @@ export const Toolbar: React.FC = () => {
       setIsSaving(true);
       setSaveError(null);
       const state = useThumbnailStore.getState();
-      const saved = await thumbnailApi.save(thumbnailId, state);
+      const saved = await getStorageAdapter().save(thumbnailId, state);
       useThumbnailStore.getState().setLastSavedAt(saved.updatedAt);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to save thumbnail');
@@ -169,7 +138,7 @@ export const Toolbar: React.FC = () => {
     e.stopPropagation();
     if (!confirm('Delete this thumbnail?')) return;
     try {
-      await thumbnailApi.delete(id);
+      await getStorageAdapter().delete(id);
       setThumbnails(prev => prev.filter(t => t.id !== id));
       if (thumbnailId === id) {
         setThumbnailId(null);
