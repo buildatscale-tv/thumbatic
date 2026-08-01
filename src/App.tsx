@@ -29,6 +29,7 @@ function App() {
   const logoSize = useThumbnailStore(state => state.logoSize);
   const setLastSavedAt = useThumbnailStore(state => state.setLastSavedAt);
   const loadPersistedState = useThumbnailStore(state => state.loadPersistedState);
+  const setIsHydrated = useThumbnailStore(state => state.setIsHydrated);
 
   // Load thumbnail on mount
   React.useEffect(() => {
@@ -62,7 +63,9 @@ function App() {
         // Continue with default state if API is unavailable
       }
     };
-    load();
+    load().finally(() => {
+      setIsHydrated(true);
+    });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-save with debounce

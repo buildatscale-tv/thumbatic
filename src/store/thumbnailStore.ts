@@ -146,6 +146,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     thumbnailName: 'Untitled Thumbnail',
     isLoading: false,
     lastSavedAt: null,
+    isHydrated: false,
 
   // Actions
   setTheme: (theme) => {
@@ -667,6 +668,8 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
   setIsLoading: (loading) => set({ isLoading: loading }),
 
   setLastSavedAt: (timestamp) => set({ lastSavedAt: timestamp }),
+
+  setIsHydrated: (hydrated) => set({ isHydrated: hydrated }),
 
   loadPersistedState: (persisted) => {
     set((state) => ({

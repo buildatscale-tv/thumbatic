@@ -119,6 +119,7 @@ export interface ThumbnailState {
   thumbnailName: string;
   isLoading: boolean;
   lastSavedAt: number | null;
+  isHydrated: boolean;
 
   // Actions
   setTheme: (theme: Theme) => void;
@@ -159,5 +160,6 @@ export interface ThumbnailState {
   setThumbnailName: (name: string) => void;
   setIsLoading: (loading: boolean) => void;
   setLastSavedAt: (timestamp: number | null) => void;
+  setIsHydrated: (hydrated: boolean) => void;
   loadPersistedState: (state: Partial<ThumbnailState>) => void;
 }

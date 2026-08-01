@@ -1,5 +1,11 @@
 /* Editor Layout - Photopea-style UI */
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Main Layout Structure */
 .editor-layout {
   display: flex;
