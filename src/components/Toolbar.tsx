@@ -292,7 +292,7 @@ export const Toolbar: React.FC = () => {
                 border: '1px solid rgba(255,255,255,0.2)',
                 borderRadius: '4px',
                 padding: '4px 8px',
-                color: 'inherit',
+                color: '#ddd',
                 fontSize: '13px',
                 width: '140px',
                 outline: 'none',
