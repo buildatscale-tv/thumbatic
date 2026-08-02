@@ -57,6 +57,20 @@ ignore a click that lands within 500 ms of the pointer press. Use a time window 
 flag, because a touch that turns into a scroll never sends the click and a flag would stay set
 and swallow the next real click.
 
+Text editing is a virtual cursor driven by a `document` keydown listener, with no editable
+element on the canvas. A phone keyboard cannot reach it, so a coarse pointer gets
+`MobileTextEditor`, a sheet with a real visible `textarea`. Three rules keep it working:
+
+- Focus the field inside the tap handler. A phone opens the keyboard only during a user gesture,
+  so the sheet stays mounted while a text element is selected and only slides into view.
+- Keep the field **uncontrolled**. A controlled value rewrites the DOM on every keystroke and
+  drops the caret back to the start.
+- Font size at least 16px, or iOS zooms the page when the field takes focus.
+
+An invisible field was tried first and failed. Select all, caret placement, and the space bar
+cursor gesture are native behaviors that need a field the user can see. The virtual handler
+ignores key events coming from a field, or every character lands twice.
+
 ## Overflow clips menus
 
 An `overflow` value other than `visible` clips absolutely positioned descendants. Toolbar menus

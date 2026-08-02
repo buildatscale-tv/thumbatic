@@ -2,6 +2,7 @@ import React from 'react';
 import { useThumbnailStore } from '../../store/thumbnailStore';
 import { DraggableElement } from '../DraggableElement';
 import type { TextElementProperties, ThumbnailElement } from '../../types';
+import { focusMobileTextField } from '../../utils/mobileTextField';
 
 // Color brightness detection - for contrasting text colors
 const getContrastingColor = (hexColor: string): string => {
@@ -54,15 +55,42 @@ interface DragCallbacks {
   onDragEnd: (elementId: string, position: { x: number; y: number }) => void;
 }
 
+/** True on a device whose main pointer is a finger. */
+function useIsCoarsePointer(): boolean {
+  const [isCoarse, setIsCoarse] = React.useState(
+    () => typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches === true
+  );
+
+  React.useEffect(() => {
+    const query = window.matchMedia?.('(pointer: coarse)');
+    if (!query) return;
+    const update = () => setIsCoarse(query.matches);
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+
+  return isCoarse;
+}
+
 // Draggable Text Component (for manual positioning)
 const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
   const { selectElement, selectedElement, setEditingElementId, editingElementId, textSelection, cursorPosition, setTextSelection, setCursorPosition } = useThumbnailStore();
   const textRef = React.useRef<HTMLDivElement>(null);
+  const isCoarsePointer = useIsCoarsePointer();
 
   const handleElementClick = (event: React.MouseEvent) => {
     event.stopPropagation();
+    const wasSelected = selectedElement?.id === element.id;
     // Use the element prop directly to avoid store timing issues
     selectElement(element);
+
+    // A touch screen has no double click to rely on, so a second tap starts editing.
+    // The sheet field is focused here, inside the tap, because a phone only opens the
+    // keyboard when focus moves during a user gesture.
+    if (isCoarsePointer && wasSelected && editingElementId !== element.id) {
+      focusMobileTextField();
+      setEditingElementId(element.id);
+    }
   };
 
   const handleDoubleClick = (event: React.MouseEvent) => {

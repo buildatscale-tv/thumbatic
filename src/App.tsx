@@ -134,6 +134,12 @@ function App() {
     if (!editingElementId) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      // On a touch screen the text goes through a real field, which handles the keys
+      // itself. Without this the character would be inserted twice.
+      if (event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLInputElement) {
+        return;
+      }
+
       const store = useThumbnailStore.getState();
       const { elements, updateElementProperties, setEditingElementId, setCursorPosition, setTextSelection, selectElement } = store;
 

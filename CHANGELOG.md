@@ -10,6 +10,7 @@ Notable changes to Thumbatic, newest first. Each heading is the date the work la
 - Grok logo in a dark theme version and a light theme version.
 - Layout for phones and narrow windows. The canvas scales down to fit the space so the whole thumbnail stays visible. Below 900 px the properties panel is hidden and the toolbar scrolls sideways. Editing still expects a mouse, so this is a viewing layout.
 - Touch support for the canvas. Elements drag with a finger, arrows draw and adjust with a finger, and drag distance now matches the pointer even when the canvas is scaled down.
+- Text editing on a touch screen. Tap a text element once to select it and again to edit. A sheet opens at the bottom of the screen with a real text field, so select all, caret placement, and the space bar cursor gesture behave the way the phone already does them. The canvas updates as you type.
 - Test suite on Vitest, run with `npm test`. It covers first-save behavior, the name that follows the canvas title, and screen to canvas coordinate conversion.
 - `CHANGELOG.md` for the 2026 releases.
 
