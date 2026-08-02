@@ -298,14 +298,6 @@ function App() {
           const start = Math.min(selection.start, selection.end);
           const end = Math.max(selection.start, selection.end);
 
-          console.log('Replacing selection:', {
-            selection,
-            start,
-            end,
-            oldContent: content,
-            selectedText: content.slice(start, end),
-            key: event.key
-          });
 
           content = content.slice(0, start) + event.key + content.slice(end);
           cursor = start + 1;

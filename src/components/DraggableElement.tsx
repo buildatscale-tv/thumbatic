@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useThumbnailStore } from '../store/thumbnailStore';
+import { toCanvasDelta } from '../utils/canvasCoords';
 
 interface DragCallbacks {
   onDragStart: (elementId: string, position: { x: number; y: number }, anchor?: { x: number; y: number }) => void;
@@ -189,7 +190,7 @@ export function DraggableElement({
   }, [position]); // Include position in deps to ensure we use current position
 
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handlePointerDown = (e: React.PointerEvent) => {
     // Don't start dragging on double-click
     if (e.detail === 2) {
       return;
@@ -244,11 +245,12 @@ export function DraggableElement({
     dragCallbacks.onDragStart(id, position, anchor);
   };
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
+  const handlePointerMove = useCallback((e: PointerEvent) => {
     if (!isDragging) return;
 
-    const deltaX = e.clientX - dragStart.x;
-    const deltaY = e.clientY - dragStart.y;
+    // Screen pixels become canvas pixels, so a drag tracks the finger or cursor
+    // even when the canvas is scaled down to fit a small screen.
+    const { x: deltaX, y: deltaY } = toCanvasDelta(e.clientX - dragStart.x, e.clientY - dragStart.y);
 
     // Get current element dimensions to calculate proper constraints
     // Use offsetWidth/offsetHeight for layout dimensions (not affected by scale)
@@ -304,32 +306,34 @@ export function DraggableElement({
       ),
     };
 
-    // Store current position for use in handleMouseUp
+    // Store current position for use when the drag ends
     currentPositionRef.current = constrainedCenterPosition;
 
     dragCallbacks.onDragMove(id, constrainedCenterPosition, dragAnchor);
   }, [isDragging, dragStart.x, dragStart.y, initialCenterPosition.x, initialCenterPosition.y, dragCallbacks, id, dragAnchor]);
 
-  const handleMouseUp = useCallback(() => {
+  const handlePointerUp = useCallback(() => {
     if (isDragging) {
       setIsDragging(false);
 
-      // Use the last constrained position from mousemove
+      // Use the last constrained position from the move handler
       dragCallbacks.onDragEnd(id, currentPositionRef.current, dragAnchor);
     }
   }, [isDragging, dragCallbacks, id, dragAnchor]);
 
   React.useEffect(() => {
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('pointermove', handlePointerMove);
+      document.addEventListener('pointerup', handlePointerUp);
+      document.addEventListener('pointercancel', handlePointerUp);
 
       return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener('pointermove', handlePointerMove);
+        document.removeEventListener('pointerup', handlePointerUp);
+        document.removeEventListener('pointercancel', handlePointerUp);
       };
     }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+  }, [isDragging, handlePointerMove, handlePointerUp]);
 
   const isSelected = selectedElement?.id === id;
 
@@ -342,6 +346,8 @@ export function DraggableElement({
     top: topLeftPosition.y,
     cursor: isDragging ? 'grabbing' : 'grab',
     userSelect: 'none',
+    // Without this the browser treats a drag on a touch screen as a scroll gesture
+    touchAction: 'none',
     zIndex: effectiveZIndex, // This should override any zIndex in style
     outline: isSelected ? '2px solid #007acc' : 'none',
     outlineOffset: '2px',
@@ -352,7 +358,7 @@ export function DraggableElement({
   return (
     <div
       ref={elementRef}
-      onMouseDown={handleMouseDown}
+      onPointerDown={handlePointerDown}
       onClick={onClick}
       onDoubleClick={onDoubleClick}
       className={combinedClassName}

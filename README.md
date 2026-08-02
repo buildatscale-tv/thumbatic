@@ -78,6 +78,8 @@ everything works offline and on the first run.
 | `npm run dev` | Start the Vite development server with hot module replacement |
 | `npm run build` | Type-check with `tsc -b` and build the production bundle into `dist/` |
 | `npm run lint` | Run ESLint with the TypeScript and React rules |
+| `npm test` | Run the Vitest suite once |
+| `npm run test:watch` | Run the tests and rerun them on every change |
 | `npm run preview` | Serve the production build locally |
 | `npm run deploy` | Deploy the current `dist/` build to Cloudflare Workers with Wrangler |
 | `npm run deploy:prod` | Build, then deploy to Cloudflare Workers |
@@ -389,9 +391,10 @@ the most reliable export results.
 
 Before you commit:
 
-1. `npm run lint` must pass.
-2. `npm run build` must complete, including the TypeScript check.
-3. Test the change in the development server.
+1. `npm run lint` must pass. It currently reports zero problems.
+2. `npm test` must pass.
+3. `npm run build` must complete, including the TypeScript check.
+4. Test the change in the development server.
 
 ## License
 

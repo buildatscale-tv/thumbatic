@@ -168,7 +168,6 @@ export const ExportButton: React.FC<ExportButtonProps> = ({ compact = false }) =
 
     } catch (error) {
       console.error('Error generating image:', error);
-      console.log('Falling back to simpler approach...');
 
       // Fallback to basic approach
       try {

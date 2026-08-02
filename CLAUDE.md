@@ -1,166 +1,125 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Working notes for agents. `README.md` has the project description, the architecture, and the
+deployment steps. This file holds only what is easy to get wrong here, plus how this repo likes
+to work.
 
-## Overview
+## Verify in a browser, not by reading
 
-This is a React TypeScript application that generates professional YouTube thumbnails with flat design, rectangular highlights, and theme-based styling. The project is built with Vite, React 19, TypeScript, and uses Zustand for state management, modern-screenshot for image export, and a custom snapping system for element positioning.
+Most defects here are layout, pointer, or persistence behavior, and none of them show up in a
+diff. The pattern that works: write a throwaway HTML page in the project root, mount the real
+`App`, drive it, print the result into the page, then screenshot it with headless Chrome.
 
-## Development Commands
-
-- **Development server**: `npm run dev` - Start Vite development server with HMR
-- **Build**: `npm run build` - TypeScript compilation followed by production build
-- **Lint**: `npm run lint` - Run ESLint with TypeScript rules
-- **Preview**: `npm run preview` - Preview production build locally
-
-## Architecture
-
-### State Management
-The application uses Zustand for centralized state management in `src/store/thumbnailStore.ts`. The store manages:
-- Theme and styling configuration (themes, corner styles)
-- Logo and icon management (library selection, custom URLs, positioning)
-- Element management (text, logos, icons) with drag-and-drop positioning
-- Text layout modes and element properties
-
-### Core Architecture Patterns
-
-#### Element System
-All thumbnail elements follow a unified structure defined in `src/types.ts`:
-```typescript
-interface ThumbnailElement {
-  id: string;
-  type: 'text' | 'logo' | 'icon';
-  name: string;
-  position: { x: number; y: number }; // Center-based coordinates
-  properties: ElementProperties;
-}
+```bash
+npm run dev > /tmp/dev.log 2>&1 &
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu \
+  --window-size=1600,1000 --virtual-time-budget=20000 --screenshot=/tmp/out.png \
+  http://localhost:5173/my-harness.html
 ```
 
-Elements use center-based positioning (x, y coordinates represent the center) but are rendered using top-left positioning. The store handles this conversion automatically.
+Delete the harness when you are done, and stop the dev server with
+`lsof -ti tcp:5173 | xargs kill`.
 
-#### Drag and Drop System
-Uses a custom implementation built around React state and DOM events:
-- **App.tsx**: Contains drag callbacks and snapping logic
-- **DraggableElement.tsx**: Wrapper component for draggable functionality
-- **useSnapping hook**: Provides intelligent snapping to canvas center and other elements
-- Only text elements participate in snapping; logos and icons have free positioning
+Two traps in that setup:
 
-#### Safe Positioning Algorithm
-The `generateSafePosition()` function in thumbnailStore ensures logos/icons don't overlap with the text center zone:
-- Defines an 900x400px exclusion zone in the thumbnail center
-- Uses up to 50 attempts to find non-overlapping positions
-- Fallback positioning if safe position can't be found
+- Headless Chrome will not make a window narrower than about 500 px. For phone widths, put the
+  app in an `<iframe>` of the exact size inside a larger page. Media queries follow the frame.
+- Screenshots freeze CSS transitions at their start value, so a colour you measure may be the
+  "from" colour. Add `* { transition: none !important }` in the harness before measuring.
 
-### Component Structure
-- **App.tsx**: Root component with drag handling and snapping integration
-- **ThumbnailGenerator.tsx**: Main layout container with Toolbar, ThumbnailCanvas, PropertiesPanel, and StatusBar
-- **ThumbnailCanvas.tsx**: 1280x720 thumbnail preview with theme classes and element rendering
-- **Toolbar.tsx**: Top toolbar with add element tools and theme selection
-- **PropertiesPanel.tsx**: Right sidebar for editing selected element properties
-- **StatusBar.tsx**: Bottom bar with export functionality
+## Canvas coordinates
 
-Key rendering components:
-- **controls/**: Export button component
-- **thumbnail/**: Thumbnail rendering components (TextElements, LogoElements, IconElements, AccentShapes)
-- **ui/**: Reusable UI components (Button, Input, Select, Slider, etc.)
+The canvas is always 1280x720 in its own coordinate space. Element positions, snapping, and
+export all depend on that.
 
-### Theme System
-Four built-in themes with CSS class switching:
-- `claude-theme`: Orange/navy default theme
-- `tech-theme`: Blue gradient theme  
-- `dark-theme`: Green/dark theme
-- `blueprint-theme`: Blue angular theme
+- Never give `.thumbnail` a `max-width`, a percentage width, or `aspect-ratio`. A `max-width`
+  clamps the used width even when the width is set inline, and the children then position
+  themselves outside the visible box. A prototype-era media query did exactly this and broke the
+  canvas below 768 px.
+- On small screens the canvas is scaled with a transform. `ThumbnailGenerator` measures the
+  container and writes `--canvas-scale`.
+- Pointer events arrive in screen pixels. Convert them with `toCanvasPoint` or `toCanvasDelta`
+  from `src/utils/canvasCoords.ts` before they reach element positions, or drags move the wrong
+  distance whenever the canvas is scaled.
+- Export must capture at full size. `ExportButton` suspends the transform and restores it in a
+  `finally`, so a failed capture cannot leave the canvas oversized.
 
-Themes are applied via CSS classes on the thumbnail container and support both rounded and sharp corner styles.
+## Pointer input, not mouse input
 
-### Export System
-Uses modern-screenshot library for PNG export at exact 1280x720 YouTube thumbnail dimensions. Exports are CORS-friendly and don't require additional server configuration.
+Use pointer events for anything draggable or tappable, and set `touch-action: none` on
+draggable elements.
 
-### Storage System
-Thumbnail persistence uses a pluggable storage adapter pattern in `src/storage/`:
-- **StorageAdapter interface** (`src/storage/types.ts`): `list`, `get`, `create`, `save`, `delete` operations common to all backends
-- **LocalStorageAdapter** (`src/storage/local.ts`): Default backend. Stores all thumbnails as a JSON array under the `thumbatic-thumbnails` localStorage key. Works fully client-side with no server.
-- **DurableObjectAdapter** (`src/storage/durable-object.ts`): Optional backend. Delegates to the Cloudflare Worker API (`src/api/thumbnails.ts`) which routes to the ThumbnailDO Durable Object with SQLite storage.
-- **Backend selection** (`src/storage/config.ts`): Controlled by the build-time env var `VITE_STORAGE_BACKEND` (`local` default | `durable-objects`). Invalid/unset values fall back to `local`.
-- **Serialization** (`src/storage/serialize.ts`): `getStateToPersist` converts store state to a `ThumbnailRecord`; `persistedToState` converts a record back to store state.
-- Components access the singleton via `getStorageAdapter()` from `src/storage/index.ts`. To add a new backend, implement `StorageAdapter` and register it in the factory.
+A tap inside a scrolling container can be claimed by the browser as the start of a pan, and then
+**no click event is ever sent**. The toolbar scrolls sideways on small screens, so controls
+wired only to `onClick` did nothing on a phone while working on desktop. `useToggleHandlers` in
+`Toolbar.tsx` shows the pattern: toggle on `pointerdown`, keep `onClick` for the keyboard, and
+ignore a click that lands within 500 ms of the pointer press. Use a time window rather than a
+flag, because a touch that turns into a scroll never sends the click and a flag would stay set
+and swallow the next real click.
 
-The Zustand store itself remains in-memory; persistence is orchestrated in App.tsx (2-second debounced auto-save) and Toolbar.tsx (manual save/load/create/delete).
+## Overflow clips menus
 
-## Key Technologies
+An `overflow` value other than `visible` clips absolutely positioned descendants. Toolbar menus
+therefore render **after** the toolbar, not inside it, and `useAnchoredMenu` places them with
+`position: fixed` under the control that opened them. A portal is not needed. Keep the
+outside-click check covering both the control and the menu.
 
-- **React 19**: Latest React with new features and improved performance
-- **TypeScript**: Strict typing with comprehensive type definitions
-- **Vite**: Fast build tool with HMR and optimized builds
-- **Zustand**: Lightweight state management (no providers needed)
-- **modern-screenshot**: Client-side image export without canvas security issues
+## Storage
 
-## File Structure
+- `local` is the default backend everywhere, including production, so a fresh clone works with
+  no server. `src/storage/config.ts` falls back to it for any unknown value.
+- `VITE_STORAGE_BACKEND` is inlined at build time. Changing it needs a restart of the dev server
+  or a rebuild.
+- Personal overrides live in git-ignored `.env.production.local` and `.env.development.local`.
+  Never commit a file that sets `durable-objects`, because that changes the default for everyone.
+- Uploaded logos are stored as data URLs inside the record, so they count against the quota.
+  `src/utils/imageStorage.ts` keeps an image untouched when it is already under 600 KB and no
+  larger than 2048 px, and only then steps quality down.
+- The Durable Object backend uses one global instance and has no per-user authentication.
 
-```
-src/
-├── App.tsx                 # Root component with drag/snap logic and auto-save
-├── store/thumbnailStore.ts # Zustand state management
-├── types.ts               # Core TypeScript type definitions
-├── api/
-│   └── thumbnails.ts      # Cloudflare Worker API client (used by DurableObjectAdapter)
-├── storage/
-│   ├── types.ts           # StorageAdapter interface + ThumbnailRecord types
-│   ├── config.ts          # Backend selection via VITE_STORAGE_BACKEND
-│   ├── local.ts           # LocalStorageAdapter (default)
-│   ├── durable-object.ts  # DurableObjectAdapter (optional)
-│   ├── serialize.ts       # State <-> ThumbnailRecord conversion
-│   └── index.ts           # getStorageAdapter() factory
-├── do/
-│   └── ThumbnailDO.ts     # Cloudflare Durable Object (SQLite storage)
-├── worker/
-│   └── index.ts           # Cloudflare Worker entry point
-├── components/
-│   ├── ThumbnailGenerator.tsx # Main layout container
-│   ├── ThumbnailCanvas.tsx # 1280x720 thumbnail preview
-│   ├── Toolbar.tsx         # Top toolbar with tools and theme
-│   ├── PropertiesPanel.tsx # Right sidebar with element properties
-│   ├── StatusBar.tsx       # Bottom status bar with export
-│   ├── DraggableElement.tsx # Drag wrapper component
-│   ├── controls/           # Export button component
-│   ├── thumbnail/          # Thumbnail rendering components
-│   └── ui/                 # Reusable UI components
-├── hooks/
-│   └── useSnapping.ts     # Smart snapping system
-├── utils/
-│   └── snapUtils.ts       # Snapping calculations
-├── constants/             # Logo and icon libraries
-└── styles/               # CSS styling
-```
+## Wrangler will not log in
 
-## Important Implementation Details
+If a `wrangler` command fails with `Invalid access token [code: 9109]` while `wrangler login`
+claims success, look for an uncommented `CLOUDFLARE_API_TOKEN` in `.env`. Wrangler reads `.env`
+and an API token takes priority over OAuth, so the login never happens. Check with
+`wrangler whoami --env-file /dev/null`. Keep `CLOUDFLARE_ACCOUNT_ID`; only the token breaks it.
 
-### Element Positioning
-- All elements use center-based coordinates internally
-- Rendering converts center coordinates to top-left for CSS positioning  
-- Text elements snap to canvas center (640, 360) and other alignment guides
-- Logo/icon elements have free positioning with safe zone avoidance
+## Logo library
 
-### Logo System
-- Supports both custom URL logos and curated library of 50+ tech logos
-- Library logos use devicons CDN for consistent styling
-- Automatic positioning prevents overlap with text content area
+- Local assets belong in `public/`. A path under `src/assets/` works in `npm run dev` and 404s in
+  the build, so it fails only on the deployed site.
+- Prefer versioned CDNs. `cdn.jsdelivr.net/gh/devicons/devicon` and
+  `cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons` are already in use. A logo taken from a
+  product's own site breaks the next time they deploy.
+- When a logo has two versions, the label names the theme it is for: `GitHub (Dark Theme)` and
+  `GitHub (Light Theme)`. The parenthesis never means the icon's own colour. List the dark theme
+  entry first, since four of the five themes are dark.
+- Decide which version is which by measuring, not by reading the file name. Draw the icon on a
+  canvas, apply its `invert` flag, and average the luminance of the visible pixels.
 
-### Snapping System
-- Text elements snap to canvas center lines and other text elements
-- 200px proximity threshold for showing guides, 100px threshold for snapping
-- Visual guides appear during drag operations for text elements
-- Snapping only applies to text elements; logos/icons have free movement
+## Checks
 
-### TypeScript Configuration
-- Strict mode enabled with comprehensive type checking
-- ESLint configured for React hooks and TypeScript best practices
-- Project uses Vite's optimized TypeScript compilation
+`npm run lint`, `npm test`, and `npm run build` all have to pass. Lint sits at zero problems, so
+any output is something you introduced. Tests cover first-save behavior, the name that follows
+the canvas title, and canvas coordinate conversion.
 
-## Development Notes
+Do not add `console.log` to shipped code, and do not add a browser `alert()` or `confirm()`.
+This UI shows errors inline and confirms destructive actions in place.
 
-- Elements are rendered at exact 1280x720 dimensions for YouTube compatibility
-- Default storage is fully client-side (localStorage); the durable-objects backend requires a Cloudflare Worker deployment
-- All positioning calculations account for the fixed thumbnail dimensions
-- Theme switching preserves element positions and properties
-- Export functionality captures the exact thumbnail canvas without UI controls
+## Conventions
+
+- The changelog entry goes in the **same commit** as the change it describes. Inside an Added
+  group, keep the `CHANGELOG.md` line last.
+- `CHANGELOG.md` is date based, newest first. One line per bullet with no hard wrapping, because
+  hard wraps make bullets ragged in an editor and noisy in a diff.
+- Deploy with `npm run deploy:prod`. The live site sits behind a `GATE_SECRET` cookie, so a plain
+  request redirects to buildatscale.tv. That is the gate, not a broken deploy.
+
+## Writing style
+
+- No em dashes anywhere, in prose or in the UI.
+- Short sentences. Avoid the padded construction "X, with Y" or "X, covering Y" repeated down a
+  list. Split it into two sentences instead.
+- State the cause when reporting a fix, not only the symptom.
+- Do not claim something works without evidence. Measure it, screenshot it, or say plainly that
+  it is unverified.

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useThumbnailStore } from '../store/thumbnailStore';
+import { toCanvasPoint } from '../utils/canvasCoords';
 import { TextElements } from './thumbnail/TextElements';
 import { LogoElements } from './thumbnail/LogoElements';
 import { ArrowElements } from './thumbnail/ArrowElements';
@@ -57,32 +58,22 @@ export const ThumbnailCanvas: React.FC<ThumbnailCanvasProps> = ({ dragState, dra
     }
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handlePointerDown = (e: React.PointerEvent) => {
     if (!isDrawingArrow) return;
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    setArrowDrawStart({ x, y });
+    setArrowDrawStart(toCanvasPoint(e.clientX, e.clientY));
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handlePointerMove = (e: React.PointerEvent) => {
     if (!isDrawingArrow || !arrowDrawStart) return;
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    setArrowPreview({ x, y });
+    setArrowPreview(toCanvasPoint(e.clientX, e.clientY));
   };
 
-  const handleMouseUp = (e: React.MouseEvent) => {
+  const handlePointerUp = (e: React.PointerEvent) => {
     if (!isDrawingArrow || !arrowDrawStart) return;
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const { x, y } = toCanvasPoint(e.clientX, e.clientY);
 
     // Minimum distance to create arrow (20px)
     const dist = Math.hypot(x - arrowDrawStart.x, y - arrowDrawStart.y);
@@ -113,9 +104,9 @@ export const ThumbnailCanvas: React.FC<ThumbnailCanvasProps> = ({ dragState, dra
       id="thumbnail"
       className={`thumbnail ${themeClass} ${isDrawingArrow ? 'drawing-mode' : ''}`.trim()}
       onClick={handleThumbnailClick}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
       style={{
         position: 'relative',
         width: '1280px',

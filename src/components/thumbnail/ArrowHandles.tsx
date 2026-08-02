@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { useThumbnailStore } from '../../store/thumbnailStore';
 import type { ArrowElementProperties, ThumbnailElement } from '../../types';
+import { toCanvasPoint, CANVAS_WIDTH, CANVAS_HEIGHT } from '../../utils/canvasCoords';
 
 interface ArrowHandlesProps {
   element: ThumbnailElement;
@@ -11,67 +12,57 @@ export const ArrowHandles: React.FC<ArrowHandlesProps> = ({ element }) => {
   const props = element.properties as ArrowElementProperties;
   const lastPosRef = useRef<{ x: number; y: number } | null>(null);
 
-  const handleDrag = (pointType: 'start' | 'end' | 'control', e: React.MouseEvent) => {
+  const handleDrag = (pointType: 'start' | 'end' | 'control', e: React.PointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
 
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      const canvas = document.getElementById('thumbnail');
-      const rect = canvas?.getBoundingClientRect();
-      if (!rect) return;
-
-      const x = Math.max(0, Math.min(1280, moveEvent.clientX - rect.left));
-      const y = Math.max(0, Math.min(720, moveEvent.clientY - rect.top));
-
-      updateArrowPoint(element.id, pointType, { x, y });
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const point = toCanvasPoint(moveEvent.clientX, moveEvent.clientY);
+      updateArrowPoint(element.id, pointType, {
+        x: Math.max(0, Math.min(CANVAS_WIDTH, point.x)),
+        y: Math.max(0, Math.min(CANVAS_HEIGHT, point.y)),
+      });
     };
 
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+    const handlePointerUp = () => {
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerUp);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', handlePointerUp);
+    document.addEventListener('pointercancel', handlePointerUp);
   };
 
-  const handleMoveAll = (e: React.MouseEvent) => {
+  const handleMoveAll = (e: React.PointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
 
-    const canvas = document.getElementById('thumbnail');
-    const rect = canvas?.getBoundingClientRect();
-    if (!rect) return;
+    lastPosRef.current = toCanvasPoint(e.clientX, e.clientY);
 
-    lastPosRef.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
-
-    const handleMouseMove = (moveEvent: MouseEvent) => {
+    const handlePointerMove = (moveEvent: PointerEvent) => {
       if (!lastPosRef.current) return;
 
-      const currentX = moveEvent.clientX - rect.left;
-      const currentY = moveEvent.clientY - rect.top;
+      const current = toCanvasPoint(moveEvent.clientX, moveEvent.clientY);
+      moveArrow(element.id, {
+        x: current.x - lastPosRef.current.x,
+        y: current.y - lastPosRef.current.y,
+      });
 
-      const delta = {
-        x: currentX - lastPosRef.current.x,
-        y: currentY - lastPosRef.current.y,
-      };
-
-      moveArrow(element.id, delta);
-
-      lastPosRef.current = { x: currentX, y: currentY };
+      lastPosRef.current = current;
     };
 
-    const handleMouseUp = () => {
+    const handlePointerUp = () => {
       lastPosRef.current = null;
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerUp);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', handlePointerUp);
+    document.addEventListener('pointercancel', handlePointerUp);
   };
 
   // Calculate center point for move handle
@@ -149,7 +140,7 @@ export const ArrowHandles: React.FC<ArrowHandlesProps> = ({ element }) => {
         stroke="#0066FF"
         strokeWidth={2}
         style={{ cursor: 'move', pointerEvents: 'auto' }}
-        onMouseDown={(e) => handleDrag('start', e)}
+        onPointerDown={(e) => handleDrag('start', e)}
       />
 
       {/* End handle - circle */}
@@ -161,7 +152,7 @@ export const ArrowHandles: React.FC<ArrowHandlesProps> = ({ element }) => {
         stroke="#0066FF"
         strokeWidth={2}
         style={{ cursor: 'move', pointerEvents: 'auto' }}
-        onMouseDown={(e) => handleDrag('end', e)}
+        onPointerDown={(e) => handleDrag('end', e)}
       />
 
       {/* Center move handle - move entire arrow (rendered first so control is on top) */}
@@ -173,7 +164,7 @@ export const ArrowHandles: React.FC<ArrowHandlesProps> = ({ element }) => {
         stroke="#0066FF"
         strokeWidth={2}
         style={{ cursor: 'grab', pointerEvents: 'auto' }}
-        onMouseDown={handleMoveAll}
+        onPointerDown={handleMoveAll}
       />
       <g transform={`translate(${centerX}, ${centerY})`} style={{ pointerEvents: 'none' }}>
         {/* Four-way arrow move icon */}
@@ -197,7 +188,7 @@ export const ArrowHandles: React.FC<ArrowHandlesProps> = ({ element }) => {
         strokeWidth={2}
         transform={`rotate(45 ${props.controlPoint.x} ${props.controlPoint.y})`}
         style={{ cursor: 'move', pointerEvents: 'auto' }}
-        onMouseDown={(e) => handleDrag('control', e)}
+        onPointerDown={(e) => handleDrag('control', e)}
         onDoubleClick={handleResetBezier}
       />
     </svg>

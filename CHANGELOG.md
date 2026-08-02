@@ -9,12 +9,16 @@ Notable changes to Thumbatic, newest first. Each heading is the date the work la
 - DeepSeek logo.
 - Grok logo in a dark theme version and a light theme version.
 - Layout for phones and narrow windows. The canvas scales down to fit the space so the whole thumbnail stays visible. Below 900 px the properties panel is hidden and the toolbar scrolls sideways. Editing still expects a mouse, so this is a viewing layout.
+- Touch support for the canvas. Elements drag with a finger, arrows draw and adjust with a finger, and drag distance now matches the pointer even when the canvas is scaled down.
+- Test suite on Vitest, run with `npm test`. It covers first-save behavior, the name that follows the canvas title, and screen to canvas coordinate conversion.
 - `CHANGELOG.md` for the 2026 releases.
 
 ### Changed
 
 - The Pencil logo is now the Pen mark after the rebrand from pencil.dev to pen.dev. The old yellow mark is removed. The `pencil` theme keeps its name and is unrelated to this logo.
 - Every logo that has two versions now names the theme it belongs on. For example "GitHub (Dark Theme)" and "GitHub (Light Theme)". The old "(Inverted)" wording described a CSS filter instead of a use. The two Opencode entries had their meanings reversed. Each pair lists the dark theme version first.
+- Debug logging is gone from the store, the editor, and the export path. The store used to log on every property and position change, which ran on every drag.
+- `CLAUDE.md` is now agent notes only. It records the traps in this codebase and leaves the project description to the README.
 
 ### Fixed
 

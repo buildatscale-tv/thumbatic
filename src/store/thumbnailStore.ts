@@ -111,11 +111,6 @@ export const createInitialTextElements = (): ThumbnailElement[] => {
 
 export const useThumbnailStore = create<ThumbnailState>((set, get) => {
   const initialElements = createInitialTextElements();
-  console.log('🚀 Store initialized with elements:', initialElements.map(el => ({
-    id: el.id,
-    type: el.type,
-    horizontalAlign: (el.properties as TextElementProperties).horizontalAlign
-  })));
 
   return {
     // Initial theme and styling
@@ -257,11 +252,6 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     if (selectedElement && selectedElement.zIndex === undefined) {
       selectedElement = { ...selectedElement, zIndex: 5000 };
     }
-    console.log('📌 Element selected:', {
-      id: selectedElement?.id,
-      type: selectedElement?.type,
-      horizontalAlign: selectedElement?.type === 'text' ? (selectedElement?.properties as TextElementProperties)?.horizontalAlign : null
-    });
 
     const state = get();
     // Clear text selection if selecting a different element or deselecting
@@ -299,14 +289,6 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     const hasAlignment = element.type === 'text' &&
       ((element.properties as TextElementProperties).horizontalAlign || (element.properties as TextElementProperties).verticalAlign);
 
-    console.log('🔍 updateElementProperties:', {
-      elementId,
-      isContentChanging,
-      hasAlignment,
-      horizontalAlign: element.type === 'text' ? (element.properties as TextElementProperties).horizontalAlign : null,
-      newContent: (properties as Partial<TextElementProperties>).content,
-      oldContent: (element.properties as TextElementProperties).content
-    });
 
     let updatedPosition = element.position;
 
@@ -315,7 +297,6 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
       const textProps = element.properties as TextElementProperties;
       const horizontalAlign = textProps.horizontalAlign;
 
-      console.log('📏 Measuring new text for alignment:', horizontalAlign);
 
       if (horizontalAlign) {
         // Create a temporary element to measure the new text size
@@ -337,8 +318,6 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
         const padding = textProps.backgroundStyle !== 'none' ? 40 : 0; // Account for padding
         const totalWidth = newWidth + padding;
 
-        const oldX = updatedPosition.x;
-
         switch (horizontalAlign) {
           case 'left':
             updatedPosition = { ...updatedPosition, x: totalWidth / 2 + 8 }; // 8px for drop shadow
@@ -350,18 +329,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
             updatedPosition = { ...updatedPosition, x: canvasWidth / 2 };
             break;
         }
-
-        console.log('📍 Position update:', {
-          alignment: horizontalAlign,
-          oldX,
-          newX: updatedPosition.x,
-          textWidth: newWidth,
-          totalWidth,
-          padding
-        });
       }
-    } else if (isContentChanging) {
-      console.log('⚠️ Content changing but no alignment to update');
     }
 
     const updatedElements = state.elements.map(el =>
@@ -400,13 +368,6 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
   updateElementPosition: (elementId, position, isManual = false) => {
     const state = get();
 
-    console.log('🚀 updateElementPosition called:', {
-      elementId,
-      position,
-      isManual,
-      currentAlignment: state.elements.find(el => el.id === elementId)?.type === 'text' ?
-        (state.elements.find(el => el.id === elementId)?.properties as TextElementProperties)?.horizontalAlign : null
-    });
 
     // Position is used directly (snapping handled in App component for text elements)
     const updatedElements = state.elements.map(element => {
@@ -415,7 +376,6 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
         if (isManual && element.type === 'text') {
           const textProps = element.properties as TextElementProperties;
           if (textProps.horizontalAlign || textProps.verticalAlign) {
-            console.log('🔴 Clearing alignment due to manual position update');
             return {
               ...element,
               position,
