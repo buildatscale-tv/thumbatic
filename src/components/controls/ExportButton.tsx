@@ -60,6 +60,22 @@ interface ExportButtonProps {
   compact?: boolean;
 }
 
+/**
+ * Draws the canvas at full size for a capture, and returns a function that puts the
+ * fit-to-screen scale back. Small screens scale the canvas with a CSS transform, and
+ * a capture of that would come out at the scaled size.
+ */
+function suspendCanvasScale(element: HTMLElement): () => void {
+  const originalTransform = element.style.transform;
+  const originalTransformOrigin = element.style.transformOrigin;
+  element.style.transform = 'scale(1)';
+  element.style.transformOrigin = 'top left';
+  return () => {
+    element.style.transform = originalTransform;
+    element.style.transformOrigin = originalTransformOrigin;
+  };
+}
+
 export const ExportButton: React.FC<ExportButtonProps> = ({ compact = false }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { elements, selectElement } = useThumbnailStore();
@@ -100,20 +116,23 @@ export const ExportButton: React.FC<ExportButtonProps> = ({ compact = false }) =
         htmlEl.style.fontFamily = computedStyle.fontFamily;
       });
 
-      // Temporarily remove the scale transform for capture
-      const originalTransform = thumbnailElement.style.transform;
-      thumbnailElement.style.transform = 'scale(1)';
-      thumbnailElement.style.transformOrigin = 'top left';
+      // Capture at full size. On a small screen the canvas is scaled down to fit,
+      // and the restore must happen even when the capture throws, or the canvas
+      // stays at full size and overflows the screen.
+      let canvas: HTMLCanvasElement;
+      const restoreScale = suspendCanvasScale(thumbnailElement);
+      try {
+        // Use modern-screenshot with 2x scale for crisp text rendering
+        canvas = await domToCanvas(thumbnailElement, {
+          scale: 2,
+          backgroundColor: null,
+          quality: 1,
+          debug: false
+        });
+      } finally {
+        restoreScale();
+      }
 
-      // Use modern-screenshot with 2x scale for crisp text rendering
-      const canvas = await domToCanvas(thumbnailElement, {
-        scale: 2,
-        backgroundColor: null,
-        quality: 1,
-        debug: false
-      });
-
-      thumbnailElement.style.transform = originalTransform;
       originalStyles.forEach(({element, originalFontWeight, originalFontFamily}) => {
         element.style.fontWeight = originalFontWeight;
         element.style.fontFamily = originalFontFamily;
@@ -158,7 +177,13 @@ export const ExportButton: React.FC<ExportButtonProps> = ({ compact = false }) =
 
         const thumbnailElement = document.getElementById('thumbnail');
         if (thumbnailElement) {
-          const canvas = await domToCanvas(thumbnailElement, {});
+          const restoreScale = suspendCanvasScale(thumbnailElement);
+          let canvas: HTMLCanvasElement;
+          try {
+            canvas = await domToCanvas(thumbnailElement, {});
+          } finally {
+            restoreScale();
+          }
 
           const link = document.createElement('a');
           // Generate filename from text elements

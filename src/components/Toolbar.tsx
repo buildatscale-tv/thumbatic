@@ -6,6 +6,90 @@ import { saveCurrentThumbnail, onSaveSuccess } from '../storage/saveCurrent';
 import { persistedToState } from '../storage/serialize';
 import type { ThumbnailSummary } from '../storage/types';
 
+/**
+ * Positions a menu directly under the control that opens it.
+ *
+ * The menu keeps its place in the DOM, so click-outside handling still works, but it
+ * is positioned against the viewport. That matters on small screens, where the toolbar
+ * scrolls sideways and would otherwise clip the menu. The position follows the control
+ * when the toolbar is swiped or the window is resized.
+ */
+function useAnchoredMenu(
+  isOpen: boolean,
+  anchorRef: React.RefObject<HTMLElement | null>,
+  menuRef: React.RefObject<HTMLElement | null>
+): React.CSSProperties | undefined {
+  const [style, setStyle] = useState<React.CSSProperties>();
+
+  React.useLayoutEffect(() => {
+    const anchor = anchorRef.current;
+    if (!isOpen || !anchor) {
+      setStyle(undefined);
+      return;
+    }
+
+    const place = () => {
+      const anchorRect = anchor.getBoundingClientRect();
+      const toolbarRect = anchor.closest('.toolbar')?.getBoundingClientRect();
+      const menuWidth = menuRef.current?.offsetWidth ?? 0;
+      const margin = 8;
+      const maxLeft = Math.max(margin, window.innerWidth - menuWidth - margin);
+
+      // Clear the whole toolbar, not just the control. The controls sit inside the
+      // bar, so a gap measured from the control alone leaves the menu overlapping it.
+      const top = Math.max(anchorRect.bottom, toolbarRect?.bottom ?? 0) + 4;
+
+      setStyle({
+        position: 'fixed',
+        top,
+        left: Math.min(Math.max(margin, anchorRect.left), maxLeft),
+        right: 'auto',
+        margin: 0,
+      });
+    };
+
+    place();
+    const toolbar = anchor.closest('.toolbar');
+    window.addEventListener('resize', place);
+    toolbar?.addEventListener('scroll', place);
+    return () => {
+      window.removeEventListener('resize', place);
+      toolbar?.removeEventListener('scroll', place);
+    };
+  }, [isOpen, anchorRef, menuRef]);
+
+  return style;
+}
+
+/**
+ * Toggle handlers for a control that lives inside the scrolling toolbar.
+ *
+ * A tap inside a horizontal scroll container can be treated as the start of a pan, and
+ * then no click event arrives, so the menu never opens on a phone. Pointer events fire
+ * first and always, so the toggle runs there. The click handler stays for the keyboard,
+ * which produces a click with no pointer event before it.
+ */
+function useToggleHandlers(toggle: () => void) {
+  const lastPointerToggle = useRef(0);
+
+  return {
+    onPointerDown: (event: React.PointerEvent) => {
+      // Stops the browser from also firing a click that would toggle a second time
+      event.preventDefault();
+      lastPointerToggle.current = Date.now();
+      toggle();
+    },
+    onClick: () => {
+      // A click within this window belongs to the pointer press already handled.
+      // A time window is used instead of a flag, because a touch that the browser
+      // turns into a scroll never sends the click, and a flag would then stay set
+      // and swallow the next real click.
+      if (Date.now() - lastPointerToggle.current < 500) return;
+      toggle();
+    },
+  };
+}
+
 export const Toolbar: React.FC = () => {
   const {
     theme,
@@ -38,20 +122,39 @@ export const Toolbar: React.FC = () => {
   const thumbDropdownRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const nameAtFocusRef = useRef<string>('');
+  const nameFieldRef = useRef<HTMLDivElement>(null);
+  const thumbMenuRef = useRef<HTMLDivElement>(null);
+  const textButtonRef = useRef<HTMLButtonElement>(null);
+  const textMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdowns when clicking outside
+  const thumbMenuStyle = useAnchoredMenu(showThumbDropdown, nameFieldRef, thumbMenuRef);
+  const textMenuStyle = useAnchoredMenu(showTextDropdown, textButtonRef, textMenuRef);
+
+  const thumbToggleHandlers = useToggleHandlers(() => {
+    if (!showThumbDropdown) loadThumbnails();
+    setShowThumbDropdown(!showThumbDropdown);
+  });
+  const textToggleHandlers = useToggleHandlers(() => setShowTextDropdown(!showTextDropdown));
+
+  // Close dropdowns when clicking outside. The menus render outside the toolbar, so
+  // each check covers both the control and the menu it opens.
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (event: Event) => {
+      const target = event.target as Node;
+      const outside = (...elements: (HTMLElement | null)[]) =>
+        elements.every(element => !element || !element.contains(target));
+
+      if (outside(dropdownRef.current, textMenuRef.current)) {
         setShowTextDropdown(false);
       }
-      if (thumbDropdownRef.current && !thumbDropdownRef.current.contains(event.target as Node)) {
+      if (outside(thumbDropdownRef.current, thumbMenuRef.current)) {
         setShowThumbDropdown(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    // pointerdown covers mouse and touch alike
+    document.addEventListener('pointerdown', handleClickOutside);
+    return () => document.removeEventListener('pointerdown', handleClickOutside);
   }, []);
 
   // Flash a green check on the save button after an explicit save
@@ -82,13 +185,6 @@ export const Toolbar: React.FC = () => {
       console.error('Failed to load thumbnails:', err);
     }
   }, []);
-
-  const handleShowThumbDropdown = () => {
-    if (!showThumbDropdown) {
-      loadThumbnails();
-    }
-    setShowThumbDropdown(!showThumbDropdown);
-  };
 
   // Select the canvas title and highlight its text, so a new thumbnail is visibly
   // created and the next keystroke starts the title.
@@ -230,13 +326,106 @@ export const Toolbar: React.FC = () => {
     setDrawingArrow(!isDrawingArrow);
   };
 
+  const thumbnailsMenu = showThumbDropdown && (
+    <div
+      className="toolbar__dropdown-menu toolbar__dropdown-menu--thumbnails"
+      ref={thumbMenuRef}
+      style={thumbMenuStyle}
+    >
+      {thumbnails.length === 0 ? (
+        <div className="toolbar__dropdown-item" style={{ opacity: 0.6, cursor: 'default' }}>
+          No saved thumbnails
+        </div>
+      ) : (
+        thumbnails.map(thumb => (
+          <div
+            key={thumb.id}
+            className="toolbar__dropdown-item"
+            onClick={() => handleLoadThumbnail(thumb.id)}
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {thumb.name}
+            </span>
+            {confirmDeleteId === thumb.id ? (
+              <span className="toolbar__delete-confirm">
+                <button
+                  className="toolbar__delete-confirm-yes"
+                  onClick={(e) => handleDeleteThumbnail(thumb.id, e)}
+                  title="Confirm delete"
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                  Delete
+                </button>
+                <button
+                  className="toolbar__delete-confirm-no"
+                  onClick={handleCancelDelete}
+                  title="Keep this thumbnail"
+                  aria-label="Cancel delete"
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </span>
+            ) : (
+              <button
+                onClick={(e) => handleRequestDelete(thumb.id, e)}
+                className="toolbar__icon-button toolbar__delete-button"
+                style={{ padding: '2px', minWidth: 'auto' }}
+                title="Delete"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+              </button>
+            )}
+          </div>
+        ))
+      )}
+    </div>
+  );
+
+  // The menus are rendered after the toolbar, not inside it. On small screens the
+  // toolbar scrolls sideways, and a scroll container both clips its children and can
+  // swallow their taps as the start of a pan gesture. useAnchoredMenu keeps them
+  // positioned under the control that opens them.
+  const textMenu = showTextDropdown && (
+    <div className="toolbar__dropdown-menu" ref={textMenuRef} style={textMenuStyle}>
+      <button onClick={() => handleAddText('title')} className="toolbar__dropdown-item">
+        Add Title
+      </button>
+      <button onClick={() => handleAddText('subtitle')} className="toolbar__dropdown-item">
+        Add Subtitle
+      </button>
+      <button onClick={() => handleAddText('accent-label')} className="toolbar__dropdown-item">
+        Add Accent
+      </button>
+      <button onClick={() => handleAddText('custom')} className="toolbar__dropdown-item">
+        Custom Text
+      </button>
+    </div>
+  );
+
   return (
+    <>
     <div className="toolbar">
       <div className="toolbar__section toolbar__section--add">
         <div className="toolbar__dropdown" ref={dropdownRef}>
           <button
             className="toolbar__button"
-            onClick={() => setShowTextDropdown(!showTextDropdown)}
+            ref={textButtonRef}
+            {...textToggleHandlers}
             title="Add Text Element (T)"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -249,22 +438,6 @@ export const Toolbar: React.FC = () => {
               <polyline points="6 9 12 15 18 9"/>
             </svg>
           </button>
-          {showTextDropdown && (
-            <div className="toolbar__dropdown-menu">
-              <button onClick={() => handleAddText('title')} className="toolbar__dropdown-item">
-                Add Title
-              </button>
-              <button onClick={() => handleAddText('subtitle')} className="toolbar__dropdown-item">
-                Add Subtitle
-              </button>
-              <button onClick={() => handleAddText('accent-label')} className="toolbar__dropdown-item">
-                Add Accent
-              </button>
-              <button onClick={() => handleAddText('custom')} className="toolbar__dropdown-item">
-                Custom Text
-              </button>
-            </div>
-          )}
         </div>
 
         <button
@@ -300,7 +473,7 @@ export const Toolbar: React.FC = () => {
         {/* Thumbnail management */}
         <div className="toolbar__thumbnail-mgmt" ref={thumbDropdownRef} style={{ position: 'relative' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div className="toolbar__name-field">
+            <div className="toolbar__name-field" ref={nameFieldRef}>
               <input
                 ref={nameInputRef}
                 type="text"
@@ -313,7 +486,7 @@ export const Toolbar: React.FC = () => {
               />
               <button
                 className={`toolbar__name-caret ${showThumbDropdown ? 'toolbar__name-caret--open' : ''}`}
-                onClick={handleShowThumbDropdown}
+                {...thumbToggleHandlers}
                 title="Show saved thumbnails"
                 aria-label="Show saved thumbnails"
                 aria-expanded={showThumbDropdown}
@@ -353,80 +526,6 @@ export const Toolbar: React.FC = () => {
               </svg>
             </button>
           </div>
-          {showThumbDropdown && (
-            <div
-              className="toolbar__dropdown-menu"
-              style={{
-                left: '0',
-                right: 'auto',
-                minWidth: '280px',
-                maxHeight: '300px',
-                overflowY: 'auto',
-              }}
-            >
-              {thumbnails.length === 0 ? (
-                <div className="toolbar__dropdown-item" style={{ opacity: 0.6, cursor: 'default' }}>
-                  No saved thumbnails
-                </div>
-              ) : (
-                thumbnails.map(thumb => (
-                  <div
-                    key={thumb.id}
-                    className="toolbar__dropdown-item"
-                    onClick={() => handleLoadThumbnail(thumb.id)}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      gap: '8px',
-                    }}
-                  >
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {thumb.name}
-                    </span>
-                    {confirmDeleteId === thumb.id ? (
-                      <span className="toolbar__delete-confirm">
-                        <button
-                          className="toolbar__delete-confirm-yes"
-                          onClick={(e) => handleDeleteThumbnail(thumb.id, e)}
-                          title="Confirm delete"
-                        >
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                          </svg>
-                          Delete
-                        </button>
-                        <button
-                          className="toolbar__delete-confirm-no"
-                          onClick={handleCancelDelete}
-                          title="Keep this thumbnail"
-                          aria-label="Cancel delete"
-                        >
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                            <line x1="18" y1="6" x2="6" y2="18"/>
-                            <line x1="6" y1="6" x2="18" y2="18"/>
-                          </svg>
-                        </button>
-                      </span>
-                    ) : (
-                      <button
-                        onClick={(e) => handleRequestDelete(thumb.id, e)}
-                        className="toolbar__icon-button toolbar__delete-button"
-                        style={{ padding: '2px', minWidth: 'auto' }}
-                        title="Delete"
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="3 6 5 6 21 6"/>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          )}
           {saveError && (
             <div style={{
               position: 'absolute',
@@ -507,5 +606,8 @@ export const Toolbar: React.FC = () => {
         </button>
       </div>
     </div>
+    {textMenu}
+    {thumbnailsMenu}
+    </>
   );
 };

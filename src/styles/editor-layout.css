@@ -43,6 +43,19 @@
   min-height: 800px; /* 720px thumbnail + 80px padding */
 }
 
+/* Holds the layout box for the scaled canvas. --canvas-scale is 1 unless the
+   container is too small for 1280x720, and is set in ThumbnailGenerator. */
+.canvas-fit {
+  flex: none;
+  width: calc(1280px * var(--canvas-scale, 1));
+  height: calc(720px * var(--canvas-scale, 1));
+}
+
+.canvas-fit > * {
+  transform: scale(var(--canvas-scale, 1));
+  transform-origin: top left;
+}
+
 /* Toolbar Styles */
 .toolbar {
   display: flex;
@@ -345,13 +358,24 @@
   position: absolute;
   top: 100%;
   left: 0;
-  margin-top: 4px;
+  /* Fallback only. useAnchoredMenu overrides this with a fixed position 6px under
+     the control that opened the menu. */
+  margin-top: 14px;
   background: #333;
   border: 1px solid #444;
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 1000;
   min-width: 150px;
+}
+
+/* Saved thumbnail list, anchored under the name field */
+.toolbar__dropdown-menu--thumbnails {
+  left: 0;
+  right: auto;
+  min-width: 280px;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .toolbar__dropdown-item {
@@ -1368,6 +1392,76 @@
 
   .modal__logo-grid {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+}
+
+/* Small screens: view the whole thumbnail instead of scrolling a 1360px canvas.
+   Editing still works best with a mouse, so this is a viewing layout. */
+@media (max-width: 900px) {
+  .editor-layout {
+    height: 100dvh;
+  }
+
+  .canvas-container {
+    min-width: 0;
+    min-height: 0;
+    padding: 12px;
+    overflow: hidden;
+  }
+
+  /* The properties panel needs a pointer to be useful, and it steals the height
+     the canvas needs. The toolbar and the status bar stay available. */
+  .properties-panel {
+    display: none;
+  }
+
+  /* Swipe the toolbar sideways to reach every tool. This makes the toolbar a
+     clipping box, so the menus below use fixed positioning to escape it. */
+  .toolbar {
+    gap: 8px;
+    padding: 0 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  .toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* The menus are placed under their control by useAnchoredMenu, which also keeps
+     them clear of the scrolling toolbar. Only the size needs adjusting here. */
+  .toolbar__dropdown-menu,
+  .toolbar__dropdown-menu--thumbnails {
+    min-width: 240px;
+    max-width: calc(100vw - 16px);
+    max-height: calc(100dvh - 120px);
+    overflow-y: auto;
+  }
+
+  .toolbar__section {
+    flex: none;
+  }
+
+  .toolbar__section--center {
+    display: none;
+  }
+
+  .toolbar__section--right {
+    margin-left: 0;
+  }
+
+  .toolbar__name-field {
+    width: 180px;
+  }
+
+  .status-bar {
+    padding: 0 8px;
+  }
+
+  .status-bar__left {
+    overflow: hidden;
+    white-space: nowrap;
   }
 }
 

@@ -8,6 +8,7 @@ Notable changes to Thumbatic, newest first. Each heading is the date the work la
 
 - DeepSeek logo.
 - Grok logo in a dark theme version and a light theme version.
+- Layout for phones and narrow windows. The canvas scales down to fit the space so the whole thumbnail stays visible. Below 900 px the properties panel is hidden and the toolbar scrolls sideways. Editing still expects a mouse, so this is a viewing layout.
 - `CHANGELOG.md` for the 2026 releases.
 
 ### Changed
@@ -20,6 +21,8 @@ Notable changes to Thumbatic, newest first. Each heading is the date the work la
 - Claude AI and Claude Code logos were broken on the deployed site. They pointed inside `src/`. Vite does not copy that directory into the build, so they worked only in development.
 - OpenAI logo returned HTTP 400 from Wikimedia. It now comes from the same CDN as Gemini.
 - Tailwind CSS logo returned HTTP 404. It used an asset that changes each time tailwindcss.com deploys. It now comes from a versioned CDN.
+- A leftover rule from the old prototype clamped the canvas to 480 px wide below 768 px. Element positions use 1280x720 coordinates, so text and logos spilled outside the canvas at that width.
+- Export left the canvas at full size when a capture failed. The fit-to-screen scale is now restored even after an error, and the fallback capture also runs at full size.
 
 ## 2026-08-01
 
