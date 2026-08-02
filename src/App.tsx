@@ -7,6 +7,7 @@ import { snapToGrid } from './utils/gridSnapUtils';
 import type { ActiveSnap } from './types/snapping';
 import type { TextElementProperties } from './types';
 import { getStorageAdapter } from './storage';
+import { saveCurrentThumbnail } from './storage/saveCurrent';
 import { persistedToState } from './storage/serialize';
 import './styles/thumbnail.css';
 import './styles/editor-layout.css';
@@ -465,12 +466,7 @@ function App() {
       // Ctrl+S to save
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
         event.preventDefault();
-        const state = useThumbnailStore.getState();
-        if (state.thumbnailId) {
-          getStorageAdapter().save(state.thumbnailId, state)
-            .then(saved => state.setLastSavedAt(saved.updatedAt))
-            .catch(err => console.error('Save failed:', err));
-        }
+        saveCurrentThumbnail().catch(err => console.error('Save failed:', err));
         return;
       }
 

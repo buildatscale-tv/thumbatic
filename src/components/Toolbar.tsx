@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useThumbnailStore, createInitialTextElements } from '../store/thumbnailStore';
-import type { Theme, TextElementType } from '../types';
+import type { Theme, TextElementType, TextElementProperties } from '../types';
 import { getStorageAdapter } from '../storage';
+import { saveCurrentThumbnail, onSaveSuccess } from '../storage/saveCurrent';
 import { persistedToState } from '../storage/serialize';
 import type { ThumbnailSummary } from '../storage/types';
 
@@ -31,9 +32,12 @@ export const Toolbar: React.FC = () => {
   const [thumbnails, setThumbnails] = useState<ThumbnailSummary[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [justSaved, setJustSaved] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const thumbDropdownRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const nameAtFocusRef = useRef<string>('');
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -50,6 +54,25 @@ export const Toolbar: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Flash a green check on the save button after an explicit save
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const unsubscribe = onSaveSuccess(() => {
+      setJustSaved(true);
+      clearTimeout(timer);
+      timer = setTimeout(() => setJustSaved(false), 1600);
+    });
+    return () => {
+      unsubscribe();
+      clearTimeout(timer);
+    };
+  }, []);
+
+  // Drop a pending delete confirmation when the list closes
+  useEffect(() => {
+    if (!showThumbDropdown) setConfirmDeleteId(null);
+  }, [showThumbDropdown]);
+
   // Load thumbnail list when dropdown opens
   const loadThumbnails = useCallback(async () => {
     try {
@@ -65,6 +88,25 @@ export const Toolbar: React.FC = () => {
       loadThumbnails();
     }
     setShowThumbDropdown(!showThumbDropdown);
+  };
+
+  // Select the canvas title and highlight its text, so a new thumbnail is visibly
+  // created and the next keystroke starts the title.
+  const startEditingTitle = () => {
+    // Release the button that was clicked. Otherwise Space or Enter presses it again.
+    (document.activeElement as HTMLElement | null)?.blur();
+
+    const store = useThumbnailStore.getState();
+    const titleElement = store.elements.find(
+      el => el.type === 'text' && (el.properties as TextElementProperties).textType === 'title'
+    );
+    if (!titleElement) return;
+
+    const content = (titleElement.properties as TextElementProperties).content || '';
+    store.selectElement(titleElement);
+    store.setEditingElementId(titleElement.id);
+    store.setTextSelection({ elementId: titleElement.id, start: 0, end: content.length });
+    store.setCursorPosition({ elementId: titleElement.id, position: content.length });
   };
 
   const handleCreateNew = async () => {
@@ -94,6 +136,7 @@ export const Toolbar: React.FC = () => {
       const newThumb = await getStorageAdapter().create('Untitled Thumbnail', state);
       loadPersistedState(persistedToState(newThumb));
       setShowThumbDropdown(false);
+      startEditingTitle();
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to create thumbnail');
     } finally {
@@ -116,17 +159,10 @@ export const Toolbar: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!thumbnailId) {
-      // Create new if no ID
-      await handleCreateNew();
-      return;
-    }
     try {
       setIsSaving(true);
       setSaveError(null);
-      const state = useThumbnailStore.getState();
-      const saved = await getStorageAdapter().save(thumbnailId, state);
-      useThumbnailStore.getState().setLastSavedAt(saved.updatedAt);
+      await saveCurrentThumbnail();
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to save thumbnail');
     } finally {
@@ -134,9 +170,19 @@ export const Toolbar: React.FC = () => {
     }
   };
 
+  const handleRequestDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setConfirmDeleteId(id);
+  };
+
+  const handleCancelDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setConfirmDeleteId(null);
+  };
+
   const handleDeleteThumbnail = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Delete this thumbnail?')) return;
+    setConfirmDeleteId(null);
     try {
       await getStorageAdapter().delete(id);
       setThumbnails(prev => prev.filter(t => t.id !== id));
@@ -153,8 +199,14 @@ export const Toolbar: React.FC = () => {
     setThumbnailName(e.target.value);
   };
 
+  const handleNameFocus = () => {
+    nameAtFocusRef.current = thumbnailName;
+  };
+
   const handleNameBlur = () => {
-    if (thumbnailId) {
+    // Only save when the name really changed. A focus and blur with no edit
+    // must not save, because that flashes the save confirmation for nothing.
+    if (thumbnailId && thumbnailName !== nameAtFocusRef.current) {
       handleSave();
     }
   };
@@ -248,50 +300,47 @@ export const Toolbar: React.FC = () => {
         {/* Thumbnail management */}
         <div className="toolbar__thumbnail-mgmt" ref={thumbDropdownRef} style={{ position: 'relative' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <input
-              ref={nameInputRef}
-              type="text"
-              value={thumbnailName}
-              onChange={handleNameChange}
-              onBlur={handleNameBlur}
-              className="toolbar__name-input"
-              placeholder="Thumbnail name..."
-              style={{
-                background: 'transparent',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '4px',
-                padding: '4px 8px',
-                color: '#ddd',
-                fontSize: '13px',
-                width: '140px',
-                outline: 'none',
-              }}
-            />
+            <div className="toolbar__name-field">
+              <input
+                ref={nameInputRef}
+                type="text"
+                value={thumbnailName}
+                onChange={handleNameChange}
+                onFocus={handleNameFocus}
+                onBlur={handleNameBlur}
+                className="toolbar__name-input"
+                placeholder="Thumbnail name..."
+              />
+              <button
+                className={`toolbar__name-caret ${showThumbDropdown ? 'toolbar__name-caret--open' : ''}`}
+                onClick={handleShowThumbDropdown}
+                title="Show saved thumbnails"
+                aria-label="Show saved thumbnails"
+                aria-expanded={showThumbDropdown}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+            </div>
             <button
-              className="toolbar__icon-button"
+              className={`toolbar__icon-button ${justSaved ? 'toolbar__icon-button--saved' : ''}`}
               onClick={handleSave}
               disabled={isSaving}
-              title="Save thumbnail"
+              title={justSaved ? 'Saved' : 'Save thumbnail'}
               style={{ opacity: isSaving ? 0.5 : 1 }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                <polyline points="17 21 17 13 7 13 7 21"/>
-                <polyline points="7 3 7 8 15 8"/>
-              </svg>
-            </button>
-            <button
-              className="toolbar__icon-button"
-              onClick={handleShowThumbDropdown}
-              title="Open thumbnail"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10 9 9 9 8 9"/>
-              </svg>
+              {justSaved ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                  <polyline points="17 21 17 13 7 13 7 21"/>
+                  <polyline points="7 3 7 8 15 8"/>
+                </svg>
+              )}
             </button>
             <button
               className="toolbar__icon-button"
@@ -308,9 +357,9 @@ export const Toolbar: React.FC = () => {
             <div
               className="toolbar__dropdown-menu"
               style={{
-                right: '0',
-                left: 'auto',
-                minWidth: '240px',
+                left: '0',
+                right: 'auto',
+                minWidth: '280px',
                 maxHeight: '300px',
                 overflowY: 'auto',
               }}
@@ -335,17 +384,44 @@ export const Toolbar: React.FC = () => {
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {thumb.name}
                     </span>
-                    <button
-                      onClick={(e) => handleDeleteThumbnail(thumb.id, e)}
-                      className="toolbar__icon-button"
-                      style={{ padding: '2px', minWidth: 'auto' }}
-                      title="Delete"
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                      </svg>
-                    </button>
+                    {confirmDeleteId === thumb.id ? (
+                      <span className="toolbar__delete-confirm">
+                        <button
+                          className="toolbar__delete-confirm-yes"
+                          onClick={(e) => handleDeleteThumbnail(thumb.id, e)}
+                          title="Confirm delete"
+                        >
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          </svg>
+                          Delete
+                        </button>
+                        <button
+                          className="toolbar__delete-confirm-no"
+                          onClick={handleCancelDelete}
+                          title="Keep this thumbnail"
+                          aria-label="Cancel delete"
+                        >
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
+                        </button>
+                      </span>
+                    ) : (
+                      <button
+                        onClick={(e) => handleRequestDelete(thumb.id, e)}
+                        className="toolbar__icon-button toolbar__delete-button"
+                        style={{ padding: '2px', minWidth: 'auto' }}
+                        title="Delete"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 ))
               )}

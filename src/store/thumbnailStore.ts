@@ -41,6 +41,11 @@ const generateSafePosition = (forLogo: boolean = false): { x: number; y: number 
   return { x, y };
 };
 
+export const DEFAULT_THUMBNAIL_NAME = 'Untitled Thumbnail';
+
+// Turn canvas title text into a one-line thumbnail name
+const titleToName = (title: string): string => title.replace(/\s+/g, ' ').trim();
+
 // Create initial text elements positioned centered on canvas
 export const createInitialTextElements = (): ThumbnailElement[] => {
   return [
@@ -370,6 +375,20 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     );
 
     set({ elements: updatedElements });
+
+    // Keep the thumbnail name in step with the canvas title while the name is still the
+    // default, or while it still matches the title. A name typed by hand no longer
+    // matches, so this stops as soon as the user chooses a name.
+    if (isContentChanging && element.type === 'text' &&
+        (element.properties as TextElementProperties).textType === 'title') {
+      const oldTitle = titleToName((element.properties as TextElementProperties).content || '');
+      const newTitle = titleToName((properties as Partial<TextElementProperties>).content || '');
+      const currentName = state.thumbnailName.trim();
+
+      if (currentName === DEFAULT_THUMBNAIL_NAME || currentName === '' || currentName === oldTitle) {
+        set({ thumbnailName: newTitle || DEFAULT_THUMBNAIL_NAME });
+      }
+    }
 
     // Update selected element if it's the one being modified
     if (state.selectedElement?.id === elementId) {

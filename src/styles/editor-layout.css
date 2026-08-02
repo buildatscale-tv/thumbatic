@@ -141,14 +141,37 @@
   color: #999;
 }
 
+/* Matches the thumbnail name field: same frame, same caret, same hover and focus */
 .toolbar__select {
-  padding: 4px 8px;
-  background: #444;
+  height: 28px;
+  padding: 0 26px 0 8px;
+  background-color: transparent;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 5px center;
   color: #ddd;
-  border: 1px solid #555;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.toolbar__select:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.toolbar__select:focus {
+  border-color: #017cff;
+}
+
+/* The native menu still uses the system palette, so keep the options readable */
+.toolbar__select option {
+  background: #333;
+  color: #ddd;
 }
 
 .toolbar__icon-button {
@@ -172,6 +195,127 @@
 
 .toolbar__icon-button--active {
   background: #017cff;
+  color: #fff;
+}
+
+/* Thumbnail name field: type to rename, or open the saved list from the caret */
+.toolbar__name-field {
+  display: flex;
+  align-items: center;
+  width: 280px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  transition: border-color 0.2s;
+}
+
+.toolbar__name-field:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.toolbar__name-field:focus-within {
+  border-color: #017cff;
+}
+
+.toolbar__name-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 8px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ddd;
+  font-size: 13px;
+}
+
+.toolbar__name-caret {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0 3px 3px 0;
+  color: #999;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toolbar__name-caret:hover {
+  background: #444;
+  color: #fff;
+}
+
+.toolbar__name-caret--open {
+  background: #444;
+  color: #fff;
+}
+
+/* Save confirmation: the save icon turns into a green check for a moment */
+.toolbar__icon-button--saved,
+.toolbar__icon-button--saved:hover {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.15);
+}
+
+/* Two-click delete inside the saved list, in place of a browser alert.
+   Both states are 22px tall with a 1px margin, so the row keeps its height. */
+.toolbar__icon-button.toolbar__delete-button {
+  width: 22px;
+  height: 22px;
+  margin: 1px 0;
+}
+
+.toolbar__delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin: 1px 0;
+}
+
+.toolbar__delete-confirm-yes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 8px;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.toolbar__delete-confirm-yes:hover {
+  background: #dc2626;
+}
+
+.toolbar__delete-confirm-no {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  color: #999;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.toolbar__delete-confirm-no:hover {
+  background: #444;
   color: #fff;
 }
 
