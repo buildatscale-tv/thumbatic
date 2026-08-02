@@ -2,6 +2,8 @@ import React, { useState, useMemo, useRef } from 'react';
 import { useThumbnailStore } from '../store/thumbnailStore';
 import { LOGO_LIBRARY } from '../constants/logos';
 import { Input } from './ui/Input';
+import { prepareImageForStorage, formatBytes } from '../utils/imageStorage';
+import type { PreparedImage } from '../utils/imageStorage';
 
 export const LogoLibraryModal: React.FC = () => {
   const {
@@ -21,34 +23,92 @@ export const LogoLibraryModal: React.FC = () => {
   const [customAspectRatio, setCustomAspectRatio] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<'library' | 'url'>('library');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [imageInfo, setImageInfo] = useState<PreparedImage | null>(null);
+  const dragDepth = useRef(0);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const isDataUrl = (url: string) => url.startsWith('data:');
+  const fileSizeLabel = imageInfo
+    ? `, ${imageInfo.width}x${imageInfo.height}, ${formatBytes(imageInfo.storedBytes)}` +
+      (imageInfo.recompressed ? ` (compressed from ${formatBytes(imageInfo.originalBytes)})` : '')
+    : '';
 
-    // Validate file type
+  // Shared by the file picker and the drop zone
+  const readImageFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      setUploadError(`"${file.name}" is not an image. Use PNG, JPG, SVG, GIF, or WebP.`);
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target?.result as string;
-      setCustomUrl(dataUrl);
+    setUploadError(null);
 
-      // Load image to get its dimensions for aspect ratio
-      const img = new Image();
-      img.onload = () => {
-        const ratio = img.naturalWidth / img.naturalHeight;
-        setCustomAspectRatio(ratio);
-      };
-      img.src = dataUrl;
-    };
-    reader.readAsDataURL(file);
+    try {
+      const prepared = await prepareImageForStorage(file);
+      setCustomUrl(prepared.dataUrl);
+      setCustomAspectRatio(prepared.aspectRatio);
+      setImageInfo(prepared);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : `"${file.name}" could not be read.`);
+    }
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) readImageFile(file);
 
     // Reset input so same file can be selected again
     event.target.value = '';
+  };
+
+  // Clears the image everywhere at once: the field, the canvas element, and the
+  // saved record. An uploaded file is a data URL, so leaving it behind would keep
+  // the whole image in storage.
+  const handleRemoveImage = () => {
+    setCustomUrl('');
+    setCustomAspectRatio(1);
+    setUploadError(null);
+    setImageInfo(null);
+    if (logoUrl) setLogoUrl('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleDragEnter = (event: React.DragEvent) => {
+    event.preventDefault();
+    dragDepth.current += 1;
+    setIsDragging(true);
+  };
+
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+  };
+
+  // Child elements fire dragleave too, so count enters and leaves
+  const handleDragLeave = (event: React.DragEvent) => {
+    event.preventDefault();
+    dragDepth.current = Math.max(0, dragDepth.current - 1);
+    if (dragDepth.current === 0) setIsDragging(false);
+  };
+
+  const handleDrop = (event: React.DragEvent) => {
+    event.preventDefault();
+    dragDepth.current = 0;
+    setIsDragging(false);
+
+    const file = event.dataTransfer.files?.[0];
+    if (file) {
+      readImageFile(file);
+      return;
+    }
+
+    // Some sources drop a URL instead of a file, for example an image in a browser tab
+    const droppedUrl = event.dataTransfer.getData('text/uri-list') || event.dataTransfer.getData('text/plain');
+    if (droppedUrl) {
+      setUploadError(null);
+      setImageInfo(null);
+      setCustomUrl(droppedUrl.trim());
+    }
   };
 
   // Get unique categories and their counts
@@ -282,20 +342,39 @@ export const LogoLibraryModal: React.FC = () => {
                 style={{ display: 'none' }}
               />
 
-              <div className="modal__upload-row">
-                <button
-                  type="button"
-                  className="modal__upload-button"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
-                  </svg>
-                  Upload Local Image
-                </button>
-                <span className="modal__upload-or">or</span>
+              <div
+                className={`modal__dropzone ${isDragging ? 'modal__dropzone--active' : ''}`}
+                onClick={() => fileInputRef.current?.click()}
+                onDragEnter={handleDragEnter}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    fileInputRef.current?.click();
+                  }
+                }}
+              >
+                <svg className="modal__dropzone-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <p className="modal__dropzone-title">
+                  {isDragging ? 'Drop the image to use it' : 'Drag an image here, or click to choose a file'}
+                </p>
+                <p className="modal__dropzone-hint">PNG, JPG, SVG, GIF, or WebP</p>
+              </div>
+
+              {uploadError && (
+                <p className="modal__dropzone-error" role="alert">{uploadError}</p>
+              )}
+
+              <div className="modal__upload-or">
+                <span>or</span>
               </div>
 
               <Input
@@ -303,7 +382,11 @@ export const LogoLibraryModal: React.FC = () => {
                 label="Logo URL"
                 value={customUrl}
                 placeholder="Enter logo URL (SVG or PNG recommended)"
-                onChange={(e) => setCustomUrl(e.target.value)}
+                onChange={(e) => {
+                  setCustomUrl(e.target.value);
+                  setImageInfo(null);
+                  setUploadError(null);
+                }}
                 icon={
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
@@ -314,7 +397,21 @@ export const LogoLibraryModal: React.FC = () => {
 
               {customUrl && (
                 <div className="modal__url-preview">
-                  <p>Preview:</p>
+                  <div className="modal__url-preview-header">
+                    <p>{isDataUrl(customUrl) ? `Uploaded image${fileSizeLabel}` : 'Preview:'}</p>
+                    <button
+                      type="button"
+                      className="modal__remove-image"
+                      onClick={handleRemoveImage}
+                      title="Remove this image and clear it from storage"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                      Remove
+                    </button>
+                  </div>
                   <div className="modal__url-image">
                     <img
                       src={customUrl}

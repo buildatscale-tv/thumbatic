@@ -1113,39 +1113,133 @@
   color: #ccc;
 }
 
-.modal__upload-row {
+/* Drop zone for a local logo file. Click also opens the file picker. */
+.modal__dropzone {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.modal__upload-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
+  justify-content: center;
+  gap: 6px;
+  padding: 32px 20px;
   background: #2a2a2a;
   border: 2px dashed #444;
   border-radius: 8px;
-  color: #fff;
-  font-size: 14px;
+  color: #999;
   cursor: pointer;
+  text-align: center;
   transition: all 0.2s ease;
 }
 
-.modal__upload-button:hover {
+.modal__dropzone:hover {
   background: #333;
   border-color: #666;
+  color: #ddd;
 }
 
-.modal__upload-or {
-  font-size: 13px;
+.modal__dropzone:focus-visible {
+  outline: none;
+  border-color: #017cff;
+  box-shadow: 0 0 0 3px rgba(1, 124, 255, 0.25);
+}
+
+.modal__dropzone--active,
+.modal__dropzone--active:hover {
+  background: rgba(1, 124, 255, 0.1);
+  border-color: #017cff;
+  border-style: solid;
+  color: #fff;
+}
+
+.modal__dropzone-icon {
+  color: inherit;
+}
+
+.modal__dropzone-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: inherit;
+}
+
+.modal__dropzone-hint {
+  margin: 0;
+  font-size: 12px;
   color: #666;
+}
+
+.modal__dropzone-error {
+  margin: 8px 0 0 0;
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 4px;
+  font-size: 12px;
+  color: #f87171;
+}
+
+/* "or" divider between the drop zone and the URL field */
+.modal__upload-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #666;
+}
+
+.modal__upload-or::before,
+.modal__upload-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #444;
 }
 
 .modal__url-preview {
   margin-top: 24px;
+}
+
+.modal__url-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* More specific than ".modal__url-preview p", which adds a bottom margin and
+   would push the label out of line with the Remove button */
+.modal__url-preview .modal__url-preview-header p {
+  margin: 0;
+  line-height: 24px;
+}
+
+/* Clears the image from the field, the canvas, and the saved record */
+.modal__remove-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  line-height: 1;
+  background: transparent;
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.modal__remove-image:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  color: #fca5a5;
 }
 
 .modal__url-preview p {
