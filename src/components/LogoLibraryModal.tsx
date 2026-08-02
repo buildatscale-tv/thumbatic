@@ -142,11 +142,11 @@ export const LogoLibraryModal: React.FC = () => {
     setShowLogoLibrary(false);
   };
 
-  const handleCancel = () => {
+  const handleCancel = React.useCallback(() => {
     setTempSelectedLogos(selectedLogos);
     setCustomUrl(logoUrl);
     setShowLogoLibrary(false);
-  };
+  }, [selectedLogos, logoUrl, setShowLogoLibrary]);
 
   // Handle ESC key to close modal
   React.useEffect(() => {
@@ -163,7 +163,7 @@ export const LogoLibraryModal: React.FC = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [showLogoLibrary]);
+  }, [showLogoLibrary, handleCancel]);
 
   if (!showLogoLibrary) return null;
 

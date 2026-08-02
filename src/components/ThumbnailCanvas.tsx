@@ -106,7 +106,7 @@ export const ThumbnailCanvas: React.FC<ThumbnailCanvasProps> = ({ dragState, dra
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isDrawingArrow, setDrawingArrow]);
+  }, [isDrawingArrow, setDrawingArrow, setArrowDrawStart]);
 
   return (
     <div

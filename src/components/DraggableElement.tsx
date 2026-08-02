@@ -156,7 +156,7 @@ export function DraggableElement({
         updateElementPosition(id, alignedPosition);
       }
     });
-  }, [alignment, calculateAlignedPosition, id, updateElementPosition]);
+  }, [alignment, calculateAlignedPosition, id, updateElementPosition, position.x, position.y]);
 
   // Update positioning after element is mounted and when position changes
   React.useLayoutEffect(() => {
