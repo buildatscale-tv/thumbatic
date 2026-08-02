@@ -58,7 +58,7 @@ export const createInitialTextElements = (): ThumbnailElement[] => {
         cornerStyle: 'sharp',
         opacity: 100,
         rotation: 0,
-        content: 'CLAUDE CODE',
+        content: 'THUMBATIC',
         textType: 'title' as TextElementType,
         horizontalAlign: 'center' as const,
       }
@@ -77,7 +77,7 @@ export const createInitialTextElements = (): ThumbnailElement[] => {
         cornerStyle: 'rounded',
         opacity: 100,
         rotation: 0,
-        content: 'SLASH COMMANDS',
+        content: 'DRAG. SNAP. EXPORT.',
         textType: 'subtitle' as TextElementType,
         horizontalAlign: 'center' as const,
       }
@@ -96,7 +96,7 @@ export const createInitialTextElements = (): ThumbnailElement[] => {
         cornerStyle: 'sharp',
         opacity: 100,
         rotation: -1,
-        content: 'In 5 minutes',
+        content: 'Free & open source',
         textType: 'accent-label' as TextElementType,
         horizontalAlign: 'center' as const,
       }
