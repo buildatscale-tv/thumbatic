@@ -15,7 +15,7 @@ export const Arrowhead: React.FC<ArrowheadProps> = ({ point, angle, style, color
 
   // All shapes have BASE at origin, TIP at +X
   switch (style) {
-    case 'filled':
+    case 'filled': {
       // Pointy but substantial base
       const filledWidth = size * 0.55;
       return (
@@ -25,8 +25,9 @@ export const Arrowhead: React.FC<ArrowheadProps> = ({ point, angle, style, color
           transform={transform}
         />
       );
+    }
 
-    case 'sharp':
+    case 'sharp': {
       // Chevron-style - shallow notch
       const sharpWidth = size * 0.5;
       const sharpBack = -size * 0.3;  // Moderate back extension
@@ -38,8 +39,9 @@ export const Arrowhead: React.FC<ArrowheadProps> = ({ point, angle, style, color
           transform={transform}
         />
       );
+    }
 
-    case 'rounded':
+    case 'rounded': {
       // Angular V-shape with slightly rounded ends
       const roundWidth = size * 0.55;
       const roundBack = -size * 0.3;  // Moderate back extension
@@ -55,22 +57,9 @@ export const Arrowhead: React.FC<ArrowheadProps> = ({ point, angle, style, color
           transform={transform}
         />
       );
+    }
 
     default:
       return null;
   }
 };
-
-// Calculate tangent angle at end of quadratic bezier (from control to end)
-export function calculateEndTangentAngle(control: { x: number; y: number }, end: { x: number; y: number }): number {
-  const dx = end.x - control.x;
-  const dy = end.y - control.y;
-  return Math.atan2(dy, dx) * (180 / Math.PI);
-}
-
-// Calculate tangent angle at start of quadratic bezier (from start to control)
-export function calculateStartTangentAngle(start: { x: number; y: number }, control: { x: number; y: number }): number {
-  const dx = control.x - start.x;
-  const dy = control.y - start.y;
-  return Math.atan2(dy, dx) * (180 / Math.PI);
-}

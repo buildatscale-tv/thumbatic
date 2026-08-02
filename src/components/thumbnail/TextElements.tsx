@@ -434,7 +434,7 @@ const DraggableText: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
                   measureEl.textContent = selectedText;
 
                   document.body.appendChild(measureEl);
-                  let width = measureEl.offsetWidth;
+                  const width = measureEl.offsetWidth;
                   document.body.removeChild(measureEl);
 
                   return width;

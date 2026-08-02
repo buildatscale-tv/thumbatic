@@ -1,6 +1,7 @@
 import React from 'react';
 import { useThumbnailStore } from '../../store/thumbnailStore';
-import { Arrowhead, calculateEndTangentAngle, calculateStartTangentAngle } from './Arrowhead';
+import { Arrowhead } from './Arrowhead';
+import { calculateEndTangentAngle, calculateStartTangentAngle } from '../../utils/arrowUtils';
 import type { ArrowElementProperties, ThumbnailElement } from '../../types';
 
 interface DragCallbacks {

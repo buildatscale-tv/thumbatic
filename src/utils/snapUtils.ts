@@ -452,7 +452,6 @@ export const findActiveSnaps = (
 export const calculateSnapPosition = (
   currentPosition: { x: number; y: number },
   activeSnaps: ActiveSnap[],
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _snapThreshold: number = DEFAULT_SNAP_CONFIG.snapThreshold
 ): { x: number; y: number } => {
   const finalPosition = { ...currentPosition };

@@ -14,7 +14,6 @@ export const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
   activeSnaps,
   isVisible = true,
   dragPosition,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   snapThreshold: _snapThreshold = 100,
   showDebugInfo = false
 }) => {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useThumbnailStore } from '../../store/thumbnailStore';
 import { domToCanvas } from 'modern-screenshot';
+import type { TextElementProperties } from '../../types';
 
 // Function to ensure fonts are loaded
 const ensureFontsLoaded = async (): Promise<void> => {
@@ -46,7 +47,7 @@ const ensureFontsLoaded = async (): Promise<void> => {
     });
 
     document.body.appendChild(testDiv);
-    testDiv.offsetHeight; // Force repaint
+    testDiv.getBoundingClientRect(); // Force repaint
 
     document.body.removeChild(testDiv);
   }
@@ -139,8 +140,8 @@ export const ExportButton: React.FC<ExportButtonProps> = ({ compact = false }) =
       const link = document.createElement('a');
       // Generate filename from text elements
       const textElements = elements.filter(el => el.type === 'text');
-      const titleElements = textElements.filter(el => (el.properties as any).textType === 'title');
-      const titleText = titleElements.map(el => (el.properties as any).content).join(' ');
+      const titleElements = textElements.filter(el => (el.properties as TextElementProperties).textType === 'title');
+      const titleText = titleElements.map(el => (el.properties as TextElementProperties).content).join(' ');
       const filename = titleText.replace(/[^a-zA-Z0-9]/g, '-') || 'thumbnail';
       link.download = `${filename}-intro-thumbnail.png`;
       link.href = targetCanvas.toDataURL('image/png', 1.0);
@@ -162,8 +163,8 @@ export const ExportButton: React.FC<ExportButtonProps> = ({ compact = false }) =
           const link = document.createElement('a');
           // Generate filename from text elements
           const textElements = elements.filter(el => el.type === 'text');
-          const titleElements = textElements.filter(el => (el.properties as any).textType === 'title');
-          const titleText = titleElements.map(el => (el.properties as any).content).join(' ');
+          const titleElements = textElements.filter(el => (el.properties as TextElementProperties).textType === 'title');
+          const titleText = titleElements.map(el => (el.properties as TextElementProperties).content).join(' ');
           const filename = titleText.replace(/[^a-zA-Z0-9]/g, '-') || 'thumbnail';
           link.download = `${filename}-intro-thumbnail.png`;
           link.href = canvas.toDataURL('image/png', 1.0);

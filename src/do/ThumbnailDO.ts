@@ -58,7 +58,7 @@ export class ThumbnailDO implements DurableObject {
         return this.createThumbnail(await request.json() as ThumbnailData);
       }
 
-      const thumbnailMatch = path.match(/^\/api\/thumbnails\/([^\/]+)$/);
+      const thumbnailMatch = path.match(/^\/api\/thumbnails\/([^/]+)$/);
       if (thumbnailMatch) {
         const id = thumbnailMatch[1];
 

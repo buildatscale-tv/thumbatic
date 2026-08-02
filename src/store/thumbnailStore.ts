@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ThumbnailState, ThumbnailElement, TextElementType, LogoIconElementProperties, ArrowElementProperties } from '../types';
+import type { ThumbnailState, ThumbnailElement, TextElementType, TextElementProperties, LogoIconElementProperties, ArrowElementProperties } from '../types';
 import { THEME_TYPES } from '../types';
 
 
@@ -109,7 +109,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
   console.log('🚀 Store initialized with elements:', initialElements.map(el => ({
     id: el.id,
     type: el.type,
-    horizontalAlign: (el.properties as any).horizontalAlign
+    horizontalAlign: (el.properties as TextElementProperties).horizontalAlign
   })));
 
   return {
@@ -154,14 +154,14 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
 
     const state = get();
     const updatedElements = state.elements.map(el => {
-      if (el.type === 'text' && (el.properties as any).textType === 'title') {
+      if (el.type === 'text' && (el.properties as TextElementProperties).textType === 'title') {
         return { ...el, properties: { ...el.properties, fontColor: titleColor } };
       }
       return el;
     });
 
     const updatedSelected = state.selectedElement?.type === 'text' &&
-      (state.selectedElement.properties as any).textType === 'title'
+      (state.selectedElement.properties as TextElementProperties).textType === 'title'
         ? updatedElements.find(el => el.id === state.selectedElement!.id) ?? state.selectedElement
         : state.selectedElement;
 
@@ -255,7 +255,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     console.log('📌 Element selected:', {
       id: selectedElement?.id,
       type: selectedElement?.type,
-      horizontalAlign: selectedElement?.type === 'text' ? (selectedElement?.properties as any)?.horizontalAlign : null
+      horizontalAlign: selectedElement?.type === 'text' ? (selectedElement?.properties as TextElementProperties)?.horizontalAlign : null
     });
 
     const state = get();
@@ -292,22 +292,22 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     // Check if content is changing and element has alignment
     const isContentChanging = 'content' in properties;
     const hasAlignment = element.type === 'text' &&
-      ((element.properties as any).horizontalAlign || (element.properties as any).verticalAlign);
+      ((element.properties as TextElementProperties).horizontalAlign || (element.properties as TextElementProperties).verticalAlign);
 
     console.log('🔍 updateElementProperties:', {
       elementId,
       isContentChanging,
       hasAlignment,
-      horizontalAlign: element.type === 'text' ? (element.properties as any).horizontalAlign : null,
-      newContent: (properties as any).content,
-      oldContent: (element.properties as any).content
+      horizontalAlign: element.type === 'text' ? (element.properties as TextElementProperties).horizontalAlign : null,
+      newContent: (properties as Partial<TextElementProperties>).content,
+      oldContent: (element.properties as TextElementProperties).content
     });
 
     let updatedPosition = element.position;
 
     // If content is changing and element has horizontal alignment, calculate new position
     if (isContentChanging && hasAlignment && element.type === 'text') {
-      const textProps = element.properties as any;
+      const textProps = element.properties as TextElementProperties;
       const horizontalAlign = textProps.horizontalAlign;
 
       console.log('📏 Measuring new text for alignment:', horizontalAlign);
@@ -386,7 +386,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
       position,
       isManual,
       currentAlignment: state.elements.find(el => el.id === elementId)?.type === 'text' ?
-        (state.elements.find(el => el.id === elementId)?.properties as any)?.horizontalAlign : null
+        (state.elements.find(el => el.id === elementId)?.properties as TextElementProperties)?.horizontalAlign : null
     });
 
     // Position is used directly (snapping handled in App component for text elements)
@@ -394,7 +394,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
       if (element.id === elementId) {
         // Only clear alignment if this is a manual position update (drag or arrow keys)
         if (isManual && element.type === 'text') {
-          const textProps = element.properties as any;
+          const textProps = element.properties as TextElementProperties;
           if (textProps.horizontalAlign || textProps.verticalAlign) {
             console.log('🔴 Clearing alignment due to manual position update');
             return {

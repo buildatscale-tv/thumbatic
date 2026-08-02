@@ -5,6 +5,7 @@ import { useThumbnailStore } from './store/thumbnailStore';
 import { useSnapping } from './hooks/useSnapping';
 import { snapToGrid } from './utils/gridSnapUtils';
 import type { ActiveSnap } from './types/snapping';
+import type { TextElementProperties } from './types';
 import { getStorageAdapter } from './storage';
 import { persistedToState } from './storage/serialize';
 import './styles/thumbnail.css';
@@ -188,7 +189,7 @@ function App() {
             store.setEditingElementId(nextElement.id);
 
             // Position cursor at end of text
-            const nextProps = nextElement.properties as any;
+            const nextProps = nextElement.properties as TextElementProperties;
             const contentLength = nextProps.content?.length || 0;
             store.setCursorPosition({
               elementId: nextElement.id,
@@ -199,7 +200,7 @@ function App() {
         return;
       }
 
-      const props = element.properties as any;
+      const props = element.properties as TextElementProperties;
       let content = props.content || '';
       let cursor = store.cursorPosition?.position || 0;
       let selection = store.textSelection;

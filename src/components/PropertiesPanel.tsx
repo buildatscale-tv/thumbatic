@@ -30,7 +30,7 @@ export const PropertiesPanel: React.FC = () => {
     );
   }
 
-  const handlePropertyChange = (property: string, value: any) => {
+  const handlePropertyChange = (property: string, value: string | number | boolean) => {
     updateElementProperties(selectedElement.id, { [property]: value });
   };
 
@@ -159,7 +159,7 @@ export const PropertiesPanel: React.FC = () => {
 
 interface TextPropertiesProps {
   properties: TextElementProperties;
-  onChange: (property: string, value: any) => void;
+  onChange: (property: string, value: string | number | boolean) => void;
 }
 
 const TextProperties: React.FC<TextPropertiesProps> = ({ properties, onChange }) => {
@@ -311,7 +311,7 @@ const TextProperties: React.FC<TextPropertiesProps> = ({ properties, onChange })
 
 interface LogoIconPropertiesProps {
   properties: LogoIconElementProperties;
-  onChange: (property: string, value: any) => void;
+  onChange: (property: string, value: string | number | boolean) => void;
 }
 
 const LogoIconProperties: React.FC<LogoIconPropertiesProps> = ({ properties, onChange }) => {
@@ -371,7 +371,7 @@ const LogoIconProperties: React.FC<LogoIconPropertiesProps> = ({ properties, onC
 
 interface ArrowPropertiesProps {
   properties: ArrowElementProperties;
-  onChange: (property: string, value: any) => void;
+  onChange: (property: string, value: string | number | boolean) => void;
 }
 
 const ArrowProperties: React.FC<ArrowPropertiesProps> = ({ properties, onChange }) => {
