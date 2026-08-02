@@ -131,18 +131,28 @@ the backend is a one-line configuration change.
 
 Any other value falls back to `local`.
 
-Select the backend at **build time**, because Vite inlines `import.meta.env` values into the bundle.
-Put it in a `.env` file in the project root, or set it in the shell:
+`local` is the default everywhere. The repository contains no env file, and an unset or invalid
+`VITE_STORAGE_BACKEND` falls back to `local`, so a fresh clone runs fully client-side in both
+development and production.
+
+Select a different backend at **build time**, because Vite inlines `import.meta.env` values into
+the bundle:
 
 ```bash
-# .env
+VITE_STORAGE_BACKEND=durable-objects npm run build
+```
+
+To make the choice permanent for your own deployments only, put it in a git-ignored env file. Vite
+reads `.env.[mode].local` last, so it wins over every other file:
+
+```bash
+# .env.production.local — your builds and deploys only, never committed
 VITE_STORAGE_BACKEND=durable-objects
 ```
 
-```bash
-# or per command
-VITE_STORAGE_BACKEND=durable-objects npm run build
-```
+Use `.env.development.local` for the same control over `npm run dev`. Keep the `durable-objects`
+value out of `.env.production`, because that file is committed and would change the default for
+everybody.
 
 ### Save Behavior
 
@@ -359,7 +369,11 @@ the most reliable export results.
 - With the `local` backend, data is per browser and per profile. Private windows and cleared site
   data remove it.
 - With the `durable-objects` backend, check the browser console for failed `/api/thumbnails`
-  requests. Under `npm run dev` these requests fail, because Vite does not proxy `/api`.
+  requests.
+- If a save shows "Unknown error" and the console shows a 404 for `/api/thumbnails` with
+  `Unexpected token '<'`, the page runs the `durable-objects` backend against the Vite dev server,
+  which does not serve `/api`. Use `local` in development, or run the Worker with
+  `npm run build && npx wrangler dev`.
 
 **Export fails or images are missing**
 - Wait until all logos have loaded, then export again.
