@@ -1,212 +1,384 @@
-# Slide - YouTube Thumbnail Generator
+# Thumbatic
 
-A modern, browser-based tool for creating professional YouTube thumbnails with flat design aesthetics, customizable themes, and drag-and-drop element positioning.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Overview
+A browser-based editor for professional YouTube thumbnails. Place text, logos, and arrows on a
+1280×720 canvas, pick a theme, and export a PNG at YouTube's exact thumbnail size.
 
-Slide is a React TypeScript application that generates 1280x720 YouTube thumbnails with:
-- Four built-in professional themes (Claude, Tech, Dark, Blueprint)
-- Drag-and-drop text, logo, and icon positioning
-- 50+ curated tech logos from major companies and frameworks
-- Custom logo/icon upload support
-- Smart snapping system for precise text alignment
-- One-click PNG export at YouTube's exact thumbnail dimensions
+Thumbatic runs fully client-side by default: no account, no server, no build-time configuration.
+An optional Cloudflare Workers + Durable Objects backend is included if you want thumbnails stored
+server-side instead of in the browser.
 
-## Purpose
+## Screenshots
 
-This tool streamlines the creation of consistent, professional-looking YouTube thumbnails without requiring design software. It's built for content creators who want polished thumbnails with minimal effort while maintaining brand consistency across videos.
+The editor: toolbar, canvas, properties panel, and status bar.
+
+![The Thumbatic editor](docs/screenshots/editor.png)
+
+The same content in each of the five themes:
+
+| Claude Code | Cloudflare |
+|-------------|------------|
+| ![Claude Code theme](docs/screenshots/theme-claude.png) | ![Cloudflare theme](docs/screenshots/theme-cloudflare.png) |
+
+| Codex | Gemini |
+|-------|--------|
+| ![Codex theme](docs/screenshots/theme-codex.png) | ![Gemini theme](docs/screenshots/theme-gemini.png) |
+
+| Pencil |
+|--------|
+| ![Pencil theme](docs/screenshots/theme-pencil.png) |
+
+## Features
+
+- **1280×720 canvas** that matches the YouTube thumbnail specification exactly.
+- **Text elements** in four presets (title, subtitle, accent label, custom) with inline editing,
+  multi-line support, highlight/drop-shadow backgrounds, rotation, opacity, and alignment.
+- **Logo elements** from a built-in library of 79 tech logos (Cloud, Frontend, Backend, AI,
+  Database, DevOps, Design, Testing, Languages, Tools) or from any custom image URL.
+- **Arrow elements** drawn directly on the canvas, with bezier control point, stroke width, color,
+  and arrowheads on either end.
+- **Five themes**: Claude Code, Cloudflare, Codex, Gemini, and Pencil.
+- **Three snapping modes**: neighbor snapping to other text elements, canvas-center snapping, and
+  grid snapping. Alignment guides appear while you drag.
+- **Preview mode** that shows the thumbnail at real YouTube display sizes.
+- **PNG export** captured at 2× and downscaled to 1280×720 for crisp text.
+- **Saved thumbnails** with a 2-second debounced auto-save, through a pluggable storage backend.
 
 ## Prerequisites
 
-- **Node.js**: v22.14.0 (specified in `.nvmrc`)
-- **npm**: v9.0.0 or higher (comes with Node.js)
+- **Node.js** v22.14.0 (see `.nvmrc`)
+- **npm** v9 or higher
 
-To manage Node versions easily, consider using [nvm](https://github.com/nvm-sh/nvm):
+With [nvm](https://github.com/nvm-sh/nvm):
 
 ```bash
-# Install the project's Node version
 nvm install
 nvm use
 ```
 
 ## Quick Start
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd slide
-   ```
+```bash
+git clone https://github.com/buildatscale-tv/thumbatic.git
+cd thumbatic
+npm install
+npm run dev
+```
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+Open the URL printed in the terminal (usually `http://localhost:5173`).
 
-3. **Start development server**
-   ```bash
-   npm run dev
-   ```
+No environment file is needed. The default storage backend is the browser's `localStorage`, so
+everything works offline and on the first run.
 
-4. **Open in browser**
-   Navigate to the URL shown in terminal (typically `http://localhost:5173`)
-
-## Available Commands
+## Commands
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start Vite development server with hot module replacement |
-| `npm run build` | Build production-ready bundle (TypeScript compilation + Vite build) |
-| `npm run lint` | Run ESLint with TypeScript and React rules |
-| `npm run preview` | Preview production build locally |
+| `npm run dev` | Start the Vite development server with hot module replacement |
+| `npm run build` | Type-check with `tsc -b` and build the production bundle into `dist/` |
+| `npm run lint` | Run ESLint with the TypeScript and React rules |
+| `npm run preview` | Serve the production build locally |
+| `npm run deploy` | Deploy the current `dist/` build to Cloudflare Workers with Wrangler |
+| `npm run deploy:prod` | Build, then deploy to Cloudflare Workers |
 
-## Development
+## Using the Editor
 
-### Project Structure
+The layout is a top toolbar, the canvas, a properties panel on the right, and a status bar.
 
+- **Toolbar**: add text, add a logo, draw an arrow, choose a theme, toggle snapping modes, and
+  manage saved thumbnails (name field, save, open, new).
+- **Canvas**: click an element to select it, double-click text to edit it, and drag to move.
+- **Properties panel**: edit the properties of the selected element.
+- **Status bar**: element counts, the active snap mode, preview, and export.
+
+### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `L` | Open the logo library |
+| `A` | Toggle arrow drawing mode |
+| `S` | Toggle snapping |
+| `C` | Toggle center-snap mode |
+| `G` | Toggle the grid |
+| `P` | Toggle preview mode |
+| `D` | Download the PNG |
+| `Ctrl`/`Cmd` + `S` | Save the current thumbnail |
+| `Delete` / `Backspace` | Remove the selected element |
+| `Esc` | Stop editing and deselect |
+| Arrow keys | Move the selected element by 1 px |
+| `Shift` + arrow keys | Move by 10 px |
+| `Cmd`/`Ctrl` + `Shift` + arrow keys | Move by 50 px |
+| `Alt` + `↑`/`↓` | Change the z-index by 100 (add `Shift` for 500) |
+| `Tab` / `Shift` + `Tab` | Move to the next/previous text element while editing |
+
+### Export
+
+The export button (or `D`) renders the canvas with
+[modern-screenshot](https://github.com/qq15725/modern-screenshot) at 2× scale, draws it onto a
+1280×720 canvas, and downloads a PNG. The file name comes from the title text, for example
+`MY-TITLE-intro-thumbnail.png`.
+
+## Storage
+
+Persistence goes through a small adapter interface (`list`, `get`, `create`, `save`, `delete`), so
+the backend is a one-line configuration change.
+
+| Backend | `VITE_STORAGE_BACKEND` | Where the data is | When to use it |
+|---------|------------------------|-------------------|----------------|
+| Local storage (default) | `local` (or unset) | Browser `localStorage`, key `thumbatic-thumbnails` | Static hosting, single browser, no server |
+| Durable Objects | `durable-objects` | Cloudflare Durable Object with SQLite, through `/api/thumbnails` | Thumbnails shared between browsers and devices |
+
+Any other value falls back to `local`.
+
+Select the backend at **build time**, because Vite inlines `import.meta.env` values into the bundle.
+Put it in a `.env` file in the project root, or set it in the shell:
+
+```bash
+# .env
+VITE_STORAGE_BACKEND=durable-objects
 ```
-src/
-├── App.tsx                    # Root component with drag/snap logic
-├── store/thumbnailStore.ts    # Zustand state management
-├── types.ts                   # TypeScript type definitions
-├── components/
-│   ├── ThumbnailGenerator.tsx # Main layout container
-│   ├── ThumbnailCanvas.tsx    # 1280x720 thumbnail preview
-│   ├── Toolbar.tsx            # Top toolbar with tools and theme selection
-│   ├── PropertiesPanel.tsx    # Right sidebar with element properties
-│   ├── StatusBar.tsx          # Bottom status bar with export
-│   ├── DraggableElement.tsx   # Drag wrapper component
-│   ├── controls/              # Export button component
-│   ├── thumbnail/             # Thumbnail rendering components
-│   └── ui/                    # Reusable UI components
-├── hooks/
-│   └── useSnapping.ts         # Smart snapping system
-├── utils/
-│   └── snapUtils.ts           # Snapping calculations
-├── constants/                 # Logo and icon libraries
-└── styles/                    # CSS styling
+
+```bash
+# or per command
+VITE_STORAGE_BACKEND=durable-objects npm run build
 ```
 
-### Tech Stack
+### Save Behavior
 
-- **React 19**: Latest React with improved performance
-- **TypeScript 5.8**: Strict typing for better developer experience
-- **Vite 7**: Fast build tool with HMR
-- **Zustand 5**: Lightweight state management
-- **modern-screenshot 4**: Client-side PNG export
+- On start-up the app loads the most recently created thumbnail, if one exists.
+- After a thumbnail exists, all changes auto-save with a 2-second debounce.
+- The save button and `Ctrl`/`Cmd` + `S` save immediately.
+- "New" creates a record named `Untitled Thumbnail` and resets the editor to the defaults.
 
-### Key Features
+### Adding a Backend
 
-**Element System**
-- Center-based positioning for all elements (text, logos, icons)
-- Text elements snap to canvas center and alignment guides
-- Logos/icons have free positioning with automatic safe zone avoidance
+1. Implement `StorageAdapter` from `src/storage/types.ts` in a new file in `src/storage/`.
+2. Add the identifier to the `StorageBackend` union in `src/storage/types.ts` and to
+   `VALID_BACKENDS` in `src/storage/config.ts`.
+3. Register the class in the factory in `src/storage/index.ts`.
 
-**Theme System**
-- Four built-in themes with CSS class switching
-- Support for rounded and sharp corner styles
-- Consistent color palettes across all themes
+Components never construct an adapter directly. They call `getStorageAdapter()`.
 
-**Export System**
-- Exports at exact 1280x720 dimensions for YouTube
-- CORS-friendly, no server configuration needed
-- High-quality PNG output
+## Adding a Theme
 
-## Building for Production
+A theme is a CSS class plus three small registrations. `ThumbnailCanvas.tsx` puts the class
+`` `${theme}-theme` `` on the canvas, so a theme with the id `sunset` uses the selector
+`.sunset-theme`.
+
+1. **Register the id** in `src/types.ts`:
+   - Add it to the `Theme` union.
+   - Add it to `THEME_TYPES` as `'light'` or `'dark'`. This controls the title color that
+     `setTheme` applies (black for light themes, white for dark themes).
+2. **Add the menu entry** in the theme `<select>` in `src/components/Toolbar.tsx`:
+   `<option value="sunset">Sunset</option>`.
+3. **Add the styles** in `src/styles/thumbnail.css`. Copy an existing block, for example
+   `.gemini-theme`, and change the colors. These selectors are available:
+
+   | Selector | Purpose |
+   |----------|---------|
+   | `.sunset-theme` | Canvas background |
+   | `.sunset-theme .title-wrapper` / `.title-text` / `.title-highlight` | Title styling |
+   | `.sunset-theme .subtitle-text, .subtitle, .selectable-element.subtitle` | Subtitle styling |
+   | `.sunset-theme .logo-section` | Position of the logo area |
+   | `.sunset-theme .accent-shapes`, `.shape`, `.shape-1`, `.shape-2`, `.shape-3` | Background shapes |
+   | `.sunset-theme .decorative-icon.icon-1`, `.icon-3` | Decorative icon colors |
+
+Nothing else is necessary. Saved thumbnails store the theme id, so do not rename an id after
+thumbnails use it.
+
+### Sample Agent Prompt
+
+Give a coding agent this prompt, and change the name and the colors:
+
+```text
+Add a new theme called "Sunset" (id: sunset) to this Thumbatic repository.
+
+It is a dark theme: a warm gradient background from #2b1055 to #7597de, an orange
+accent (#ff8c42), and white title text.
+
+Make these changes, and follow the pattern of the existing "gemini" theme exactly:
+
+1. src/types.ts — add 'sunset' to the Theme union, and add `sunset: 'dark'` to THEME_TYPES.
+2. src/components/Toolbar.tsx — add <option value="sunset">Sunset</option> to the theme
+   <select>, after the existing options.
+3. src/styles/thumbnail.css — add a .sunset-theme block that copies the structure of the
+   .gemini-theme block: the canvas background, .title-wrapper, .title-text, .title-highlight,
+   the subtitle selectors, .accent-shapes with .shape-1 to .shape-3, and the .decorative-icon
+   colors. Keep the shapes subtle (opacity 0.06 to 0.10).
+
+Rules:
+- Do not change any other theme.
+- Keep the id 'sunset' the same in all three files, because the canvas class is
+  `${theme}-theme`.
+- Make sure `npm run build` and `npm run lint` pass.
+- Then start the development server, select the Sunset theme, and confirm that the title,
+  subtitle, and accent label stay legible against the background.
+```
+
+## Configuration
+
+| Variable | Where | Required | Description |
+|----------|-------|----------|-------------|
+| `VITE_STORAGE_BACKEND` | Build environment (`.env`) | No | `local` (default) or `durable-objects` |
+| `GATE_SECRET` | Cloudflare Worker secret (`.dev.vars` locally) | No | Enables the access gate. If it is not set, the gate is off. |
+
+Both `.env` and `.dev.vars` are git-ignored.
+
+## Deployment
+
+### Option 1 — Any Static Host (default)
+
+With the `local` backend the application is fully static.
 
 ```bash
 npm run build
 ```
 
-This creates an optimized production build in the `dist/` directory. The build includes:
-- TypeScript compilation with strict type checking
-- Minified JavaScript and CSS
-- Optimized asset bundling
+Upload the contents of `dist/`. This works on Vercel, Netlify, Cloudflare Pages, GitHub Pages,
+Amazon S3 + CloudFront, or any web server. Each visitor's thumbnails stay in their own browser.
 
-To test the production build locally:
+### Option 2 — Cloudflare Workers + Durable Objects
 
-```bash
-npm run preview
-```
+This gives you server-side storage. `wrangler.toml` already declares the Worker, the `ThumbnailDO`
+Durable Object with SQLite, and the static-asset binding.
 
-## Deployment
+1. **Edit `wrangler.toml`.** Change `name` to your own Worker name and delete or replace the two
+   `[[routes]]` blocks, which point at `thumbatic.com`. Keep them only if that zone is in your
+   Cloudflare account.
 
-### Cloudflare Workers (Recommended)
+2. **Authenticate Wrangler.**
 
-This project is configured for deployment to Cloudflare Workers with the custom domain **thumbatic.com**.
+   ```bash
+   npx wrangler login
+   ```
 
-**Prerequisites:**
-- A Cloudflare account
-- `thumbatic.com` added to your Cloudflare account
-- Wrangler CLI authenticated (`npx wrangler login`)
+3. **Select the backend** by putting `VITE_STORAGE_BACKEND=durable-objects` in `.env`.
 
-**Deploy:**
+4. **Build and deploy.**
 
-```bash
-# Build and deploy
-npm run deploy:prod
+   ```bash
+   npm run deploy:prod
+   ```
 
-# Or deploy an existing build
-npm run deploy
-```
+The Worker sends `/api/*` requests to the Durable Object and serves everything else from the built
+assets, with single-page-application fallback.
 
-**Custom Domain Setup:**
+**Important:** the Worker uses one Durable Object instance (`idFromName('global')`), and the API has
+no per-user authentication. Everyone who can reach the deployment reads and writes the same set of
+thumbnails. Use the access gate below, add your own authentication, or keep the `local` backend for
+a public deployment.
 
-The `wrangler.toml` is pre-configured with routes for `thumbatic.com` and `www.thumbatic.com`. After your first deploy:
+### Optional Access Gate
 
-1. Go to the Cloudflare Dashboard → Workers & Pages → thumbatic
-2. Navigate to Settings → Triggers → Custom Domains
-3. Ensure `thumbatic.com` and `www.thumbatic.com` are active
-
-Or add the domain via Wrangler:
+If the `GATE_SECRET` secret is set, the Worker blocks all requests that do not have it:
 
 ```bash
-npx wrangler deploy
+npx wrangler secret put GATE_SECRET
 ```
 
-The `[assets]` configuration in `wrangler.toml` handles SPA routing (all unmatched routes serve `index.html`).
+- Visit `https://your-worker.example/?key=<secret>` once. The Worker sets an `auth` cookie that is
+  valid for one year and removes the key from the URL.
+- Visit `?lock` to clear the cookie.
+- All other visitors are redirected to the address in `GATE_REDIRECT` in `src/worker/index.ts`,
+  which is `https://buildatscale.tv` by default. Change that constant for your own deployment.
+- For local Worker runs, put `GATE_SECRET=...` in `.dev.vars`.
 
-### Other Static Hosts
+### Local Development Against the Worker
 
-The application is fully static and can also be deployed to:
-- Netlify
-- Vercel
-- GitHub Pages
-- AWS S3 + CloudFront
-- Any static web server
+`npm run dev` starts only the Vite server, which does not proxy `/api`. To test the
+`durable-objects` backend locally, run the Worker instead:
 
-Simply upload the contents of the `dist/` directory after running `npm run build`.
+```bash
+npm run build
+npx wrangler dev
+```
+
+Wrangler serves the built assets from `dist/` and runs the Durable Object with local storage. If you
+want hot module replacement together with the API, add a `server.proxy` entry for `/api` in
+`vite.config.ts` that points at the `wrangler dev` port.
+
+## Project Structure
+
+```
+src/
+├── App.tsx                     # Root component: drag, snapping, shortcuts, auto-save
+├── main.tsx                    # React entry point
+├── types.ts                    # Core type definitions (elements, themes, store state)
+├── store/thumbnailStore.ts     # Zustand store
+├── api/thumbnails.ts           # Client for the Worker API
+├── storage/
+│   ├── types.ts                # StorageAdapter interface and record types
+│   ├── config.ts               # Backend selection (VITE_STORAGE_BACKEND)
+│   ├── local.ts                # LocalStorageAdapter (default)
+│   ├── durable-object.ts       # DurableObjectAdapter (optional)
+│   ├── serialize.ts            # Store state <-> stored record
+│   └── index.ts                # getStorageAdapter() factory
+├── do/ThumbnailDO.ts           # Durable Object with SQLite storage
+├── worker/index.ts             # Worker entry: access gate, API routing, assets
+├── components/
+│   ├── ThumbnailGenerator.tsx  # Layout container
+│   ├── ThumbnailCanvas.tsx     # 1280×720 preview
+│   ├── Toolbar.tsx             # Tools, theme, snap toggles, thumbnail management
+│   ├── PropertiesPanel.tsx     # Properties of the selected element
+│   ├── StatusBar.tsx           # Counts, hints, preview, export
+│   ├── DraggableElement.tsx    # Drag wrapper
+│   ├── GridOverlay.tsx         # Grid guides
+│   ├── LogoLibraryModal.tsx    # Logo picker
+│   ├── PreviewMode.tsx         # YouTube-size preview
+│   ├── controls/               # Export button
+│   ├── thumbnail/              # Text, logo, arrow, guide, and accent renderers
+│   └── ui/                     # Reusable UI components
+├── hooks/useSnapping.ts        # Snapping system
+├── utils/                      # Snap and grid-snap calculations
+├── constants/logos.ts          # Logo library
+└── styles/                     # CSS (themes, layout, UI)
+```
+
+## Tech Stack
+
+- **React 19** with TypeScript 5.8 in strict mode
+- **Vite 7** for development and builds
+- **Zustand 5** for state, with no providers
+- **modern-screenshot 4** for client-side PNG export
+- **Wrangler 4** for the optional Cloudflare Workers deployment
 
 ## Browser Support
 
-Modern browsers with ES2020 support:
-- Chrome/Edge 90+
-- Firefox 88+
-- Safari 15+
+Modern browsers with ES2020 support: Chrome/Edge 90+, Firefox 88+, Safari 15+. Chrome and Edge give
+the most reliable export results.
 
 ## Troubleshooting
 
-**Development server won't start**
-- Ensure you're using Node.js v22.14.0 (`nvm use`)
-- Delete `node_modules` and run `npm install` again
-- Check if port 5173 is already in use
+**The development server does not start**
+- Use Node.js v22.14.0 (`nvm use`).
+- Delete `node_modules` and run `npm install` again.
+- Make sure port 5173 is free.
 
-**TypeScript errors**
-- Run `npm run lint` to see all linting issues
-- Ensure your IDE is using the workspace TypeScript version
+**Saved thumbnails do not appear**
+- With the `local` backend, data is per browser and per profile. Private windows and cleared site
+  data remove it.
+- With the `durable-objects` backend, check the browser console for failed `/api/thumbnails`
+  requests. Under `npm run dev` these requests fail, because Vite does not proxy `/api`.
 
-**Export not working**
-- Check browser console for errors
-- Ensure all images have loaded before exporting
-- Try a different browser (Chrome/Edge recommended)
+**Export fails or images are missing**
+- Wait until all logos have loaded, then export again.
+- Custom logo URLs must allow cross-origin reads.
+- Check the browser console. The export falls back to a simpler capture method if the first attempt
+  fails.
+
+**Deployment redirects to another site**
+- The `GATE_SECRET` access gate is active. Open the site once with `?key=<secret>`, or remove the
+  secret with `npx wrangler secret delete GATE_SECRET`.
 
 ## Contributing
 
-This project follows strict TypeScript and ESLint rules. Before committing:
+Before you commit:
 
-1. Run `npm run lint` to check for issues
-2. Ensure `npm run build` completes successfully
-3. Test your changes in development mode
+1. `npm run lint` must pass.
+2. `npm run build` must complete, including the TypeScript check.
+3. Test the change in the development server.
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT. See [LICENSE](LICENSE).
