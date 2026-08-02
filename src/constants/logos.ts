@@ -8,8 +8,8 @@ export const LOGO_LIBRARY: LogoLibraryItem[] = [
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/digitalocean/digitalocean-original.svg", label: "DigitalOcean", category: "Cloud" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/heroku/heroku-original.svg", label: "Heroku", category: "Cloud" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/netlify/netlify-original.svg", label: "Netlify", category: "Cloud" },
-  { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vercel/vercel-original.svg", label: "Vercel", category: "Cloud" },
-  { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vercel/vercel-original.svg#inverted", label: "Vercel (Inverted)", category: "Cloud", invert: true },
+  { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vercel/vercel-original.svg#inverted", label: "Vercel (Dark Theme)", category: "Cloud", invert: true },
+  { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vercel/vercel-original.svg", label: "Vercel (Light Theme)", category: "Cloud" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cloudflare/cloudflare-original.svg", label: "Cloudflare", category: "Cloud" },
 
   // Frontend Frameworks & Libraries
@@ -21,7 +21,7 @@ export const LOGO_LIBRARY: LogoLibraryItem[] = [
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg", label: "Next.js", category: "Frontend" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nuxtjs/nuxtjs-original.svg", label: "Nuxt.js", category: "Frontend" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bootstrap/bootstrap-original.svg", label: "Bootstrap", category: "Frontend" },
-  { value: "https://tailwindcss.com/_next/static/media/tailwindcss-mark.d52e9897.svg", label: "Tailwind CSS", category: "Frontend" },
+  { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg", label: "Tailwind CSS", category: "Frontend" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/materialui/materialui-original.svg", label: "Material UI", category: "Frontend" },
 
   // Programming Languages
@@ -53,14 +53,14 @@ export const LOGO_LIBRARY: LogoLibraryItem[] = [
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg", label: "Docker", category: "DevOps" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-plain.svg", label: "Kubernetes", category: "DevOps" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/terraform/terraform-original.svg", label: "Terraform", category: "DevOps" },
-  { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ansible/ansible-original.svg", label: "Ansible", category: "DevOps" },
-  { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ansible/ansible-original.svg#inverted", label: "Ansible (Inverted)", category: "DevOps", invert: true },
+  { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ansible/ansible-original.svg#inverted", label: "Ansible (Dark Theme)", category: "DevOps", invert: true },
+  { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ansible/ansible-original.svg", label: "Ansible (Light Theme)", category: "DevOps" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jenkins/jenkins-original.svg", label: "Jenkins", category: "DevOps" },
 
   // Development Tools
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg", label: "Git", category: "Tools" },
-  { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg", label: "GitHub", category: "Tools" },
-  { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg#inverted", label: "GitHub (Inverted)", category: "Tools", invert: true },
+  { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg#inverted", label: "GitHub (Dark Theme)", category: "Tools", invert: true },
+  { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg", label: "GitHub (Light Theme)", category: "Tools" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/gitlab/gitlab-original.svg", label: "GitLab", category: "Tools" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bitbucket/bitbucket-original.svg", label: "Bitbucket", category: "Tools" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg", label: "VS Code", category: "Tools" },
@@ -87,16 +87,21 @@ export const LOGO_LIBRARY: LogoLibraryItem[] = [
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/photoshop/photoshop-plain.svg", label: "Photoshop", category: "Design" },
 
   // AI & ML
-  { value: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/OpenAI_logo_2025_%28symbol%29.svg/1024px-OpenAI_logo_2025_%28symbol%29.svg.png", label: "OpenAI", category: "AI" },
-  { value: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/OpenAI_logo_2025_%28symbol%29.svg/1024px-OpenAI_logo_2025_%28symbol%29.svg.png#inverted", label: "OpenAI (Inverted)", category: "AI", invert: true },
-  { value: "/src/assets/logos/claude-ai-icon.svg", label: "Claude AI", category: "AI" },
-  { value: "/src/assets/logos/claude-code.svg", label: "Claude Code", category: "AI" },
+  { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/openai.svg#inverted", label: "OpenAI (Dark Theme)", category: "AI", invert: true },
+  { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/openai.svg", label: "OpenAI (Light Theme)", category: "AI" },
+  { value: "/claude-ai-icon.svg", label: "Claude AI", category: "AI" },
+  { value: "/claude-code.svg", label: "Claude Code", category: "AI" },
   { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/google-gemini.svg", label: "Gemini", category: "AI" },
-  { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/opencode.svg", label: "Opencode", category: "AI" },
-  { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/opencode-dark.svg", label: "Opencode (Light)", category: "AI" },
-  { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kimi-ai.svg", label: "Kimi", category: "AI" },
-  { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kimi-ai.svg#inverted", label: "Kimi (Inverted)", category: "AI", invert: true },
+  // Label in parentheses names the theme the file is meant for, not the icon's own color
+  { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/opencode-dark.svg", label: "Opencode (Dark Theme)", category: "AI" },
+  { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/opencode.svg", label: "Opencode (Light Theme)", category: "AI" },
+  { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kimi-ai.svg#inverted", label: "Kimi (Dark Theme)", category: "AI", invert: true },
+  { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kimi-ai.svg", label: "Kimi (Light Theme)", category: "AI" },
+  { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/deepseek.svg", label: "DeepSeek", category: "AI" },
+  { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/grok-dark.svg", label: "Grok (Dark Theme)", category: "AI" },
+  { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/grok.svg", label: "Grok (Light Theme)", category: "AI" },
   { value: "/remotion-logo.svg", label: "Remotion", category: "AI" },
   { value: "/elevenlabs-logo-white.svg", label: "ElevenLabs", category: "AI" },
-  { value: "/pencil-icon.svg", label: "Pencil", category: "Design" },
+  // Pencil rebranded to pen.dev in 2026. The "pencil" theme name is unrelated to this logo.
+  { value: "/pen-icon.png", label: "Pen", category: "Design" },
 ];
