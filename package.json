@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "preview": "vite preview",
     "deploy": "wrangler deploy",
-    "deploy:prod": "npm run build && wrangler deploy"
+    "deploy:prod": "npm run build && wrangler deploy",
+    "deploy:demo": "VITE_STORAGE_BACKEND=local npm run build && wrangler deploy --env demo"
   },
   "dependencies": {
     "modern-screenshot": "^4.6.5",

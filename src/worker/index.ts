@@ -3,9 +3,11 @@ import { ThumbnailDO } from '../do/ThumbnailDO';
 export { ThumbnailDO };
 
 export interface Env {
-  THUMBNAIL_DO: DurableObjectNamespace<ThumbnailDO>;
+  // Absent in the demo environment, which stores thumbnails in the browser instead
+  THUMBNAIL_DO?: DurableObjectNamespace<ThumbnailDO>;
   ASSETS: Fetcher;
-  GATE_SECRET: string;
+  // Absent means the access gate is off, which is how the demo stays public
+  GATE_SECRET?: string;
 }
 
 const GATE_COOKIE = 'auth';
@@ -52,6 +54,13 @@ function gate(request: Request, env: Env): Response | null {
   return Response.redirect(GATE_REDIRECT, 302);
 }
 
+function jsonError(message: string, status: number): Response {
+  return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+  });
+}
+
 function corsHeaders(): HeadersInit {
   return {
     'Access-Control-Allow-Origin': '*',
@@ -74,6 +83,13 @@ export default {
 
     // Route API requests to the Durable Object
     if (url.pathname.startsWith('/api/')) {
+      // No binding means this deployment keeps thumbnails in the browser, so there is
+      // no API to reach. Answering 404 also keeps the demo from exposing a store that
+      // anyone could write to.
+      if (!env.THUMBNAIL_DO) {
+        return jsonError('Not found', 404);
+      }
+
       const id = env.THUMBNAIL_DO.idFromName('global');
       const doStub = env.THUMBNAIL_DO.get(id);
       return doStub.fetch(request);

@@ -29,3 +29,27 @@ custom_domain = true
 [[routes]]
 pattern = "www.thumbatic.com"
 custom_domain = true
+
+# Public demo at demo.thumbatic.com.
+#
+# It runs the local storage build, so thumbnails stay in the visitor's own browser.
+# There is deliberately no durable_objects binding here, so the demo has no server side
+# store and nobody can write to one. The worker answers 404 for /api when the binding is
+# missing. Wrangler warns that durable_objects is not inherited by this environment.
+# That warning is expected.
+#
+# Set no GATE_SECRET here either. The gate is off when the secret is missing, which is
+# what keeps the demo open to everyone.
+[env.demo]
+name = "thumbatic-demo"
+
+[[env.demo.routes]]
+pattern = "demo.thumbatic.com"
+custom_domain = true
+
+[env.demo.assets]
+directory = "./dist"
+binding = "ASSETS"
+html_handling = "auto-trailing-slash"
+not_found_handling = "single-page-application"
+run_worker_first = true

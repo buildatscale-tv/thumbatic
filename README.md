@@ -5,6 +5,10 @@
 A browser-based editor for professional YouTube thumbnails. Place text, logos, and arrows on a
 1280×720 canvas, pick a theme, and export a PNG at YouTube's exact thumbnail size.
 
+**[Try the demo at demo.thumbatic.com](https://demo.thumbatic.com)**. It needs no account and
+sends nothing to a server. Your thumbnails are saved in your own browser, and clearing site data
+removes them.
+
 Thumbatic runs fully client-side by default: no account, no server, no build-time configuration.
 An optional Cloudflare Workers + Durable Objects backend is included if you want thumbnails stored
 server-side instead of in the browser.
@@ -83,6 +87,7 @@ everything works offline and on the first run.
 | `npm run preview` | Serve the production build locally |
 | `npm run deploy` | Deploy the current `dist/` build to Cloudflare Workers with Wrangler |
 | `npm run deploy:prod` | Build, then deploy to Cloudflare Workers |
+| `npm run deploy:demo` | Build with the local storage backend, then deploy the public demo |
 
 ## Using the Editor
 
@@ -280,6 +285,26 @@ assets, with single-page-application fallback.
 no per-user authentication. Everyone who can reach the deployment reads and writes the same set of
 thumbnails. Use the access gate below, add your own authentication, or keep the `local` backend for
 a public deployment.
+
+### The Public Demo Environment
+
+`wrangler.toml` also defines a `demo` environment, which is what runs at
+[demo.thumbatic.com](https://demo.thumbatic.com). Deploy it with:
+
+```bash
+npm run deploy:demo
+```
+
+Three things make that deployment safe to leave open:
+
+- The build sets `VITE_STORAGE_BACKEND=local`, so thumbnails never leave the visitor's browser.
+- The environment declares **no** Durable Object binding, so there is no server side store at all.
+  The Worker answers 404 for `/api/*` when the binding is missing, which means nobody can read or
+  write a shared store through the demo.
+- No `GATE_SECRET` is set for it, so the access gate stays off.
+
+Wrangler prints a warning that `durable_objects` is not inherited by the `demo` environment. That
+is intentional, not a misconfiguration.
 
 ### Optional Access Gate
 
