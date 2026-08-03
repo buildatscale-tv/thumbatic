@@ -110,18 +110,37 @@ outside-click check covering both the control and the menu.
   or a rebuild.
 - Personal overrides live in git-ignored `.env.production.local` and `.env.development.local`.
   Never commit a file that sets `durable-objects`, because that changes the default for everyone.
-- Uploaded images are blobs in the `images` store, keyed by the SHA-256 of their bytes, and a
-  thumbnail holds only an `img:<hash>` reference. Never inline image data into a record again.
-  `src/utils/imageStorage.ts` keeps an image untouched when it is already under 600 KB and no
-  larger than 2048 px, and only then steps quality down.
-- The original file is hashed too, in the `sources` store, so re-uploading a file that is already
-  held skips both the compression and the write.
-- Rendering goes through `useImageSrc`, which resolves a reference to an object URL and caches it
-  per image. Do not put a reference straight into an `img` tag.
-- Unused images are removed by `sweepUnusedImages` on start-up. Mark and sweep, not reference
-  counting, because counting breaks when a write fails between two stores.
-- Uploads live in the browser even when thumbnails go to the Durable Object. Making the server
-  hold them is a separate piece of work.
+- An uploaded image is never inlined into a thumbnail record. The record holds a reference of
+  the form `img:<sha-256 of the bytes>`, and the bytes live in a separate image store. Base64 in
+  a record costs about 2.7 times the file size, which used to fill the 5 MB localStorage budget
+  after three uploads.
+- The image store has two implementations and one entry point. `src/storage/images.ts` chooses
+  IndexedDB blobs for a browser backend, or an R2 bucket through the worker when the backend is
+  `durable-objects`. Import that facade in components. Importing `imageStore.ts` or
+  `remoteImageStore.ts` directly sends an upload to whichever store the file happens to use.
+- `/api/images` is served by the worker itself, not by the Durable Object. R2 keys are
+  `images/<sha-256>`, the name, width, and height ride along as R2 custom metadata, and the size
+  and upload date come from the object, so images need no database table. Responses carry a one
+  year immutable cache header, which is safe because different bytes always mean a different key.
+- A PUT to `/api/images/<id>` recomputes the SHA-256 of the body and answers 400 unless it
+  matches the id in the path. Without that check a client could store chosen bytes under any key.
+  When the key already exists the worker returns the stored record without reading the body,
+  which is what makes re-adding an image you already have cost nothing.
+- Uploading the same file twice stores it once. The original file is hashed before any
+  compression and remembered in the `sources` store in IndexedDB, so a repeat upload is
+  recognised without compressing it again. The compressed bytes are hashed separately, and that
+  hash is the id.
+- Compression happens before storage, in `src/utils/imageStorage.ts`. An image already under
+  600 KB and no larger than 2048 px is stored byte for byte. Anything larger steps resolution and
+  quality down one notch at a time, stopping at the first size that fits.
+- Rendering an image goes through `useImageSrc`. It turns an `img:` reference into something an
+  `img` tag can use, an object URL for a local blob or a plain `/api/images/<id>` URL for R2, and
+  caches the result per image. A raw reference in an `img` tag renders nothing.
+- Unused images are deleted by a mark and sweep pass at start-up, never by reference counting.
+  The local sweep reads every thumbnail in IndexedDB. The remote sweep asks the Durable Object
+  for every `img:` reference across saved thumbnails, then deletes any R2 object outside that
+  set. Counting breaks the moment a write fails between two stores, while a sweep is idempotent
+  and a crash only postpones it.
 - The Durable Object backend uses one global instance and has no per-user authentication.
 
 ## Wrangler will not log in

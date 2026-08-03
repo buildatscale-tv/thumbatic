@@ -7,6 +7,13 @@ main = "./src/worker/index.ts"
 name = "THUMBNAIL_DO"
 class_name = "ThumbnailDO"
 
+# Uploaded images. Keys are the SHA-256 of the bytes, so an object can never be stale
+# and name, width, and height ride along as R2 custom metadata. The demo environment
+# deliberately has no binding here, which is what keeps it browser only.
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "thumbatic-storage"
+
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["ThumbnailDO"]

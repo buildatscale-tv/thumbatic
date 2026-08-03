@@ -3,17 +3,16 @@ import { useThumbnailStore } from '../store/thumbnailStore';
 import { IMAGE_LIBRARY } from '../constants/images';
 import { Input } from './ui/Input';
 import { prepareImageForStorage, formatBytes } from '../utils/imageStorage';
+import { idToImageRef, isImageRef } from '../storage/imageStore';
 import {
   deleteImage,
   findImageForSource,
   hashBlob,
-  idToImageRef,
-  isImageRef,
   listImages,
   putImage,
   rememberSource,
-} from '../storage/imageStore';
-import type { StoredImage } from '../storage/imageStore';
+} from '../storage/images';
+import type { StoredImage } from '../storage/images';
 import { forgetImageUrl, useImageSrc } from '../utils/imageUrls';
 import type { PreparedImage } from '../utils/imageStorage';
 import type { ImageElementProperties } from '../types';

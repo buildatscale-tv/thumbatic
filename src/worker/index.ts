@@ -1,10 +1,13 @@
 import { ThumbnailDO } from '../do/ThumbnailDO';
+import { handleImageRequest, sweepImages } from './images';
 
 export { ThumbnailDO };
 
 export interface Env {
   // Absent in the demo environment, which stores thumbnails in the browser instead
   THUMBNAIL_DO?: DurableObjectNamespace<ThumbnailDO>;
+  // Uploaded images. Absent in the demo, so uploads there stay in the browser.
+  IMAGES?: R2Bucket;
   ASSETS: Fetcher;
   // Absent means the access gate is off, which is how the demo stays public
   GATE_SECRET?: string;
@@ -80,6 +83,27 @@ export default {
 
     const blocked = gate(request, env);
     if (blocked) return blocked;
+
+    // Uploaded images are served from R2 by the worker itself
+    if (url.pathname.startsWith('/api/images')) {
+      if (!env.IMAGES) return jsonError('Not found', 404);
+
+      // Removing images that no thumbnail refers to needs the list of references,
+      // which only the Durable Object can produce.
+      if (url.pathname === '/api/images/sweep' && request.method === 'POST') {
+        if (!env.THUMBNAIL_DO) return jsonError('Not found', 404);
+        const stub = env.THUMBNAIL_DO.get(env.THUMBNAIL_DO.idFromName('global'));
+        const refsResponse = await stub.fetch(new Request('https://do/api/thumbnails/image-refs'));
+        const referenced = new Set(await refsResponse.json() as string[]);
+        const removed = await sweepImages(env.IMAGES, referenced);
+        return new Response(JSON.stringify({ removed }), {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        });
+      }
+
+      const handled = await handleImageRequest(request, env.IMAGES, corsHeaders());
+      if (handled) return handled;
+    }
 
     // Route API requests to the Durable Object
     if (url.pathname.startsWith('/api/')) {

@@ -10,6 +10,7 @@ Notable changes to Thumbatic, newest first. Each heading is the date the work la
 - Personal image library. Uploaded images are stored once each and appear under Your Uploads in the image picker, ready to reuse in any thumbnail or delete.
 - Image deduplication by content hash. A thumbnail refers to an image by the SHA-256 of its bytes, so the same image used in ten thumbnails is stored once. Uploading a file you already have stores nothing and skips recompression.
 - Automatic clean up of images no longer used by any thumbnail, on start-up.
+- Uploaded images sync across devices when the thumbnails do. On the Cloudflare backend they go to an R2 bucket through the Worker, so an image added on a laptop is in the library on a phone. On a browser backend they stay on that device. A thumbnail refers to an image the same way either way.
 - Tests for the storage layer and the uploads tab, using a real IndexedDB implementation.
 
 ### Changed

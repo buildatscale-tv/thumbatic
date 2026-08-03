@@ -149,7 +149,12 @@ nothing and skips recompression, because the original file is hashed first.
 
 Your uploads appear in the image picker under **Your Uploads**, ready to reuse or delete.
 
-Images nobody refers to are removed on start-up by a mark and sweep pass. Deleting a thumbnail
+Where those images live follows the thumbnail backend. With `indexeddb` or `local` they are blobs
+in the browser and stay on that device. With `durable-objects` they go to an R2 bucket through the
+Worker, so the library follows you to another browser or device. Either way a thumbnail stores the
+same `img:` reference, so records do not change when the backend does.
+
+Images nobody refers to are removed by a mark and sweep pass on start-up. Deleting a thumbnail
 therefore frees its images only when no other thumbnail still uses them.
 
 This matters for size. `localStorage` can only hold strings, so an image has to be base64, which

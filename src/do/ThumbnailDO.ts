@@ -49,6 +49,12 @@ export class ThumbnailDO implements DurableObject {
         return this.listThumbnails();
       }
 
+      // Every image id any thumbnail refers to. The worker uses this to decide which
+      // stored images are still in use.
+      if (path === '/api/thumbnails/image-refs' && request.method === 'GET') {
+        return this.listImageRefs();
+      }
+
       if (path === '/api/thumbnails' && request.method === 'POST') {
         return this.createThumbnail(await request.json() as ThumbnailData);
       }
@@ -76,6 +82,23 @@ export class ThumbnailDO implements DurableObject {
         headers: { 'Content-Type': 'application/json' },
       });
     }
+  }
+
+  /** Collects the image ids referenced by every stored thumbnail. */
+  private listImageRefs(): Response {
+    const rows = this.sql.exec<{ data: string }>(`SELECT data FROM thumbnails`);
+    const referenced = new Set<string>();
+
+    for (const row of rows) {
+      // The reference format is img:<sha-256>, wherever it appears in the record
+      for (const match of row.data.matchAll(/img:([a-f0-9]{64})/g)) {
+        referenced.add(match[1]);
+      }
+    }
+
+    return new Response(JSON.stringify([...referenced]), {
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   private listThumbnails(): Response {

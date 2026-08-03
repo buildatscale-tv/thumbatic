@@ -1,5 +1,6 @@
 import React from 'react';
-import { getImageBlob, imageRefToId, isImageRef } from '../storage/imageStore';
+import { imageRefToId, isImageRef } from '../storage/imageStore';
+import { imageUrlFor } from '../storage/images';
 
 // Thumbnails reference an uploaded image by content hash, not by data. These helpers
 // turn a reference into something an <img> can show. Object URLs are cached per image,
@@ -17,11 +18,9 @@ export async function resolveImageRef(reference: string): Promise<string | null>
   const inFlight = pending.get(id);
   if (inFlight) return inFlight;
 
-  const request = getImageBlob(id)
-    .then(blob => {
-      if (!blob) return null;
-      const url = URL.createObjectURL(blob);
-      urlCache.set(id, url);
+  const request = imageUrlFor(id)
+    .then(url => {
+      if (url) urlCache.set(id, url);
       return url;
     })
     .finally(() => pending.delete(id));
@@ -34,7 +33,8 @@ export async function resolveImageRef(reference: string): Promise<string | null>
 export function forgetImageUrl(id: string): void {
   const url = urlCache.get(id);
   if (!url) return;
-  URL.revokeObjectURL(url);
+  // Only a local image holds an object URL that has to be released
+  if (url.startsWith('blob:')) URL.revokeObjectURL(url);
   urlCache.delete(id);
 }
 
