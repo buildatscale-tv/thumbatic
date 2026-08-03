@@ -115,7 +115,7 @@ export async function getImageBlob(id: string): Promise<Blob | null> {
   return record?.blob ?? null;
 }
 
-/** Every stored image, newest first. This is the personal logo library. */
+/** Every stored image, newest first. This is the personal image library. */
 export async function listImages(): Promise<StoredImage[]> {
   const records = await getAllFrom<StoredImageRecord>(IMAGES_STORE);
   return records
@@ -133,10 +133,7 @@ export async function collectReferencedImageIds(): Promise<Set<string>> {
   const referenced = new Set<string>();
 
   for (const record of records) {
-    for (const url of record.selectedLogos ?? []) {
-      if (isImageRef(url)) referenced.add(imageRefToId(url));
-    }
-    if (isImageRef(record.logoUrl)) referenced.add(imageRefToId(record.logoUrl));
+    // An image is in use when it is on a canvas. Nothing else refers to one.
     for (const element of record.elements ?? []) {
       const src = (element as { properties?: { src?: string } }).properties?.src;
       if (isImageRef(src)) referenced.add(imageRefToId(src));

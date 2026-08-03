@@ -6,7 +6,7 @@ const envBackend = import.meta.env.VITE_STORAGE_BACKEND as string | undefined;
 
 /**
  * IndexedDB is the default. It holds far more than localStorage and stores uploaded
- * images as blobs, so a custom logo costs its own size rather than base64 in UTF-16.
+ * images as blobs, so a custom image costs its own size rather than base64 in UTF-16.
  * There is no automatic fallback on purpose: a silent downgrade to a 5 MB store would
  * hide the failure. Set the variable to `local` to choose that explicitly.
  */

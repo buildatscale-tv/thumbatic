@@ -17,7 +17,7 @@ export interface TextElementProperties {
   lineSpacing?: number; // Spacing between lines for multi-line text (negative values bring lines closer)
 }
 
-export interface LogoIconElementProperties {
+export interface ImageElementProperties {
   size: number;
   rotation: number;
   opacity: number;
@@ -47,20 +47,20 @@ export function isArrowElement(props: ElementProperties): props is ArrowElementP
 }
 
 // Union type for element properties
-export type ElementProperties = TextElementProperties | LogoIconElementProperties | ArrowElementProperties;
+export type ElementProperties = TextElementProperties | ImageElementProperties | ArrowElementProperties;
 
 // Thumbnail element interface
 export interface ThumbnailElement {
   id: string;
-  type: 'text' | 'logo' | 'arrow';
+  type: 'text' | 'image' | 'arrow';
   name: string;
   position: { x: number; y: number };
   zIndex: number;
   properties: ElementProperties;
 }
 
-// Logo library item
-export interface LogoLibraryItem {
+// Image library item
+export interface ImageLibraryItem {
   value: string;
   label: string;
   category: string;
@@ -78,22 +78,15 @@ export const THEME_TYPES: Record<Theme, ThemeType> = {
   pencil:     'light',
 };
 
-export type LogoType = 'url' | 'library';
 
 // Tool types for the new UI
-export type ToolType = 'text' | 'logo' | 'arrow';
+export type ToolType = 'text' | 'image' | 'arrow';
 
 // Main store state interface
 export interface ThumbnailState {
 
   // Theme and styling
   theme: Theme;
-
-  // Logo configuration
-  logoType: LogoType;
-  logoUrl: string;
-  selectedLogos: string[];
-  logoSize: number;
 
   // Arrow draw mode
   isDrawingArrow: boolean;
@@ -108,7 +101,7 @@ export interface ThumbnailState {
 
   // UI states
   activeTool: ToolType;
-  showLogoLibrary: boolean;
+  showImageLibrary: boolean;
   showGridGuides: boolean;
   snappingEnabled: boolean;
   centerSnapMode: boolean;
@@ -123,10 +116,6 @@ export interface ThumbnailState {
 
   // Actions
   setTheme: (theme: Theme) => void;
-  setLogoType: (type: LogoType) => void;
-  setLogoUrl: (url: string) => void;
-  setSelectedLogos: (logos: string[]) => void;
-  setLogoSize: (size: number) => void;
   selectElement: (element: ThumbnailElement | null) => void;
   setEditingElementId: (elementId: string | null) => void;
   setTextSelection: (selection: { elementId: string; start: number; end: number } | null) => void;
@@ -138,7 +127,7 @@ export interface ThumbnailState {
   addTextElement: (textType: TextElementType, content: string, position?: { x: number; y: number }) => void;
   removeElement: (elementId: string) => void;
   reorderElements: (elementIds: string[]) => void;
-  randomizeLogoPositions: () => void;
+  randomizeImagePositions: () => void;
 
   // Arrow actions
   setDrawingArrow: (drawing: boolean) => void;
@@ -149,7 +138,7 @@ export interface ThumbnailState {
 
   // UI actions
   setActiveTool: (tool: ToolType) => void;
-  setShowLogoLibrary: (show: boolean) => void;
+  setShowImageLibrary: (show: boolean) => void;
   setShowGridGuides: (show: boolean) => void;
   setSnappingEnabled: (enabled: boolean) => void;
   setCenterSnapMode: (enabled: boolean) => void;

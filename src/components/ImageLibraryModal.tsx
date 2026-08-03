@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { useThumbnailStore } from '../store/thumbnailStore';
-import { LOGO_LIBRARY } from '../constants/logos';
+import { IMAGE_LIBRARY } from '../constants/images';
 import { Input } from './ui/Input';
 import { prepareImageForStorage, formatBytes } from '../utils/imageStorage';
 import {
@@ -16,6 +16,7 @@ import {
 import type { StoredImage } from '../storage/imageStore';
 import { forgetImageUrl, useImageSrc } from '../utils/imageUrls';
 import type { PreparedImage } from '../utils/imageStorage';
+import type { ImageElementProperties } from '../types';
 
 /** Shows one stored upload, resolving its blob to a URL. */
 const UploadPreview: React.FC<{ id: string; name: string }> = ({ id, name }) => {
@@ -23,21 +24,37 @@ const UploadPreview: React.FC<{ id: string; name: string }> = ({ id, name }) => 
   return src ? <img src={src} alt={name} /> : null;
 };
 
-export const LogoLibraryModal: React.FC = () => {
+export const ImageLibraryModal: React.FC = () => {
   const {
-    showLogoLibrary,
-    setShowLogoLibrary,
-    logoUrl,
-    setLogoUrl,
-    selectedLogos,
-    setSelectedLogos,
+    showImageLibrary,
+    setShowImageLibrary,
     addElement,
+    removeElement,
   } = useThumbnailStore();
+  const elements = useThumbnailStore(state => state.elements);
+
+  // What the canvas already holds is the only record of which images are chosen. The
+  // store used to keep a separate list beside it, and the two could disagree.
+  const imagesOnCanvas = useMemo(() => {
+    const bySrc = new Map<string, string>();
+    elements
+      .filter(element => element.type === 'image')
+      .forEach(element => {
+        const src = (element.properties as ImageElementProperties).src;
+        if (src && !bySrc.has(src)) bySrc.set(src, element.id);
+      });
+    return bySrc;
+  }, [elements]);
+
+  const libraryOnCanvas = useMemo(
+    () => IMAGE_LIBRARY.map(image => image.value).filter(value => imagesOnCanvas.has(value)),
+    [imagesOnCanvas]
+  );
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [tempSelectedLogos, setTempSelectedLogos] = useState<string[]>(selectedLogos);
-  const [customUrl, setCustomUrl] = useState(logoUrl);
+  const [tempSelectedImages, setTempSelectedImages] = useState<string[]>(libraryOnCanvas);
+  const [customUrl, setCustomUrl] = useState('');
   const [customAspectRatio, setCustomAspectRatio] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<'library' | 'uploads' | 'url'>('library');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -143,7 +160,6 @@ export const LogoLibraryModal: React.FC = () => {
     setCustomAspectRatio(1);
     setUploadError(null);
     setImageInfo(null);
-    if (logoUrl) setLogoUrl('');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -186,109 +202,127 @@ export const LogoLibraryModal: React.FC = () => {
   };
 
   React.useEffect(() => {
-    if (showLogoLibrary) refreshUploads();
-  }, [showLogoLibrary]);
+    if (!showImageLibrary) return;
+    // Opening the picker shows the canvas as it is, so a tick means the image is there
+    setTempSelectedImages(libraryOnCanvas);
+    refreshUploads();
+  }, [showImageLibrary]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Get unique categories and their counts
-  const { categories, logoCounts } = useMemo(() => {
+  const { categories, imageCounts } = useMemo(() => {
     const categorySet = new Set<string>();
     const counts: Record<string, number> = {};
 
-    LOGO_LIBRARY.forEach(logo => {
-      categorySet.add(logo.category);
-      counts[logo.category] = (counts[logo.category] || 0) + 1;
+    IMAGE_LIBRARY.forEach(image => {
+      categorySet.add(image.category);
+      counts[image.category] = (counts[image.category] || 0) + 1;
     });
 
     return {
       categories: Array.from(categorySet),
-      logoCounts: counts
+      imageCounts: counts
     };
   }, []);
 
   const filteredLogos = useMemo(() => {
-    let filtered = LOGO_LIBRARY;
+    let filtered = IMAGE_LIBRARY;
 
     if (selectedCategory) {
-      filtered = filtered.filter(logo => logo.category === selectedCategory);
+      filtered = filtered.filter(image => image.category === selectedCategory);
     }
 
     if (searchTerm.trim()) {
-      filtered = filtered.filter(logo =>
-        logo.label.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(image =>
+        image.label.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     return filtered;
   }, [searchTerm, selectedCategory]);
 
-  const handleLogoToggle = (logoValue: string) => {
-    setTempSelectedLogos(prev =>
-      prev.includes(logoValue)
-        ? prev.filter(url => url !== logoValue)
-        : [...prev, logoValue]
+  const handleLogoToggle = (imageValue: string) => {
+    setTempSelectedImages(prev =>
+      prev.includes(imageValue)
+        ? prev.filter(url => url !== imageValue)
+        : [...prev, imageValue]
     );
   };
 
+  // Add what was ticked and is not there yet, and take away what was unticked. Anything
+  // the picker does not offer, an upload for instance, is left alone.
+  const added = useMemo(
+    () => tempSelectedImages.filter(value => !imagesOnCanvas.has(value)),
+    [tempSelectedImages, imagesOnCanvas]
+  );
+  const removed = useMemo(
+    () => libraryOnCanvas.filter(value => !tempSelectedImages.includes(value)),
+    [libraryOnCanvas, tempSelectedImages]
+  );
+
+  // The button says what pressing it does. Unticking the last image is a change too, so
+  // a button that only counted ticks left no way to apply it.
+  const confirmLabel = added.length && removed.length
+    ? 'Apply'
+    : removed.length
+      ? `Remove (${removed.length})`
+      : added.length
+        ? `Add (${added.length})`
+        : 'Add';
+
   const handleAddLogos = () => {
     if (activeTab === 'library') {
-      // Add multiple library logos
-      tempSelectedLogos.forEach((logoUrl, index) => {
-        const logoItem = LOGO_LIBRARY.find(l => l.value === logoUrl);
-        if (logoItem) {
-          const position = {
-            x: 175 + (index * 30), // Stack horizontally with small offset
-            y: 550
-          };
+      added.forEach((value, index) => {
+        const imageItem = IMAGE_LIBRARY.find(image => image.value === value);
+        if (!imageItem) return;
 
-          addElement({
-            id: `logo-${Date.now()}-${index}`,
-            type: 'logo',
-            name: logoItem.label,
-            position,
-            zIndex: 5000 + index * 10,
-            properties: {
-              size: 128,
-              rotation: 0,
-              opacity: 100,
-              src: logoUrl,
-            },
-          });
-        }
-      });
-      setSelectedLogos(tempSelectedLogos);
-    } else {
-      // Add custom URL logo
-      if (customUrl) {
         addElement({
-          id: `logo-custom-${Date.now()}`,
-          type: 'logo',
-          name: 'Custom Logo',
-          position: { x: 175, y: 550 },
-          zIndex: 5000,
+          id: `image-${Date.now()}-${index}`,
+          type: 'image',
+          name: imageItem.label,
+          position: { x: 175 + index * 30, y: 550 },
+          zIndex: 5000 + index * 10,
           properties: {
             size: 128,
             rotation: 0,
             opacity: 100,
-            src: customUrl,
-            aspectRatio: customAspectRatio,
+            src: value,
           },
         });
-        setLogoUrl(customUrl);
-      }
+      });
+
+      removed.forEach(value => {
+        const elementId = imagesOnCanvas.get(value);
+        if (elementId) removeElement(elementId);
+      });
+    } else if (customUrl) {
+      addElement({
+        id: `image-${Date.now()}`,
+        type: 'image',
+        name: 'Custom Image',
+        position: { x: 175, y: 550 },
+        zIndex: 5000,
+        properties: {
+          size: 128,
+          rotation: 0,
+          opacity: 100,
+          src: customUrl,
+          aspectRatio: customAspectRatio,
+        },
+      });
     }
 
-    setShowLogoLibrary(false);
+    setShowImageLibrary(false);
   };
 
   const handleCancel = React.useCallback(() => {
-    setTempSelectedLogos(selectedLogos);
-    setCustomUrl(logoUrl);
-    setShowLogoLibrary(false);
-  }, [selectedLogos, logoUrl, setShowLogoLibrary]);
+    setTempSelectedImages(libraryOnCanvas);
+    setCustomUrl('');
+    setShowImageLibrary(false);
+  }, [libraryOnCanvas, setShowImageLibrary]);
 
   // Handle ESC key to close modal
   React.useEffect(() => {
-    if (!showLogoLibrary) return;
+    if (!showImageLibrary) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -301,15 +335,18 @@ export const LogoLibraryModal: React.FC = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [showLogoLibrary, handleCancel]);
+  }, [showImageLibrary, handleCancel]);
 
-  if (!showLogoLibrary) return null;
+  if (!showImageLibrary) return null;
 
   return (
     <div className="modal-overlay" onClick={handleCancel}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal__header">
-          <h2>Add Logo</h2>
+          {/* The heading follows the tab. A fixed one contradicts two of the three. */}
+          <h2>
+            {activeTab === 'library' ? 'Image Library' : activeTab === 'uploads' ? 'Your Uploads' : 'Upload Image'}
+          </h2>
           <button className="modal__close" onClick={handleCancel}>×</button>
         </div>
 
@@ -318,7 +355,7 @@ export const LogoLibraryModal: React.FC = () => {
             className={`modal__tab ${activeTab === 'library' ? 'modal__tab--active' : ''}`}
             onClick={() => setActiveTab('library')}
           >
-            Logo Library
+            Image Library
           </button>
           <button
             className={`modal__tab ${activeTab === 'uploads' ? 'modal__tab--active' : ''}`}
@@ -330,7 +367,7 @@ export const LogoLibraryModal: React.FC = () => {
             className={`modal__tab ${activeTab === 'url' ? 'modal__tab--active' : ''}`}
             onClick={() => setActiveTab('url')}
           >
-            Custom URL
+            Upload Image
           </button>
         </div>
 
@@ -341,19 +378,19 @@ export const LogoLibraryModal: React.FC = () => {
                 <div className="modal__empty">
                   <p>Nothing here yet.</p>
                   <p style={{ fontSize: '12px', marginTop: '8px' }}>
-                    Images you upload on the Custom URL tab are kept here, stored once each,
+                    Images you upload on the Upload Image tab are kept here, stored once each,
                     ready to reuse in any thumbnail.
                   </p>
                 </div>
               ) : (
-                <div className="modal__logo-grid">
+                <div className="modal__image-grid">
                   {uploads.map(image => {
                     const reference = idToImageRef(image.id);
                     const isSelected = customUrl === reference;
                     return (
                       <div
                         key={image.id}
-                        className={`modal__logo-item ${isSelected ? 'modal__logo-item--selected' : ''}`}
+                        className={`modal__image-item ${isSelected ? 'modal__image-item--selected' : ''}`}
                         onClick={() => {
                           setCustomUrl(reference);
                           setCustomAspectRatio(image.height ? image.width / image.height : 1);
@@ -363,10 +400,10 @@ export const LogoLibraryModal: React.FC = () => {
                         }}
                         title={`${image.name}, ${image.width}x${image.height}, ${formatBytes(image.bytes)}`}
                       >
-                        <div className="modal__logo-preview">
+                        <div className="modal__image-preview">
                           <UploadPreview id={image.id} name={image.name} />
                         </div>
-                        <div className="modal__logo-label">{image.name}</div>
+                        <div className="modal__image-label">{image.name}</div>
                         <div className="modal__upload-meta">{formatBytes(image.bytes)}</div>
                         <button
                           type="button"
@@ -392,7 +429,7 @@ export const LogoLibraryModal: React.FC = () => {
                 <div className="modal__search">
                   <Input
                     type="text"
-                    placeholder="Search logos..."
+                    placeholder="Search images..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     icon={
@@ -409,7 +446,7 @@ export const LogoLibraryModal: React.FC = () => {
                     className={`modal__category ${!selectedCategory ? 'modal__category--active' : ''}`}
                     onClick={() => setSelectedCategory(null)}
                   >
-                    All ({LOGO_LIBRARY.length})
+                    All ({IMAGE_LIBRARY.length})
                   </button>
                   {categories.map(category => (
                     <button
@@ -417,41 +454,41 @@ export const LogoLibraryModal: React.FC = () => {
                       className={`modal__category ${selectedCategory === category ? 'modal__category--active' : ''}`}
                       onClick={() => setSelectedCategory(category)}
                     >
-                      {category} ({logoCounts[category]})
+                      {category} ({imageCounts[category]})
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="modal__selection-info">
-                <span>{tempSelectedLogos.length} selected</span>
-                {tempSelectedLogos.length > 0 && (
+                <span>{tempSelectedImages.length} selected</span>
+                {tempSelectedImages.length > 0 && (
                   <button
                     className="modal__clear"
-                    onClick={() => setTempSelectedLogos([])}
+                    onClick={() => setTempSelectedImages([])}
                   >
                     Clear All
                   </button>
                 )}
               </div>
 
-              <div className="modal__logo-grid">
-                {filteredLogos.map(logo => (
+              <div className="modal__image-grid">
+                {filteredLogos.map(image => (
                   <div
-                    key={logo.value}
-                    className={`modal__logo-item ${tempSelectedLogos.includes(logo.value) ? 'modal__logo-item--selected' : ''}`}
-                    onClick={() => handleLogoToggle(logo.value)}
+                    key={image.value}
+                    className={`modal__image-item ${tempSelectedImages.includes(image.value) ? 'modal__image-item--selected' : ''}`}
+                    onClick={() => handleLogoToggle(image.value)}
                   >
-                    <div className="modal__logo-preview">
+                    <div className="modal__image-preview">
                       <img
-                        src={logo.value}
-                        alt={logo.label}
-                        style={{ filter: logo.invert ? 'invert(1)' : 'none' }}
+                        src={image.value}
+                        alt={image.label}
+                        style={{ filter: image.invert ? 'invert(1)' : 'none' }}
                       />
                     </div>
-                    <div className="modal__logo-label">{logo.label}</div>
-                    {tempSelectedLogos.includes(logo.value) && (
-                      <div className="modal__logo-check">
+                    <div className="modal__image-label">{image.label}</div>
+                    {tempSelectedImages.includes(image.value) && (
+                      <div className="modal__image-check">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M20 6L9 17l-5-5"/>
                         </svg>
@@ -463,7 +500,7 @@ export const LogoLibraryModal: React.FC = () => {
 
               {filteredLogos.length === 0 && (
                 <div className="modal__empty">
-                  <p>No logos found matching "{searchTerm}"</p>
+                  <p>No images found matching "{searchTerm}"</p>
                 </div>
               )}
             </>
@@ -514,9 +551,9 @@ export const LogoLibraryModal: React.FC = () => {
 
               <Input
                 type="url"
-                label="Logo URL"
+                label="Image URL"
                 value={customUrl}
-                placeholder="Enter logo URL (SVG or PNG recommended)"
+                placeholder="Enter an image URL (SVG or PNG recommended)"
                 onChange={(e) => {
                   setCustomUrl(e.target.value);
                   setImageInfo(null);
@@ -550,7 +587,7 @@ export const LogoLibraryModal: React.FC = () => {
                   <div className="modal__url-image">
                     <img
                       src={previewSrc}
-                      alt="Custom logo preview"
+                      alt="Custom image preview"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
@@ -588,9 +625,9 @@ export const LogoLibraryModal: React.FC = () => {
           <button
             className="modal__button modal__button--primary"
             onClick={handleAddLogos}
-            disabled={activeTab === 'library' ? tempSelectedLogos.length === 0 : !customUrl}
+            disabled={activeTab === 'library' ? !added.length && !removed.length : !customUrl}
           >
-            Add {activeTab === 'library' && tempSelectedLogos.length > 0 && `(${tempSelectedLogos.length})`}
+            {activeTab === 'library' ? confirmLabel : 'Add'}
           </button>
         </div>
       </div>

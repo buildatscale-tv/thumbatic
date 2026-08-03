@@ -1,6 +1,6 @@
-import type { LogoLibraryItem } from '../types';
+import type { ImageLibraryItem } from '../types';
 
-export const LOGO_LIBRARY: LogoLibraryItem[] = [
+export const IMAGE_LIBRARY: ImageLibraryItem[] = [
   // Cloud & Infrastructure
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-plain-wordmark.svg", label: "AWS", category: "Cloud" },
   { value: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg", label: "Azure", category: "Cloud" },
@@ -102,6 +102,6 @@ export const LOGO_LIBRARY: LogoLibraryItem[] = [
   { value: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/grok.svg", label: "Grok (Light Theme)", category: "AI" },
   { value: "/remotion-logo.svg", label: "Remotion", category: "AI" },
   { value: "/elevenlabs-logo-white.svg", label: "ElevenLabs", category: "AI" },
-  // Pencil rebranded to pen.dev in 2026. The "pencil" theme name is unrelated to this logo.
+  // Pencil rebranded to pen.dev in 2026. The "pencil" theme name is unrelated to this image.
   { value: "/pen-icon.png", label: "Pen", category: "Design" },
 ];

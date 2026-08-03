@@ -12,7 +12,7 @@ export const StatusBar: React.FC = () => {
   } = useThumbnailStore();
 
   const textElements = elements.filter(el => el.type === 'text').length;
-  const logoElements = elements.filter(el => el.type === 'logo').length;
+  const imageElements = elements.filter(el => el.type === 'image').length;
   const arrowElements = elements.filter(el => el.type === 'arrow').length;
 
   return (
@@ -26,7 +26,7 @@ export const StatusBar: React.FC = () => {
         <div className="status-bar__info">
           <span className="status-bar__label">Elements:</span>
           <span className="status-bar__value">
-            {textElements} text, {logoElements} logos, {arrowElements} arrows
+            {textElements} text, {imageElements} images, {arrowElements} arrows
           </span>
         </div>
         {selectedElement && (
@@ -51,7 +51,7 @@ export const StatusBar: React.FC = () => {
         <div className="status-bar__hints">
           <div className="status-bar__hint-group">
             <span className="status-bar__hint">
-              <kbd>L</kbd> Logo
+              <kbd>L</kbd> Image
             </span>
             <span className="status-bar__hint">
               <kbd>I</kbd> Icon

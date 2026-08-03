@@ -1133,10 +1133,10 @@
   }
 }
 
-/* Logo Management Styles */
+/* Image Management Styles */
 
-/* Logo Grid */
-.logo-grid {
+/* Image Grid */
+.image-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: var(--ui-space-4);
@@ -1144,8 +1144,8 @@
   min-height: 200px;
 }
 
-/* Logo Card */
-.logo-card {
+/* Image Card */
+.image-card {
   display: flex;
   flex-direction: column;
   background: white;
@@ -1158,30 +1158,30 @@
   min-height: 120px;
 }
 
-.logo-card:hover {
+.image-card:hover {
   border-color: var(--ui-primary-300);
   transform: translateY(-2px);
   box-shadow: var(--ui-shadow-md);
 }
 
-.logo-card:focus-visible {
+.image-card:focus-visible {
   outline: 2px solid var(--ui-primary-500);
   outline-offset: 2px;
 }
 
-.logo-card.selected {
+.image-card.selected {
   border-color: var(--ui-primary-500);
   background: var(--ui-primary-50);
   box-shadow: 0 0 0 3px var(--ui-primary-100);
 }
 
-.logo-card.selected:hover {
+.image-card.selected:hover {
   border-color: var(--ui-primary-600);
   background: var(--ui-primary-100);
 }
 
-/* Logo Preview */
-.logo-preview {
+/* Image Preview */
+.image-preview {
   flex: 1;
   display: flex;
   align-items: center;
@@ -1191,19 +1191,19 @@
   margin-bottom: var(--ui-space-2);
 }
 
-.logo-preview img {
+.image-preview img {
   max-width: 100%;
   max-height: 60px;
   object-fit: contain;
   transition: all var(--ui-transition-fast);
 }
 
-.logo-card:hover .logo-preview img {
+.image-card:hover .image-preview img {
   transform: scale(1.05);
 }
 
 /* Loading State */
-.logo-loading {
+.image-loading {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1226,7 +1226,7 @@
 }
 
 /* Error State */
-.logo-error {
+.image-error {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1237,15 +1237,15 @@
   border-radius: var(--ui-radius-md);
 }
 
-/* Logo Info */
-.logo-info {
+/* Image Info */
+.image-info {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--ui-space-2);
 }
 
-.logo-name {
+.image-name {
   font-size: var(--ui-font-size-sm);
   font-weight: var(--ui-font-weight-medium);
   color: var(--ui-gray-700);
@@ -1254,7 +1254,7 @@
   line-height: var(--ui-line-height-tight);
 }
 
-.logo-card.selected .logo-name {
+.image-card.selected .image-name {
   color: var(--ui-primary-800);
   font-weight: var(--ui-font-weight-semibold);
 }
@@ -1273,7 +1273,7 @@
 }
 
 /* Empty State */
-.logo-grid-empty {
+.image-grid-empty {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1305,59 +1305,59 @@
   line-height: var(--ui-line-height-relaxed);
 }
 
-/* Responsive Design for Logo Grid */
+/* Responsive Design for Image Grid */
 @media (max-width: 768px) {
-  .logo-grid {
+  .image-grid {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: var(--ui-space-3);
   }
 
-  .logo-card {
+  .image-card {
     min-height: 100px;
     padding: var(--ui-space-2);
   }
 
-  .logo-preview {
+  .image-preview {
     min-height: 50px;
   }
 
-  .logo-preview img {
+  .image-preview img {
     max-height: 50px;
   }
 
-  .logo-loading,
-  .logo-error {
+  .image-loading,
+  .image-error {
     height: 50px;
   }
 
-  .logo-name {
+  .image-name {
     font-size: var(--ui-font-size-xs);
   }
 }
 
 @media (max-width: 480px) {
-  .logo-grid {
+  .image-grid {
     grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
     gap: var(--ui-space-2);
     padding: var(--ui-space-1);
   }
 
-  .logo-card {
+  .image-card {
     min-height: 90px;
     padding: var(--ui-space-2);
   }
 
-  .logo-preview {
+  .image-preview {
     min-height: 40px;
     margin-bottom: var(--ui-space-1);
   }
 
-  .logo-preview img {
+  .image-preview img {
     max-height: 40px;
   }
 
-  .logo-loading,
-  .logo-error {
+  .image-loading,
+  .image-error {
     height: 40px;
   }
 
@@ -1372,8 +1372,8 @@
   }
 }
 
-/* Logo Search Styles */
-.logo-search {
+/* Image Search Styles */
+.image-search {
   display: flex;
   flex-direction: column;
   gap: var(--ui-space-3);
@@ -1451,8 +1451,8 @@
   color: var(--ui-gray-500);
 }
 
-/* Logo Selection Summary */
-.logo-selection-summary {
+/* Image Selection Summary */
+.image-selection-summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1503,19 +1503,19 @@
   border-color: var(--ui-primary-700);
 }
 
-/* Logo Controls Layout */
-.logo-controls {
+/* Image Controls Layout */
+.image-controls {
   width: 100%;
 }
 
-.logo-type-header {
+.image-type-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--ui-space-4);
 }
 
-.logo-type-header h3 {
+.image-type-header h3 {
   margin: 0;
   font-size: var(--ui-font-size-lg);
   font-weight: var(--ui-font-weight-semibold);
@@ -1523,7 +1523,7 @@
 }
 
 /* Custom Logo Section */
-.custom-logo-section {
+.custom-image-section {
   display: flex;
   flex-direction: column;
   gap: var(--ui-space-4);
@@ -1576,15 +1576,15 @@
   color: var(--ui-gray-500);
 }
 
-/* Logo Library Section */
-.logo-library-section {
+/* Image Library Section */
+.image-library-section {
   display: flex;
   flex-direction: column;
   gap: var(--ui-space-4);
 }
 
-/* Logo Actions */
-.logo-actions {
+/* Image Actions */
+.image-actions {
   display: flex;
   justify-content: center;
   padding-top: var(--ui-space-2);
@@ -1687,8 +1687,8 @@
   color: var(--ui-gray-500);
 }
 
-/* Logo Size Control - Legacy support for specific logo styling */
-.logo-size-control {
+/* Image Size Control - Legacy support for specific logo styling */
+.image-size-control {
   display: flex;
   flex-direction: column;
   gap: var(--ui-space-3);
@@ -1700,17 +1700,17 @@
 
 /* Responsive Design for Logo Controls */
 @media (max-width: 768px) {
-  .logo-type-header {
+  .image-type-header {
     flex-direction: column;
     align-items: stretch;
     gap: var(--ui-space-3);
   }
 
-  .logo-type-header h3 {
+  .image-type-header h3 {
     text-align: center;
   }
 
-  .logo-grid {
+  .image-grid {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
 }
@@ -1722,13 +1722,13 @@
     align-items: flex-start;
   }
 
-  .logo-actions {
+  .image-actions {
     flex-direction: column;
   }
 }
 
-/* Logo Category Filter */
-.logo-category-filter {
+/* Image Category Filter */
+.image-category-filter {
   display: flex;
   flex-direction: column;
   gap: var(--ui-space-3);
@@ -1845,7 +1845,7 @@
 }
 
 .text-element-properties,
-.logo-element-properties {
+.image-element-properties {
   display: flex;
   flex-direction: column;
   gap: var(--ui-space-4);
@@ -1921,7 +1921,7 @@
 
 @media (max-width: 480px) {
   .text-element-properties,
-  .logo-element-properties {
+  .image-element-properties {
     gap: var(--ui-space-3);
   }
 }

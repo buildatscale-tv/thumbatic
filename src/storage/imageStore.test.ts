@@ -28,17 +28,16 @@ async function clearDatabase() {
   }
 }
 
-function stateWithLogo(name: string, reference: string): ThumbnailState {
+function stateWithImage(name: string, reference: string): ThumbnailState {
   useThumbnailStore.setState({
     thumbnailId: null,
     thumbnailName: name,
-    selectedLogos: [reference],
     elements: [
       ...createInitialTextElements(),
       {
-        id: 'logo-1',
-        type: 'logo',
-        name: 'Logo',
+        id: 'image-1',
+        type: 'image',
+        name: 'Image',
         position: { x: 200, y: 500 },
         zIndex: 5000,
         properties: { size: 256, rotation: 0, opacity: 100, src: reference },
@@ -111,8 +110,8 @@ describe('sharing one image between thumbnails', () => {
     const unused = await putImage(bytes(10), { name: 'unused.png', width: 20, height: 10 });
     const reference = idToImageRef(shared.id);
 
-    const one = await adapter.create('One', stateWithLogo('One', reference));
-    const two = await adapter.create('Two', stateWithLogo('Two', reference));
+    const one = await adapter.create('One', stateWithImage('One', reference));
+    const two = await adapter.create('Two', stateWithImage('Two', reference));
 
     // The record carries a reference, not the image data
     const saved = await adapter.get(one.id);

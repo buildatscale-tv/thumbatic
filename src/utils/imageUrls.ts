@@ -3,7 +3,7 @@ import { getImageBlob, imageRefToId, isImageRef } from '../storage/imageStore';
 
 // Thumbnails reference an uploaded image by content hash, not by data. These helpers
 // turn a reference into something an <img> can show. Object URLs are cached per image,
-// so ten elements using the same logo share one URL and one decode.
+// so ten elements using the same image share one URL and one decode.
 
 const urlCache = new Map<string, string>();
 const pending = new Map<string, Promise<string | null>>();
@@ -40,7 +40,7 @@ export function forgetImageUrl(id: string): void {
 
 /**
  * Returns something an <img> can use. A plain URL passes straight through, so library
- * logos cost nothing, and a stored reference resolves to an object URL.
+ * images cost nothing, and a stored reference resolves to an object URL.
  */
 export function useImageSrc(src: string | undefined): string | undefined {
   const [resolved, setResolved] = React.useState<string | undefined>(() =>

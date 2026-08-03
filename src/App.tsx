@@ -27,10 +27,6 @@ function App() {
   const thumbnailId = useThumbnailStore(state => state.thumbnailId);
   const thumbnailName = useThumbnailStore(state => state.thumbnailName);
   const theme = useThumbnailStore(state => state.theme);
-  const logoType = useThumbnailStore(state => state.logoType);
-  const logoUrl = useThumbnailStore(state => state.logoUrl);
-  const selectedLogos = useThumbnailStore(state => state.selectedLogos);
-  const logoSize = useThumbnailStore(state => state.logoSize);
   const setLastSavedAt = useThumbnailStore(state => state.setLastSavedAt);
   const loadPersistedState = useThumbnailStore(state => state.loadPersistedState);
   const setIsHydrated = useThumbnailStore(state => state.setIsHydrated);
@@ -87,7 +83,7 @@ function App() {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [thumbnailId, thumbnailName, allElements, theme, logoType, logoUrl, selectedLogos, logoSize, showGridGuides, snappingEnabled, centerSnapMode, previewMode, setLastSavedAt]);
+  }, [thumbnailId, thumbnailName, allElements, theme, showGridGuides, snappingEnabled, centerSnapMode, previewMode, setLastSavedAt]);
 
   const textElements = React.useMemo(
     () => allElements.filter(el => el.type === 'text'),
@@ -445,7 +441,7 @@ function App() {
   // Keyboard controls for tools and element manipulation
   React.useEffect(() => {
     const {
-      setShowLogoLibrary,
+      setShowImageLibrary,
       setShowGridGuides,
       setDrawingArrow,
       setPreviewMode,
@@ -479,7 +475,7 @@ function App() {
         case 'l':
           if (!event.ctrlKey && !event.metaKey) {
             event.preventDefault();
-            setShowLogoLibrary(true);
+            setShowImageLibrary(true);
           }
           break;
         case 'a':

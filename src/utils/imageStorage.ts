@@ -1,4 +1,4 @@
-// Uploaded logos are stored as blobs in IndexedDB and referenced by every thumbnail
+// Uploaded images are stored as blobs in IndexedDB and referenced by every thumbnail
 // that uses them. These helpers keep an upload as sharp as possible while staying
 // small enough to be worth storing.
 
@@ -77,11 +77,11 @@ function drawScaled(img: HTMLImageElement, maxDimension: number): HTMLCanvasElem
  *
  * - SVG files are never touched. They are vector, already small, and rasterizing loses quality.
  * - A file that is already small enough and no larger than MAX_DIMENSION is kept byte for byte,
- *   so a hand-made logo is never re-encoded.
+ *   so a hand-made image is never re-encoded.
  * - Anything else is re-encoded as WebP, which keeps transparency and is much smaller than PNG.
  *   Resolution and quality drop one step at a time, and only as far as the budget requires.
  * - A lossless PNG at the same size is used instead when it happens to be smaller, which is
- *   common for flat logos.
+ *   common for flat graphics.
  */
 export async function prepareImageForStorage(file: File): Promise<PreparedImage> {
   const img = await loadImageFromBlob(file);

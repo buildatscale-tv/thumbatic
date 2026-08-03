@@ -1105,13 +1105,13 @@
   opacity: 0.8;
 }
 
-.modal__logo-grid {
+.modal__image-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 12px;
 }
 
-.modal__logo-item {
+.modal__image-item {
   position: relative;
   padding: 12px;
   background: #222;
@@ -1122,17 +1122,17 @@
   text-align: center;
 }
 
-.modal__logo-item:hover {
+.modal__image-item:hover {
   background: #333;
   transform: translateY(-2px);
 }
 
-.modal__logo-item--selected {
+.modal__image-item--selected {
   border-color: #017cff;
   background: #1a3a5a;
 }
 
-.modal__logo-preview {
+.modal__image-preview {
   height: 60px;
   display: flex;
   align-items: center;
@@ -1140,13 +1140,13 @@
   margin-bottom: 8px;
 }
 
-.modal__logo-preview img {
+.modal__image-preview img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
 }
 
-.modal__logo-label {
+.modal__image-label {
   font-size: 11px;
   color: #999;
   text-align: center;
@@ -1155,7 +1155,7 @@
   white-space: nowrap;
 }
 
-.modal__logo-check {
+.modal__image-check {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -1173,7 +1173,7 @@
   min-height: 200px;
 }
 
-.modal__logo-item {
+.modal__image-item {
   position: relative;
 }
 
@@ -1203,7 +1203,7 @@
   transition: opacity 0.15s ease, background 0.15s ease;
 }
 
-.modal__logo-item:hover .modal__upload-delete,
+.modal__image-item:hover .modal__upload-delete,
 .modal__upload-delete:focus-visible {
   opacity: 1;
 }
@@ -1227,7 +1227,7 @@
   color: #ccc;
 }
 
-/* Drop zone for a local logo file. Click also opens the file picker. */
+/* Drop zone for a local image file. Click also opens the file picker. */
 .modal__dropzone {
   display: flex;
   flex-direction: column;
@@ -1480,7 +1480,7 @@
     display: none;
   }
 
-  .modal__logo-grid {
+  .modal__image-grid {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
 }
@@ -1547,11 +1547,30 @@
 
   .status-bar {
     padding: 0 8px;
+    gap: 8px;
   }
 
+  /* The labels cost more width than they earn here, and cutting the values in half
+     leaves a canvas size like "1280 ›" that says nothing. Drop the labels, keep the
+     numbers, and let the row scroll if it still does not fit. */
   .status-bar__left {
-    overflow: hidden;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .status-bar__left::-webkit-scrollbar {
+    display: none;
+  }
+
+  .status-bar__left .status-bar__label {
+    display: none;
+  }
+
+  .status-bar__info,
+  .status-bar__value {
     white-space: nowrap;
+    flex: none;
   }
 }
 

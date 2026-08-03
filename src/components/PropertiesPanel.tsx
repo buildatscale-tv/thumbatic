@@ -2,7 +2,7 @@ import React from 'react';
 import { useThumbnailStore } from '../store/thumbnailStore';
 import { Slider } from './ui/Slider';
 import { Select } from './ui/Select';
-import type { TextElementProperties, LogoIconElementProperties, ArrowElementProperties } from '../types';
+import type { TextElementProperties, ImageElementProperties, ArrowElementProperties } from '../types';
 
 export const PropertiesPanel: React.FC = () => {
   const {
@@ -59,7 +59,7 @@ export const PropertiesPanel: React.FC = () => {
             <label>Element Type</label>
             <div className="properties-panel__type">
               {selectedElement.type === 'text' && '📝 Text'}
-              {selectedElement.type === 'logo' && '🖼️ Logo'}
+              {selectedElement.type === 'image' && '🖼️ Image'}
               {selectedElement.type === 'arrow' && '➡️ Arrow'}
             </div>
           </div>
@@ -77,9 +77,9 @@ export const PropertiesPanel: React.FC = () => {
           />
         )}
 
-        {selectedElement.type === 'logo' && (
-          <LogoIconProperties
-            properties={selectedElement.properties as LogoIconElementProperties}
+        {selectedElement.type === 'image' && (
+          <ImageProperties
+            properties={selectedElement.properties as ImageElementProperties}
             onChange={handlePropertyChange}
           />
         )}
@@ -309,12 +309,12 @@ const TextProperties: React.FC<TextPropertiesProps> = ({ properties, onChange })
   );
 };
 
-interface LogoIconPropertiesProps {
-  properties: LogoIconElementProperties;
+interface ImagePropertiesProps {
+  properties: ImageElementProperties;
   onChange: (property: string, value: string | number | boolean) => void;
 }
 
-const LogoIconProperties: React.FC<LogoIconPropertiesProps> = ({ properties, onChange }) => {
+const ImageProperties: React.FC<ImagePropertiesProps> = ({ properties, onChange }) => {
   return (
     <>
       <div className="properties-panel__section">

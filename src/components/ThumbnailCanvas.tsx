@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useThumbnailStore } from '../store/thumbnailStore';
 import { toCanvasPoint } from '../utils/canvasCoords';
 import { TextElements } from './thumbnail/TextElements';
-import { LogoElements } from './thumbnail/LogoElements';
+import { ImageElements } from './thumbnail/ImageElements';
 import { ArrowElements } from './thumbnail/ArrowElements';
 import { ArrowHandles } from './thumbnail/ArrowHandles';
 import { AccentShapes } from './thumbnail/AccentShapes';
@@ -116,7 +116,7 @@ export const ThumbnailCanvas: React.FC<ThumbnailCanvasProps> = ({ dragState, dra
       }}
     >
       <div className="thumbnail-content" onClick={handleThumbnailClick}>
-        <LogoElements dragCallbacks={dragCallbacks} />
+        <ImageElements dragCallbacks={dragCallbacks} />
         <TextElements dragCallbacks={dragCallbacks} />
         <AccentShapes />
         <ArrowElements dragCallbacks={dragCallbacks} />

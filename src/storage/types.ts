@@ -6,13 +6,8 @@ export interface ThumbnailRecord {
   id: string;
   name: string;
   theme: ThumbnailState['theme'];
-  logoType: ThumbnailState['logoType'];
-  logoUrl: string;
-  selectedLogos: string[];
-  logoSize: number;
   elements: ThumbnailState['elements'];
   activeTool: ThumbnailState['activeTool'];
-  showLogoLibrary: boolean;
   showGridGuides: boolean;
   snappingEnabled: boolean;
   centerSnapMode: boolean;

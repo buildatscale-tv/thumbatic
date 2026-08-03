@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import type { ThumbnailState, ThumbnailElement, TextElementType, TextElementProperties, LogoIconElementProperties, ArrowElementProperties } from '../types';
+import type { ThumbnailState, ThumbnailElement, TextElementType, TextElementProperties, ArrowElementProperties } from '../types';
 import { THEME_TYPES } from '../types';
 
 
 // Helper function to generate safe positions outside center exclusion zone (pixel-based)
-const generateSafePosition = (forLogo: boolean = false): { x: number; y: number } => {
-  // Use fixed position for logos - lower left area where they're always visible
-  if (forLogo) {
+const generateSafePosition = (forImage: boolean = false): { x: number; y: number } => {
+  // Use fixed position for images - lower left area where they're always visible
+  if (forImage) {
     return { x: 175, y: 550 };
   }
 
@@ -26,7 +26,7 @@ const generateSafePosition = (forLogo: boolean = false): { x: number; y: number 
   const maxAttempts = 50;
 
   do {
-    // Allow 50px protrusion for logos and icons by extending the possible range
+    // Allow 50px protrusion for images and icons by extending the possible range
     const protrusionAllowance = 50;
     x = Math.random() * (thumbnailWidth + 2 * protrusionAllowance) - protrusionAllowance;
     y = Math.random() * (thumbnailHeight + 2 * protrusionAllowance) - protrusionAllowance;
@@ -116,12 +116,6 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
     // Initial theme and styling
     theme: 'claude',
 
-    // Initial logo configuration
-    logoType: 'library',
-    logoUrl: '',
-    selectedLogos: [],
-    logoSize: 256,
-
     // Arrow draw mode
     isDrawingArrow: false,
     arrowDrawStart: null,
@@ -135,7 +129,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
 
     // UI states
     activeTool: 'text' as const,
-    showLogoLibrary: false,
+    showImageLibrary: false,
     showGridGuides: false,
     snappingEnabled: true,
     centerSnapMode: false, // False = neighbor snapping (default), True = center snapping
@@ -166,85 +160,6 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
         : state.selectedElement;
 
     set({ theme, elements: updatedElements, selectedElement: updatedSelected });
-  },
-
-  setLogoType: (logoType) => set({ logoType }),
-
-  setLogoUrl: (logoUrl) => {
-    const state = get();
-
-    // Remove existing custom logo element if any
-    const updatedElements = state.elements.filter(el => el.id !== 'logo-custom');
-
-    // If new URL is provided, create a custom logo element
-    if (logoUrl) {
-      const customLogoElement: ThumbnailElement = {
-        id: 'logo-custom',
-        type: 'logo',
-        name: 'Custom Logo',
-        position: { x: 175, y: 550 },
-        zIndex: 5000,
-        properties: {
-          size: state.logoSize,
-          rotation: 0,
-          opacity: 100,
-          src: logoUrl,
-        },
-      };
-      updatedElements.push(customLogoElement);
-    }
-
-    set({ logoUrl, elements: updatedElements });
-  },
-
-  setSelectedLogos: (selectedLogos) => {
-    const state = get();
-
-    // Remove logos that are no longer selected
-    const updatedElements = state.elements.filter(element =>
-      element.type !== 'logo' || selectedLogos.some(url =>
-        (element.properties as LogoIconElementProperties).src === url
-      )
-    );
-
-    // Add new logo elements for newly selected logos
-    const existingLogoUrls = state.elements
-      .filter(el => el.type === 'logo')
-      .map(el => (el.properties as LogoIconElementProperties).src);
-
-    const newLogoElements: ThumbnailElement[] = selectedLogos
-      .filter(url => !existingLogoUrls.includes(url))
-      .map((url, index) => {
-        return {
-          id: `logo-${Date.now()}-${index}`,
-          type: 'logo' as const,
-          name: `Logo ${index + 1}`,
-          position: { x: 175, y: 550 },
-          zIndex: 5000 + index * 10, // Start at 5000, increment by 10 for each logo
-          properties: {
-            size: state.logoSize,
-            rotation: Math.random() * 30 - 15, // -15 to 15 degrees
-            opacity: 100,
-            src: url,
-          },
-        };
-      });
-
-    set({
-      selectedLogos,
-      elements: [...updatedElements, ...newLogoElements],
-    });
-  },
-
-  setLogoSize: (logoSize) => {
-    const state = get();
-    const updatedElements = state.elements.map(element =>
-      element.type === 'logo'
-        ? { ...element, properties: { ...element.properties, size: logoSize } }
-        : element
-    );
-
-    set({ logoSize, elements: updatedElements });
   },
 
   selectElement: (selectedElement) => {
@@ -480,10 +395,10 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
       };
     }),
 
-  randomizeLogoPositions: () => {
+  randomizeImagePositions: () => {
     const state = get();
     const updatedElements = state.elements.map(element =>
-      element.type === 'logo'
+      element.type === 'image'
         ? {
             ...element,
             position: generateSafePosition(false), // Use random position for randomization
@@ -629,7 +544,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
   // UI actions
   setActiveTool: (tool) => set({ activeTool: tool }),
 
-  setShowLogoLibrary: (show) => set({ showLogoLibrary: show }),
+  setShowImageLibrary: (show) => set({ showImageLibrary: show }),
 
   setShowGridGuides: (show) => set({ showGridGuides: show, centerSnapMode: show ? false : get().centerSnapMode }),
 
@@ -661,7 +576,7 @@ export const useThumbnailStore = create<ThumbnailState>((set, get) => {
       cursorPosition: null,
       isDrawingArrow: false,
       arrowDrawStart: null,
-      showLogoLibrary: false,
+      showImageLibrary: false,
       previewMode: false,
     }));
   },

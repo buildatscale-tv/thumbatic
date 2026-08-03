@@ -22,8 +22,8 @@ npm run dev > /tmp/dev.log 2>&1 &
 agent-browser set viewport 1500 950
 agent-browser open http://localhost:5173
 agent-browser wait 2000
-agent-browser find text "Add Logo" click
-agent-browser upload "input[type=file]" /tmp/logo.png
+agent-browser find text "Add Image" click
+agent-browser upload "input[type=file]" /tmp/image.png
 agent-browser wait 2000
 agent-browser get text ".modal__url-preview-header p"
 agent-browser screenshot /tmp/out.png
@@ -41,8 +41,8 @@ Notes from use:
 - `hover` fails when a selector matches several elements. Narrow it or use `find`.
 - Generate test images with ImageMagick, which is installed. `magick -size 1600x1600
   plasma:fractal /tmp/big.png` gives a heavy file for testing compression, and
-  `magick -size 400x400 xc:none -fill "#017cff" -draw "circle 200,200 200,60" /tmp/logo.png`
-  gives a clean logo shape.
+  `magick -size 400x400 xc:none -fill "#017cff" -draw "circle 200,200 200,60" /tmp/image.png`
+  gives a clean flat shape.
 
 Do not go back to a throwaway HTML page and a `--headless=new --screenshot` command. Chrome fires
 its screenshot at the load event, which does not wait for a module's top level await, so the
@@ -110,7 +110,7 @@ outside-click check covering both the control and the menu.
   or a rebuild.
 - Personal overrides live in git-ignored `.env.production.local` and `.env.development.local`.
   Never commit a file that sets `durable-objects`, because that changes the default for everyone.
-- Uploaded logos are blobs in the `images` store, keyed by the SHA-256 of their bytes, and a
+- Uploaded images are blobs in the `images` store, keyed by the SHA-256 of their bytes, and a
   thumbnail holds only an `img:<hash>` reference. Never inline image data into a record again.
   `src/utils/imageStorage.ts` keeps an image untouched when it is already under 600 KB and no
   larger than 2048 px, and only then steps quality down.
@@ -131,15 +131,17 @@ claims success, look for an uncommented `CLOUDFLARE_API_TOKEN` in `.env`. Wrangl
 and an API token takes priority over OAuth, so the login never happens. Check with
 `wrangler whoami --env-file /dev/null`. Keep `CLOUDFLARE_ACCOUNT_ID`; only the token breaks it.
 
-## Logo library
+## Image library
 
+- The word is image, not logo, everywhere in the UI and the code. These were never limited to
+  logos. Internal names follow: element type `image`, `IMAGE_LIBRARY`, `imageUrl`, and so on.
 - Local assets belong in `public/`. A path under `src/assets/` works in `npm run dev` and 404s in
   the build, so it fails only on the deployed site.
 - Prefer versioned CDNs. `cdn.jsdelivr.net/gh/devicons/devicon` and
-  `cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons` are already in use. A logo taken from a
+  `cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons` are already in use. An image taken from a
   product's own site breaks the next time they deploy.
-- When a logo has two versions, the label names the theme it is for: `GitHub (Dark Theme)` and
-  `GitHub (Light Theme)`. The parenthesis never means the icon's own colour. List the dark theme
+- When an image has two versions, the label names the theme it is for: `GitHub (Dark Theme)` and
+  `GitHub (Light Theme)`. The parenthesis never means the image's own colour. List the dark theme
   entry first, since four of the five themes are dark.
 - Decide which version is which by measuring, not by reading the file name. Draw the icon on a
   canvas, apply its `invert` flag, and average the luminance of the visible pixels.
@@ -160,8 +162,11 @@ This UI shows errors inline and confirms destructive actions in place.
 
 ## Conventions
 
-- The changelog entry goes in the **same commit** as the change it describes. Inside an Added
-  group, keep the `CHANGELOG.md` line last.
+- The changelog entry goes in the **same commit** as the change it describes.
+- Order the bullets inside each group by what matters most to a reader, not by the order the
+  work happened. New capability first, then changes to what you see or how you work, then
+  internal or cosmetic changes. Break ties by how much of the app the change touches. The
+  `CHANGELOG.md` line itself always goes last in an Added group.
 - `CHANGELOG.md` is date based, newest first. One line per bullet with no hard wrapping, because
   hard wraps make bullets ragged in an editor and noisy in a diff.
 - Deploy with `npm run deploy:prod`. The live site sits behind a `GATE_SECRET` cookie, so a plain

@@ -4,13 +4,8 @@ export interface ThumbnailData {
   id: string;
   name: string;
   theme: string;
-  logoType: string;
-  logoUrl: string;
-  selectedLogos: string[];
-  logoSize: number;
   elements: unknown[];
   activeTool: string;
-  showLogoLibrary: boolean;
   showGridGuides: boolean;
   snappingEnabled: boolean;
   centerSnapMode: boolean;

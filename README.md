@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A browser-based editor for professional YouTube thumbnails. Place text, logos, and arrows on a
+A browser-based editor for professional YouTube thumbnails. Place text, images, and arrows on a
 1280×720 canvas, pick a theme, and export a PNG at YouTube's exact thumbnail size.
 
 **[Try the demo at demo.thumbatic.com](https://demo.thumbatic.com)**. It needs no account and
@@ -38,8 +38,8 @@ The same content in each of the five themes:
 - **1280×720 canvas** that matches the YouTube thumbnail specification exactly.
 - **Text elements** in four presets (title, subtitle, accent label, custom) with inline editing,
   multi-line support, highlight/drop-shadow backgrounds, rotation, opacity, and alignment.
-- **Logo elements** from a built-in library of 79 tech logos (Cloud, Frontend, Backend, AI,
-  Database, DevOps, Design, Testing, Languages, Tools) or from any custom image URL.
+- **Image elements** from a built-in library of 79 tech logos and your own uploads (Cloud, Frontend, Backend, AI,
+  Database, DevOps, Design, Testing, Languages, Tools) or uploaded from your own files.
 - **Arrow elements** drawn directly on the canvas, with bezier control point, stroke width, color,
   and arrowheads on either end.
 - **Five themes**: Claude Code, Cloudflare, Codex, Gemini, and Pencil.
@@ -72,7 +72,7 @@ npm run dev
 
 Open the URL printed in the terminal (usually `http://localhost:5173`).
 
-No environment file is needed. The default storage backend is the browser's `localStorage`, so
+No environment file is needed. The default storage backend is the browser's IndexedDB, so
 everything works offline and on the first run.
 
 ## Commands
@@ -87,13 +87,13 @@ everything works offline and on the first run.
 | `npm run preview` | Serve the production build locally |
 | `npm run deploy` | Deploy the current `dist/` build to Cloudflare Workers with Wrangler |
 | `npm run deploy:prod` | Build, then deploy to Cloudflare Workers |
-| `npm run deploy:demo` | Build with the local storage backend, then deploy the public demo |
+| `npm run deploy:demo` | Build with browser storage, then deploy the public demo |
 
 ## Using the Editor
 
 The layout is a top toolbar, the canvas, a properties panel on the right, and a status bar.
 
-- **Toolbar**: add text, add a logo, draw an arrow, choose a theme, toggle snapping modes, and
+- **Toolbar**: add text, add an image, draw an arrow, choose a theme, toggle snapping modes, and
   manage saved thumbnails (name field, save, open, new).
 - **Canvas**: click an element to select it, double-click text to edit it, and drag to move.
 - **Properties panel**: edit the properties of the selected element.
@@ -103,7 +103,7 @@ The layout is a top toolbar, the canvas, a properties panel on the right, and a 
 
 | Key | Action |
 |-----|--------|
-| `L` | Open the logo library |
+| `L` | Open the image library |
 | `A` | Toggle arrow drawing mode |
 | `S` | Toggle snapping |
 | `C` | Toggle center-snap mode |
@@ -140,24 +140,24 @@ the backend is a one-line configuration change.
 Any other value falls back to `indexeddb`. There is no automatic fallback between backends,
 because a silent downgrade to a 5 MB store would hide the failure rather than report it.
 
-### Uploaded Logos
+### Uploaded Images
 
-An uploaded logo is stored once and referenced by every thumbnail that uses it. The reference
+An uploaded image is stored once and referenced by every thumbnail that uses it. The reference
 is `img:<sha-256 of the bytes>`, so the same image can never be stored twice, no matter how many
 thumbnails use it or how often it is uploaded again. Uploading a file you already have costs
 nothing and skips recompression, because the original file is hashed first.
 
-Your uploads appear in the logo picker under **Your Uploads**, ready to reuse or delete.
+Your uploads appear in the image picker under **Your Uploads**, ready to reuse or delete.
 
 Images nobody refers to are removed on start-up by a mark and sweep pass. Deleting a thumbnail
 therefore frees its images only when no other thumbnail still uses them.
 
 This matters for size. `localStorage` can only hold strings, so an image has to be base64, which
-costs four characters per three bytes and then two bytes per character. A 600 KB logo costs about
+costs four characters per three bytes and then two bytes per character. A 600 KB image costs about
 1.6 MB there and 600 KB in IndexedDB.
 
-`local` is the default everywhere. The repository contains no env file, and an unset or invalid
-`VITE_STORAGE_BACKEND` falls back to `local`, so a fresh clone runs fully client-side in both
+`indexeddb` is the default everywhere. The repository contains no env file, and an unset or
+invalid `VITE_STORAGE_BACKEND` falls back to it, so a fresh clone runs fully client-side in both
 development and production.
 
 Select a different backend at **build time**, because Vite inlines `import.meta.env` values into

@@ -24,7 +24,7 @@ body, #root {
 }
 
 /* Ensure dragging elements move instantly with cursor */
-.selectable-element[data-element-type="logo"],
+.selectable-element[data-element-type="image"],
 .selectable-element[data-element-type="icon"],
 .selectable-element[data-element-type="text"] {
   /* Performance optimizations removed for export compatibility */
@@ -353,7 +353,7 @@ body, #root {
   background: #1b1c1f;
 }
 
-.claude-theme .logo-section {
+.claude-theme .image-section {
   position: absolute;
   top: 40px;
   left: 40px;
@@ -629,7 +629,7 @@ body, #root {
 }
 
 /* Logo Library Checkboxes */
-.logo-checkboxes {
+.image-checkboxes {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 8px;
@@ -641,7 +641,7 @@ body, #root {
   border-radius: 6px;
 }
 
-.logo-checkboxes label {
+.image-checkboxes label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -649,7 +649,7 @@ body, #root {
   cursor: pointer;
 }
 
-.logo-checkboxes input[type="checkbox"] {
+.image-checkboxes input[type="checkbox"] {
   width: auto;
   margin: 0;
 }
@@ -723,7 +723,7 @@ body, #root {
   pointer-events: none;
 }
 
-.random-logo {
+.random-image {
   position: absolute;
   width: 128px;
   height: 128px;
@@ -733,7 +733,7 @@ body, #root {
   user-select: none;
 }
 
-.random-logo img {
+.random-image img {
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -863,7 +863,7 @@ body, #root {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
 }
 
-.gemini-theme .logo-section {
+.gemini-theme .image-section {
   position: absolute;
   top: 40px;
   left: 40px;

@@ -7,18 +7,22 @@ Notable changes to Thumbatic, newest first. Each heading is the date the work la
 ### Added
 
 - IndexedDB storage backend, now the default. It holds far more than localStorage, and it stores uploads as blobs rather than base64, which costs about a third as much for the same image.
-- Personal logo library. Uploaded images are stored once each and appear under Your Uploads in the logo picker, ready to reuse in any thumbnail or delete.
-- Image deduplication by content hash. A thumbnail refers to an image by the SHA-256 of its bytes, so the same logo used in ten thumbnails is stored once. Uploading a file you already have stores nothing and skips recompression.
+- Personal image library. Uploaded images are stored once each and appear under Your Uploads in the image picker, ready to reuse in any thumbnail or delete.
+- Image deduplication by content hash. A thumbnail refers to an image by the SHA-256 of its bytes, so the same image used in ten thumbnails is stored once. Uploading a file you already have stores nothing and skips recompression.
 - Automatic clean up of images no longer used by any thumbnail, on start-up.
 - Tests for the storage layer and the uploads tab, using a real IndexedDB implementation.
 
 ### Changed
 
+- Everything called a logo is now called an image, because these were never limited to logos. That covers the toolbar button, the picker title and tabs, element names, the status bar, and the code behind them.
+- The picker tabs read Image Library, Your Uploads, and Upload Image, and the dialog heading follows whichever tab is open. The old third tab said Custom URL, which described the field rather than what the tab is for.
+- The image picker shows what the canvas holds. An image already on the canvas opens ticked, unticking it takes it off, and the button says what pressing it does, Add, Remove, or Apply. Uploads are never disturbed by a change in the library tab. A thumbnail is now described by its elements alone, where it used to carry a second list of images that could disagree with them.
 - The public demo runs on IndexedDB, so uploads on the demo no longer compete for a 5 MB budget.
 
 ### Fixed
 
 - Save errors were clipped to a red sliver on a phone, because the message sat inside the toolbar and the toolbar scrolls sideways. The message now renders outside the toolbar, wraps, and can be dismissed.
+- The canvas size was cut off in the status bar on a phone, showing "1280 ›" and nothing else. The labels are hidden at that width, the values stay whole, and the row scrolls if it still does not fit.
 - An error from the server API reported only "Unknown error" whenever the response was not JSON, which is what a gate redirect or a wrong backend returns. It now reports the status, for example "404 Not Found from /api/thumbnails".
 
 ## 2026-08-02

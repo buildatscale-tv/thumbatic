@@ -1,8 +1,8 @@
 import React from 'react';
 import { useThumbnailStore } from '../../store/thumbnailStore';
 import { DraggableElement } from '../DraggableElement';
-import { LOGO_LIBRARY } from '../../constants/logos';
-import type { LogoIconElementProperties, ThumbnailElement } from '../../types';
+import { IMAGE_LIBRARY } from '../../constants/images';
+import type { ImageElementProperties, ThumbnailElement } from '../../types';
 import { useImageSrc } from '../../utils/imageUrls';
 
 interface DragCallbacks {
@@ -11,25 +11,25 @@ interface DragCallbacks {
   onDragEnd: (elementId: string, position: { x: number; y: number }) => void;
 }
 
-const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
+const DraggableImage: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
   const { selectElement, updateElementProperties } = useThumbnailStore();
-  const props = element.properties as LogoIconElementProperties;
-  // An uploaded logo is stored once and referenced by hash, so resolve it for display
+  const props = element.properties as ImageElementProperties;
+  // An uploaded image is stored once and referenced by hash, so resolve it for display
   const resolvedSrc = useImageSrc(props.src?.replace('#inverted', ''));
 
-  const handleLogoClick = (event: React.MouseEvent) => {
+  const handleImageClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     // Use the element prop directly to avoid store timing issues
     selectElement(element);
   };
 
-  const logoSize = props.size || 64;
+  const imageSize = props.size || 64;
   const aspectRatio = props.aspectRatio || 1;
 
   // Calculate dimensions based on aspect ratio
   // size is used as the height, width is calculated from aspect ratio
-  const logoHeight = logoSize;
-  const logoWidth = logoSize * aspectRatio;
+  const imageHeight = imageSize;
+  const imageWidth = imageSize * aspectRatio;
 
   // Auto-detect aspect ratio from loaded image
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -43,9 +43,9 @@ const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
     }
   };
 
-  // Check if this logo should be inverted
-  const logoInfo = LOGO_LIBRARY.find(logo => logo.value === props.src);
-  const shouldInvert = logoInfo?.invert || false;
+  // Check if this image should be inverted
+  const imageInfo = IMAGE_LIBRARY.find(image => image.value === props.src);
+  const shouldInvert = imageInfo?.invert || false;
 
   return (
     <DraggableElement
@@ -53,18 +53,18 @@ const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
       position={element.position}
       zIndex={element.zIndex}
       dragCallbacks={dragCallbacks}
-      className="random-logo selectable-element"
+      className="random-image selectable-element"
       style={{
-        width: `${logoWidth}px`,
-        height: `${logoHeight}px`,
+        width: `${imageWidth}px`,
+        height: `${imageHeight}px`,
         opacity: props.opacity / 100,
         touchAction: 'none',
       }}
     >
       <div
-        data-element-type="logo"
+        data-element-type="image"
         data-element-name={element.name}
-        onClick={handleLogoClick}
+        onClick={handleImageClick}
       >
         <img
           src={resolvedSrc}
@@ -84,41 +84,26 @@ const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
   );
 };
 
-interface LogoElementsProps {
+interface ImageElementsProps {
   dragCallbacks: DragCallbacks;
 }
 
-export const LogoElements: React.FC<LogoElementsProps> = ({ dragCallbacks }) => {
-  const { logoType, elements } = useThumbnailStore();
-  const logoElements = elements.filter(el => el.type === 'logo');
+export const ImageElements: React.FC<ImageElementsProps> = ({ dragCallbacks }) => {
+  const elements = useThumbnailStore(state => state.elements);
+  const imageElements = elements.filter(el => el.type === 'image');
 
+  // Every image element on the canvas is drawn. This used to be gated on a stored mode
+  // field, which meant a record missing that field rendered no images at all even though
+  // the elements were right there. The elements are the truth about what is on the canvas.
   return (
-    <>
-      {/* Custom URL Logo - now draggable */}
-      {logoType === 'url' && (
-        <div className="multiple-logos">
-          {logoElements.filter(el => el.id === 'logo-custom').map((element) => (
-            <DraggableLogo
-              key={element.id}
-              element={element}
-              dragCallbacks={dragCallbacks}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Multiple Library Logos */}
-      {logoType === 'library' && (
-        <div className="multiple-logos">
-          {logoElements.filter(el => el.id !== 'logo-custom').map((element) => (
-            <DraggableLogo
-              key={element.id}
-              element={element}
-              dragCallbacks={dragCallbacks}
-            />
-          ))}
-        </div>
-      )}
-    </>
+    <div className="multiple-images">
+      {imageElements.map(element => (
+        <DraggableImage
+          key={element.id}
+          element={element}
+          dragCallbacks={dragCallbacks}
+        />
+      ))}
+    </div>
   );
 };

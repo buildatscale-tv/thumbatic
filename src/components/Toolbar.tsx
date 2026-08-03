@@ -100,7 +100,7 @@ export const Toolbar: React.FC = () => {
     thumbnailId,
     thumbnailName,
     setTheme,
-    setShowLogoLibrary,
+    setShowImageLibrary,
     setShowGridGuides,
     setSnappingEnabled,
     setCenterSnapMode,
@@ -214,12 +214,8 @@ export const Toolbar: React.FC = () => {
       loadPersistedState({
         elements: createInitialTextElements(),
         theme: 'claude',
-        logoType: 'library',
-        logoUrl: '',
-        selectedLogos: [],
-        logoSize: 256,
         activeTool: 'text',
-        showLogoLibrary: false,
+        showImageLibrary: false,
         showGridGuides: false,
         snappingEnabled: true,
         centerSnapMode: false,
@@ -322,7 +318,7 @@ export const Toolbar: React.FC = () => {
   };
 
   const handleAddLogo = () => {
-    setShowLogoLibrary(true);
+    setShowImageLibrary(true);
   };
 
   const handleToggleDrawArrow = () => {
@@ -446,14 +442,14 @@ export const Toolbar: React.FC = () => {
         <button
           className="toolbar__button"
           onClick={handleAddLogo}
-          title="Add Logo (L)"
+          title="Add Image (L)"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
             <circle cx="8.5" cy="8.5" r="1.5"/>
             <polyline points="21 15 16 10 5 21"/>
           </svg>
-          <span>Add Logo</span>
+          <span>Add Image</span>
         </button>
 
         <button

@@ -3,7 +3,7 @@ import { useThumbnailStore } from '../store/thumbnailStore';
 import { Toolbar } from './Toolbar';
 import { PropertiesPanel } from './PropertiesPanel';
 import { StatusBar } from './StatusBar';
-import { LogoLibraryModal } from './LogoLibraryModal';
+import { ImageLibraryModal } from './ImageLibraryModal';
 import { MobileTextEditor } from './MobileTextEditor';
 import { ThumbnailCanvas } from './ThumbnailCanvas';
 import type { ActiveSnap } from '../types/snapping';
@@ -86,7 +86,7 @@ export const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({ dragStat
         <PropertiesPanel />
       </div>
       <StatusBar />
-      <LogoLibraryModal />
+      <ImageLibraryModal />
       <MobileTextEditor />
     </div>
   );
