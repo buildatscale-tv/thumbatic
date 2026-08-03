@@ -3,6 +3,7 @@ import { useThumbnailStore } from '../../store/thumbnailStore';
 import { DraggableElement } from '../DraggableElement';
 import { LOGO_LIBRARY } from '../../constants/logos';
 import type { LogoIconElementProperties, ThumbnailElement } from '../../types';
+import { useImageSrc } from '../../utils/imageUrls';
 
 interface DragCallbacks {
   onDragStart: (elementId: string, position: { x: number; y: number }) => void;
@@ -13,6 +14,8 @@ interface DragCallbacks {
 const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCallbacks }> = ({ element, dragCallbacks }) => {
   const { selectElement, updateElementProperties } = useThumbnailStore();
   const props = element.properties as LogoIconElementProperties;
+  // An uploaded logo is stored once and referenced by hash, so resolve it for display
+  const resolvedSrc = useImageSrc(props.src?.replace('#inverted', ''));
 
   const handleLogoClick = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -64,7 +67,7 @@ const DraggableLogo: React.FC<{ element: ThumbnailElement; dragCallbacks: DragCa
         onClick={handleLogoClick}
       >
         <img
-          src={props.src?.replace('#inverted', '')}
+          src={resolvedSrc}
           alt={element.name}
           onLoad={handleImageLoad}
           style={{

@@ -1123,6 +1123,50 @@
   color: #fff;
 }
 
+.modal__uploads {
+  min-height: 200px;
+}
+
+.modal__logo-item {
+  position: relative;
+}
+
+.modal__upload-meta {
+  font-size: 10px;
+  color: #666;
+  margin-top: 2px;
+}
+
+/* Sits on the tile, so a stored image can be removed without leaving the grid */
+.modal__upload-delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.55);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.modal__logo-item:hover .modal__upload-delete,
+.modal__upload-delete:focus-visible {
+  opacity: 1;
+}
+
+.modal__upload-delete:hover {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
 .modal__empty {
   text-align: center;
   padding: 40px;

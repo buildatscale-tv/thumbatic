@@ -2,6 +2,20 @@
 
 Notable changes to Thumbatic, newest first. Each heading is the date the work landed on `main`.
 
+## 2026-08-03
+
+### Added
+
+- IndexedDB storage backend, now the default. It holds far more than localStorage, and it stores uploads as blobs rather than base64, which costs about a third as much for the same image.
+- Personal logo library. Uploaded images are stored once each and appear under Your Uploads in the logo picker, ready to reuse in any thumbnail or delete.
+- Image deduplication by content hash. A thumbnail refers to an image by the SHA-256 of its bytes, so the same logo used in ten thumbnails is stored once. Uploading a file you already have stores nothing and skips recompression.
+- Automatic clean up of images no longer used by any thumbnail, on start-up.
+- Tests for the storage layer and the uploads tab, using a real IndexedDB implementation.
+
+### Changed
+
+- The public demo runs on IndexedDB, so uploads on the demo no longer compete for a 5 MB budget.
+
 ## 2026-08-02
 
 ### Added

@@ -4,28 +4,51 @@ Working notes for agents. `README.md` has the project description, the architect
 deployment steps. This file holds only what is easy to get wrong here, plus how this repo likes
 to work.
 
-## Verify in a browser, not by reading
+## Verify in a browser with agent-browser
 
 Most defects here are layout, pointer, or persistence behavior, and none of them show up in a
-diff. The pattern that works: write a throwaway HTML page in the project root, mount the real
-`App`, drive it, print the result into the page, then screenshot it with headless Chrome.
+diff. Drive the real app with the `agent-browser` CLI. It keeps a session open between commands,
+waits on real time, and can upload real files, so it needs no harness page.
+
+```bash
+npm install -g agent-browser   # if the command is missing
+agent-browser install          # one time, fetches the browser binaries
+```
+
+A session looks like this:
 
 ```bash
 npm run dev > /tmp/dev.log 2>&1 &
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu \
-  --window-size=1600,1000 --virtual-time-budget=20000 --screenshot=/tmp/out.png \
-  http://localhost:5173/my-harness.html
+agent-browser set viewport 1500 950
+agent-browser open http://localhost:5173
+agent-browser wait 2000
+agent-browser find text "Add Logo" click
+agent-browser upload "input[type=file]" /tmp/logo.png
+agent-browser wait 2000
+agent-browser get text ".modal__url-preview-header p"
+agent-browser screenshot /tmp/out.png
+agent-browser close
 ```
 
-Delete the harness when you are done, and stop the dev server with
-`lsof -ti tcp:5173 | xargs kill`.
+Useful beyond the basics: `eval <js>` reads state straight out of the page, `set viewport`
+covers phone widths, `set device <name>` emulates touch, `console` and `errors` show what the
+page logged, and `snapshot` prints an accessibility tree with refs when a selector is unclear.
 
-Two traps in that setup:
+Notes from use:
 
-- Headless Chrome will not make a window narrower than about 500 px. For phone widths, put the
-  app in an `<iframe>` of the exact size inside a larger page. Media queries follow the frame.
-- Screenshots freeze CSS transitions at their start value, so a colour you measure may be the
-  "from" colour. Add `* { transition: none !important }` in the harness before measuring.
+- `find text "Add"` matches the first element containing that text, which may be a heading
+  rather than the button. Use a CSS selector such as `.modal__button--primary` when it matters.
+- `hover` fails when a selector matches several elements. Narrow it or use `find`.
+- Generate test images with ImageMagick, which is installed. `magick -size 1600x1600
+  plasma:fractal /tmp/big.png` gives a heavy file for testing compression, and
+  `magick -size 400x400 xc:none -fill "#017cff" -draw "circle 200,200 200,60" /tmp/logo.png`
+  gives a clean logo shape.
+
+Do not go back to a throwaway HTML page and a `--headless=new --screenshot` command. Chrome fires
+its screenshot at the load event, which does not wait for a module's top level await, so the
+capture comes out blank. Adding `--virtual-time-budget` fixes the timing for ordinary code but
+freezes IndexedDB, so anything touching storage hangs on its first request. Both traps cost real
+time before agent-browser replaced them.
 
 ## Canvas coordinates
 
@@ -80,15 +103,25 @@ outside-click check covering both the control and the menu.
 
 ## Storage
 
-- `local` is the default backend everywhere, including production, so a fresh clone works with
-  no server. `src/storage/config.ts` falls back to it for any unknown value.
+- `indexeddb` is the default backend everywhere, including production, so a fresh clone works
+  with no server. `src/storage/config.ts` falls back to it for any unknown value. There is no
+  automatic fallback to `local`, because that would hide a failure behind a 5 MB store.
 - `VITE_STORAGE_BACKEND` is inlined at build time. Changing it needs a restart of the dev server
   or a rebuild.
 - Personal overrides live in git-ignored `.env.production.local` and `.env.development.local`.
   Never commit a file that sets `durable-objects`, because that changes the default for everyone.
-- Uploaded logos are stored as data URLs inside the record, so they count against the quota.
+- Uploaded logos are blobs in the `images` store, keyed by the SHA-256 of their bytes, and a
+  thumbnail holds only an `img:<hash>` reference. Never inline image data into a record again.
   `src/utils/imageStorage.ts` keeps an image untouched when it is already under 600 KB and no
   larger than 2048 px, and only then steps quality down.
+- The original file is hashed too, in the `sources` store, so re-uploading a file that is already
+  held skips both the compression and the write.
+- Rendering goes through `useImageSrc`, which resolves a reference to an object URL and caches it
+  per image. Do not put a reference straight into an `img` tag.
+- Unused images are removed by `sweepUnusedImages` on start-up. Mark and sweep, not reference
+  counting, because counting breaks when a write fails between two stores.
+- Uploads live in the browser even when thumbnails go to the Durable Object. Making the server
+  hold them is a separate piece of work.
 - The Durable Object backend uses one global instance and has no per-user authentication.
 
 ## Wrangler will not log in
@@ -112,6 +145,11 @@ and an API token takes priority over OAuth, so the login never happens. Check wi
   canvas, apply its `invert` flag, and average the luminance of the visible pixels.
 
 ## Checks
+
+IndexedDB and `crypto.subtle` do not exist in jsdom, and IndexedDB does not advance under
+Chrome's `--virtual-time-budget`, so a browser harness will hang on the first request. Test
+storage in Vitest instead, where `fake-indexeddb` provides the real API. Object URLs are stubbed
+in `src/test/setup.ts`, since fake-indexeddb returns plain objects in place of blobs.
 
 `npm run lint`, `npm test`, and `npm run build` all have to pass. Lint sits at zero problems, so
 any output is something you introduced. Tests cover first-save behavior, the name that follows

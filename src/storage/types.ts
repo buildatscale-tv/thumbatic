@@ -1,6 +1,6 @@
 import type { ThumbnailState } from '../types';
 
-export type StorageBackend = 'local' | 'durable-objects';
+export type StorageBackend = 'indexeddb' | 'local' | 'durable-objects';
 
 export interface ThumbnailRecord {
   id: string;

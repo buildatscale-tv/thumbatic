@@ -133,10 +133,28 @@ the backend is a one-line configuration change.
 
 | Backend | `VITE_STORAGE_BACKEND` | Where the data is | When to use it |
 |---------|------------------------|-------------------|----------------|
-| Local storage (default) | `local` (or unset) | Browser `localStorage`, key `thumbatic-thumbnails` | Static hosting, single browser, no server |
+| IndexedDB (default) | `indexeddb` (or unset) | Browser IndexedDB, database `thumbatic` | Any deployment. Holds far more than localStorage and stores uploads as blobs |
+| Local storage | `local` | Browser `localStorage`, key `thumbatic-thumbnails` | Only if you have a reason to avoid IndexedDB |
 | Durable Objects | `durable-objects` | Cloudflare Durable Object with SQLite, through `/api/thumbnails` | Thumbnails shared between browsers and devices |
 
-Any other value falls back to `local`.
+Any other value falls back to `indexeddb`. There is no automatic fallback between backends,
+because a silent downgrade to a 5 MB store would hide the failure rather than report it.
+
+### Uploaded Logos
+
+An uploaded logo is stored once and referenced by every thumbnail that uses it. The reference
+is `img:<sha-256 of the bytes>`, so the same image can never be stored twice, no matter how many
+thumbnails use it or how often it is uploaded again. Uploading a file you already have costs
+nothing and skips recompression, because the original file is hashed first.
+
+Your uploads appear in the logo picker under **Your Uploads**, ready to reuse or delete.
+
+Images nobody refers to are removed on start-up by a mark and sweep pass. Deleting a thumbnail
+therefore frees its images only when no other thumbnail still uses them.
+
+This matters for size. `localStorage` can only hold strings, so an image has to be base64, which
+costs four characters per three bytes and then two bytes per character. A 600 KB logo costs about
+1.6 MB there and 600 KB in IndexedDB.
 
 `local` is the default everywhere. The repository contains no env file, and an unset or invalid
 `VITE_STORAGE_BACKEND` falls back to `local`, so a fresh clone runs fully client-side in both
@@ -297,7 +315,8 @@ npm run deploy:demo
 
 Three things make that deployment safe to leave open:
 
-- The build sets `VITE_STORAGE_BACKEND=local`, so thumbnails never leave the visitor's browser.
+- The build sets `VITE_STORAGE_BACKEND=indexeddb`, so thumbnails and uploads never leave the
+  visitor's browser.
 - The environment declares **no** Durable Object binding, so there is no server side store at all.
   The Worker answers 404 for `/api/*` when the binding is missing, which means nobody can read or
   write a shared store through the demo.

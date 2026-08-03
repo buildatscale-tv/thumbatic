@@ -3,7 +3,25 @@ import { useThumbnailStore } from '../store/thumbnailStore';
 import { LOGO_LIBRARY } from '../constants/logos';
 import { Input } from './ui/Input';
 import { prepareImageForStorage, formatBytes } from '../utils/imageStorage';
+import {
+  deleteImage,
+  findImageForSource,
+  hashBlob,
+  idToImageRef,
+  isImageRef,
+  listImages,
+  putImage,
+  rememberSource,
+} from '../storage/imageStore';
+import type { StoredImage } from '../storage/imageStore';
+import { forgetImageUrl, useImageSrc } from '../utils/imageUrls';
 import type { PreparedImage } from '../utils/imageStorage';
+
+/** Shows one stored upload, resolving its blob to a URL. */
+const UploadPreview: React.FC<{ id: string; name: string }> = ({ id, name }) => {
+  const src = useImageSrc(idToImageRef(id));
+  return src ? <img src={src} alt={name} /> : null;
+};
 
 export const LogoLibraryModal: React.FC = () => {
   const {
@@ -21,17 +39,24 @@ export const LogoLibraryModal: React.FC = () => {
   const [tempSelectedLogos, setTempSelectedLogos] = useState<string[]>(selectedLogos);
   const [customUrl, setCustomUrl] = useState(logoUrl);
   const [customAspectRatio, setCustomAspectRatio] = useState<number>(1);
-  const [activeTab, setActiveTab] = useState<'library' | 'url'>('library');
+  const [activeTab, setActiveTab] = useState<'library' | 'uploads' | 'url'>('library');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [imageInfo, setImageInfo] = useState<PreparedImage | null>(null);
+  const [uploads, setUploads] = useState<StoredImage[]>([]);
+  const [reusedExisting, setReusedExisting] = useState(false);
   const dragDepth = useRef(0);
 
-  const isDataUrl = (url: string) => url.startsWith('data:');
+  const isStoredImage = (url: string) => isImageRef(url);
+  const previewSrc = useImageSrc(customUrl);
   const fileSizeLabel = imageInfo
     ? `, ${imageInfo.width}x${imageInfo.height}, ${formatBytes(imageInfo.storedBytes)}` +
-      (imageInfo.recompressed ? ` (compressed from ${formatBytes(imageInfo.originalBytes)})` : '')
+      (reusedExisting
+        ? ' (already in your uploads, stored once)'
+        : imageInfo.recompressed
+          ? ` (compressed from ${formatBytes(imageInfo.originalBytes)})`
+          : '')
     : '';
 
   // Shared by the file picker and the drop zone
@@ -44,13 +69,62 @@ export const LogoLibraryModal: React.FC = () => {
     setUploadError(null);
 
     try {
+      // The same file uploaded again is recognised by its hash, so it is neither
+      // compressed a second time nor stored a second time.
+      const sourceId = await hashBlob(file);
+      const knownId = await findImageForSource(sourceId);
+      if (knownId) {
+        setCustomUrl(idToImageRef(knownId));
+        const known = (await listImages()).find(image => image.id === knownId);
+        if (known) {
+          setCustomAspectRatio(known.height ? known.width / known.height : 1);
+          setImageInfo({
+            blob: new Blob(),
+            aspectRatio: known.height ? known.width / known.height : 1,
+            originalBytes: known.bytes,
+            storedBytes: known.bytes,
+            width: known.width,
+            height: known.height,
+            recompressed: false,
+          });
+        }
+        setReusedExisting(true);
+        await refreshUploads();
+        return;
+      }
+
       const prepared = await prepareImageForStorage(file);
-      setCustomUrl(prepared.dataUrl);
+      const stored = await putImage(prepared.blob, {
+        name: file.name,
+        width: prepared.width,
+        height: prepared.height,
+      });
+      await rememberSource(sourceId, stored.id);
+
+      setCustomUrl(idToImageRef(stored.id));
       setCustomAspectRatio(prepared.aspectRatio);
       setImageInfo(prepared);
+      setReusedExisting(false);
+      await refreshUploads();
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : `"${file.name}" could not be read.`);
     }
+  };
+
+  const refreshUploads = async () => {
+    try {
+      setUploads(await listImages());
+    } catch {
+      setUploads([]);
+    }
+  };
+
+  const handleDeleteUpload = async (id: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    await deleteImage(id);
+    forgetImageUrl(id);
+    if (customUrl === idToImageRef(id)) handleRemoveImage();
+    await refreshUploads();
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,6 +184,10 @@ export const LogoLibraryModal: React.FC = () => {
       setCustomUrl(droppedUrl.trim());
     }
   };
+
+  React.useEffect(() => {
+    if (showLogoLibrary) refreshUploads();
+  }, [showLogoLibrary]);
 
   // Get unique categories and their counts
   const { categories, logoCounts } = useMemo(() => {
@@ -243,6 +321,12 @@ export const LogoLibraryModal: React.FC = () => {
             Logo Library
           </button>
           <button
+            className={`modal__tab ${activeTab === 'uploads' ? 'modal__tab--active' : ''}`}
+            onClick={() => setActiveTab('uploads')}
+          >
+            Your Uploads{uploads.length > 0 ? ` (${uploads.length})` : ''}
+          </button>
+          <button
             className={`modal__tab ${activeTab === 'url' ? 'modal__tab--active' : ''}`}
             onClick={() => setActiveTab('url')}
           >
@@ -251,7 +335,58 @@ export const LogoLibraryModal: React.FC = () => {
         </div>
 
         <div className="modal__content">
-          {activeTab === 'library' ? (
+          {activeTab === 'uploads' ? (
+            <div className="modal__uploads">
+              {uploads.length === 0 ? (
+                <div className="modal__empty">
+                  <p>Nothing here yet.</p>
+                  <p style={{ fontSize: '12px', marginTop: '8px' }}>
+                    Images you upload on the Custom URL tab are kept here, stored once each,
+                    ready to reuse in any thumbnail.
+                  </p>
+                </div>
+              ) : (
+                <div className="modal__logo-grid">
+                  {uploads.map(image => {
+                    const reference = idToImageRef(image.id);
+                    const isSelected = customUrl === reference;
+                    return (
+                      <div
+                        key={image.id}
+                        className={`modal__logo-item ${isSelected ? 'modal__logo-item--selected' : ''}`}
+                        onClick={() => {
+                          setCustomUrl(reference);
+                          setCustomAspectRatio(image.height ? image.width / image.height : 1);
+                          setUploadError(null);
+                          setImageInfo(null);
+                          setReusedExisting(false);
+                        }}
+                        title={`${image.name}, ${image.width}x${image.height}, ${formatBytes(image.bytes)}`}
+                      >
+                        <div className="modal__logo-preview">
+                          <UploadPreview id={image.id} name={image.name} />
+                        </div>
+                        <div className="modal__logo-label">{image.name}</div>
+                        <div className="modal__upload-meta">{formatBytes(image.bytes)}</div>
+                        <button
+                          type="button"
+                          className="modal__upload-delete"
+                          onClick={event => handleDeleteUpload(image.id, event)}
+                          title="Delete this upload"
+                          aria-label={`Delete ${image.name}`}
+                        >
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          </svg>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : activeTab === 'library' ? (
             <>
               <div className="modal__filters">
                 <div className="modal__search">
@@ -398,7 +533,7 @@ export const LogoLibraryModal: React.FC = () => {
               {customUrl && (
                 <div className="modal__url-preview">
                   <div className="modal__url-preview-header">
-                    <p>{isDataUrl(customUrl) ? `Uploaded image${fileSizeLabel}` : 'Preview:'}</p>
+                    <p>{isStoredImage(customUrl) ? `Uploaded image${fileSizeLabel}` : 'Preview:'}</p>
                     <button
                       type="button"
                       className="modal__remove-image"
@@ -414,7 +549,7 @@ export const LogoLibraryModal: React.FC = () => {
                   </div>
                   <div className="modal__url-image">
                     <img
-                      src={customUrl}
+                      src={previewSrc}
                       alt="Custom logo preview"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;

@@ -6,7 +6,8 @@ import { useSnapping } from './hooks/useSnapping';
 import { snapToGrid } from './utils/gridSnapUtils';
 import type { ActiveSnap } from './types/snapping';
 import type { TextElementProperties } from './types';
-import { getStorageAdapter } from './storage';
+import { getStorageAdapter, STORAGE_BACKEND } from './storage';
+import { sweepUnusedImages } from './storage/imageStore';
 import { saveCurrentThumbnail } from './storage/saveCurrent';
 import { persistedToState } from './storage/serialize';
 import './styles/thumbnail.css';
@@ -53,6 +54,11 @@ function App() {
     };
     load().finally(() => {
       setIsHydrated(true);
+      // Drop uploaded images that no thumbnail refers to any more. Mark and sweep, so a
+      // failure here only postpones the clean up and never deletes something in use.
+      if (STORAGE_BACKEND === 'indexeddb') {
+        sweepUnusedImages().catch(err => console.error('Image clean up failed:', err));
+      }
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

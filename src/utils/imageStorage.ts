@@ -1,6 +1,6 @@
-// Uploaded logos are kept as data URLs inside the saved thumbnail, so their size
-// counts against the storage quota (localStorage is about 5 MB in most browsers).
-// These helpers keep an upload as sharp as possible while staying small enough to save.
+// Uploaded logos are stored as blobs in IndexedDB and referenced by every thumbnail
+// that uses them. These helpers keep an upload as sharp as possible while staying
+// small enough to be worth storing.
 
 // The canvas is 1280x720 and exports at 2x, so detail beyond 2x the canvas width
 // can never be seen. Anything at or below this keeps its full resolution.
@@ -19,7 +19,7 @@ const ENCODE_STEPS = [
 ];
 
 export interface PreparedImage {
-  dataUrl: string;
+  blob: Blob;
   aspectRatio: number;
   originalBytes: number;
   storedBytes: number;
@@ -28,26 +28,10 @@ export interface PreparedImage {
   recompressed: boolean;
 }
 
-/** Decoded byte size of a base64 data URL, without allocating the bytes. */
-export function dataUrlBytes(dataUrl: string): number {
-  const base64 = dataUrl.split(',')[1] ?? '';
-  const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0;
-  return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
-}
-
 export function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function readAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error(`"${file.name}" could not be read.`));
-    reader.readAsDataURL(file);
-  });
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -57,6 +41,19 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     img.onerror = () => reject(new Error('The image could not be decoded.'));
     img.src = src;
   });
+}
+
+async function loadImageFromBlob(blob: Blob): Promise<HTMLImageElement> {
+  const url = URL.createObjectURL(blob);
+  try {
+    return await loadImage(url);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality?: number): Promise<Blob | null> {
+  return new Promise(resolve => canvas.toBlob(resolve, type, quality));
 }
 
 /** Draws the image at a scale that fits maxDimension, never larger than the source. */
@@ -76,7 +73,7 @@ function drawScaled(img: HTMLImageElement, maxDimension: number): HTMLCanvasElem
 }
 
 /**
- * Reads an image file and returns the sharpest data URL that still fits the budget.
+ * Reads an image file and returns the sharpest blob that still fits the budget.
  *
  * - SVG files are never touched. They are vector, already small, and rasterizing loses quality.
  * - A file that is already small enough and no larger than MAX_DIMENSION is kept byte for byte,
@@ -87,16 +84,14 @@ function drawScaled(img: HTMLImageElement, maxDimension: number): HTMLCanvasElem
  *   common for flat logos.
  */
 export async function prepareImageForStorage(file: File): Promise<PreparedImage> {
-  const original = await readAsDataUrl(file);
-  const originalBytes = dataUrlBytes(original);
-  const img = await loadImage(original);
+  const img = await loadImageFromBlob(file);
   const aspectRatio = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 1;
 
   const keepOriginal = (): PreparedImage => ({
-    dataUrl: original,
+    blob: file,
     aspectRatio,
-    originalBytes,
-    storedBytes: originalBytes,
+    originalBytes: file.size,
+    storedBytes: file.size,
     width: img.naturalWidth,
     height: img.naturalHeight,
     recompressed: false,
@@ -106,7 +101,7 @@ export async function prepareImageForStorage(file: File): Promise<PreparedImage>
 
   // Already small enough and not oversized: keep every pixel of the source
   const withinDimensions = Math.max(img.naturalWidth, img.naturalHeight) <= MAX_DIMENSION;
-  if (withinDimensions && originalBytes <= TARGET_BYTES) return keepOriginal();
+  if (withinDimensions && file.size <= TARGET_BYTES) return keepOriginal();
 
   let best: PreparedImage | null = null;
 
@@ -114,33 +109,34 @@ export async function prepareImageForStorage(file: File): Promise<PreparedImage>
     const canvas = drawScaled(img, step.maxDimension);
     if (!canvas) break;
 
-    const candidates: string[] = [];
-    const webp = canvas.toDataURL('image/webp', step.quality);
-    // toDataURL silently falls back to PNG when a format is unsupported
-    if (webp.startsWith('data:image/webp')) candidates.push(webp);
-    candidates.push(canvas.toDataURL('image/png'));
+    const candidates: Blob[] = [];
+    const webp = await canvasToBlob(canvas, 'image/webp', step.quality);
+    // toBlob silently falls back to PNG when a format is unsupported
+    if (webp && webp.type === 'image/webp') candidates.push(webp);
+    const png = await canvasToBlob(canvas, 'image/png');
+    if (png) candidates.push(png);
+    if (candidates.length === 0) break;
 
-    const smallest = candidates.reduce((a, b) => (dataUrlBytes(b) < dataUrlBytes(a) ? b : a));
-    const bytes = dataUrlBytes(smallest);
+    const smallest = candidates.reduce((a, b) => (b.size < a.size ? b : a));
 
     const attempt: PreparedImage = {
-      dataUrl: smallest,
+      blob: smallest,
       aspectRatio,
-      originalBytes,
-      storedBytes: bytes,
+      originalBytes: file.size,
+      storedBytes: smallest.size,
       width: canvas.width,
       height: canvas.height,
       recompressed: true,
     };
 
     // Keep the smallest attempt so far, in case no step reaches the target
-    if (!best || bytes < best.storedBytes) best = attempt;
+    if (!best || attempt.storedBytes < best.storedBytes) best = attempt;
 
-    if (bytes <= TARGET_BYTES) return attempt;
+    if (attempt.storedBytes <= TARGET_BYTES) return attempt;
   }
 
   if (!best) return keepOriginal();
 
   // Never make a file bigger than it started
-  return best.storedBytes < originalBytes ? best : keepOriginal();
+  return best.storedBytes < file.size ? best : keepOriginal();
 }
