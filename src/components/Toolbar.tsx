@@ -234,6 +234,7 @@ export const Toolbar: React.FC = () => {
       setShowThumbDropdown(false);
       startEditingTitle();
     } catch (err) {
+      console.error('Create thumbnail failed:', err);
       setSaveError(err instanceof Error ? err.message : 'Failed to create thumbnail');
     } finally {
       setIsSaving(false);
@@ -248,6 +249,7 @@ export const Toolbar: React.FC = () => {
       loadPersistedState(persistedToState(thumb));
       setShowThumbDropdown(false);
     } catch (err) {
+      console.error('Load thumbnail failed:', err);
       setSaveError(err instanceof Error ? err.message : 'Failed to load thumbnail');
     } finally {
       setIsSaving(false);
@@ -260,6 +262,7 @@ export const Toolbar: React.FC = () => {
       setSaveError(null);
       await saveCurrentThumbnail();
     } catch (err) {
+      console.error('Save thumbnail failed:', err);
       setSaveError(err instanceof Error ? err.message : 'Failed to save thumbnail');
     } finally {
       setIsSaving(false);
@@ -526,23 +529,6 @@ export const Toolbar: React.FC = () => {
               </svg>
             </button>
           </div>
-          {saveError && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              right: 0,
-              marginTop: '4px',
-              padding: '4px 8px',
-              background: '#ef4444',
-              color: 'white',
-              borderRadius: '4px',
-              fontSize: '12px',
-              whiteSpace: 'nowrap',
-              zIndex: 100,
-            }}>
-              {saveError}
-            </div>
-          )}
         </div>
 
         <div className="toolbar__divider" />
@@ -608,6 +594,19 @@ export const Toolbar: React.FC = () => {
     </div>
     {textMenu}
     {thumbnailsMenu}
+    {saveError && (
+      // Rendered outside the toolbar. Inside it, the sideways scrolling on small screens
+      // clipped this to a red sliver and the message could not be read.
+      <div className="toolbar__save-error" role="alert" onClick={() => setSaveError(null)}>
+        <span>{saveError}</span>
+        <button type="button" className="toolbar__save-error-close" aria-label="Dismiss">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    )}
     </>
   );
 };

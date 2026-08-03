@@ -269,6 +269,52 @@
   color: #fff;
 }
 
+/* Save errors sit under the toolbar, outside it, so the scrolling toolbar cannot clip
+   them. The text wraps, because a clipped one line message tells the user nothing. */
+.toolbar__save-error {
+  position: fixed;
+  top: 52px;
+  right: 8px;
+  left: auto;
+  max-width: min(420px, calc(100vw - 16px));
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #ef4444;
+  color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  font-size: 13px;
+  line-height: 1.35;
+  z-index: 12000;
+  cursor: pointer;
+}
+
+.toolbar__save-error-close {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  padding: 0;
+  background: transparent;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+@media (max-width: 900px) {
+  .toolbar__save-error {
+    left: 8px;
+    right: 8px;
+    max-width: none;
+  }
+}
+
 /* Save confirmation: the save icon turns into a green check for a moment */
 .toolbar__icon-button--saved,
 .toolbar__icon-button--saved:hover {

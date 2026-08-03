@@ -16,6 +16,11 @@ Notable changes to Thumbatic, newest first. Each heading is the date the work la
 
 - The public demo runs on IndexedDB, so uploads on the demo no longer compete for a 5 MB budget.
 
+### Fixed
+
+- Save errors were clipped to a red sliver on a phone, because the message sat inside the toolbar and the toolbar scrolls sideways. The message now renders outside the toolbar, wraps, and can be dismissed.
+- An error from the server API reported only "Unknown error" whenever the response was not JSON, which is what a gate redirect or a wrong backend returns. It now reports the status, for example "404 Not Found from /api/thumbnails".
+
 ## 2026-08-02
 
 ### Added

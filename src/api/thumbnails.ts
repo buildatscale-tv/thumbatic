@@ -11,8 +11,17 @@ async function apiRequest<T>(path: string, options?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error((error as { error?: string }).error || `HTTP ${response.status}`);
+    // Keep the status even when the body is not JSON. A gate redirect or a wrong
+    // backend answers with HTML, and reporting only "Unknown error" tells nobody
+    // anything about what went wrong.
+    const body = await response.text().catch(() => '');
+    let message = '';
+    try {
+      message = (JSON.parse(body) as { error?: string }).error ?? '';
+    } catch {
+      message = '';
+    }
+    throw new Error(message || `${response.status} ${response.statusText || 'request failed'} from ${API_BASE}${path}`);
   }
 
   return response.json() as Promise<T>;
