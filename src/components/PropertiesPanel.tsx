@@ -1,5 +1,6 @@
 import React from 'react';
 import { useThumbnailStore } from '../store/thumbnailStore';
+import { usePropertiesSheetOpen } from '../utils/propertiesSheet';
 import { Slider } from './ui/Slider';
 import { Select } from './ui/Select';
 import type { TextElementProperties, ImageElementProperties, ArrowElementProperties } from '../types';
@@ -10,6 +11,8 @@ export const PropertiesPanel: React.FC = () => {
     updateElementProperties,
     removeElement,
   } = useThumbnailStore();
+  // On a narrow screen this panel is a sheet at the bottom, and the class raises it
+  const isOpen = usePropertiesSheetOpen();
 
   if (!selectedElement) {
     return (
@@ -41,7 +44,7 @@ export const PropertiesPanel: React.FC = () => {
   };
 
   return (
-    <div className="properties-panel">
+    <div className={`properties-panel ${isOpen ? 'properties-panel--open' : ''}`}>
       <div className="properties-panel__header">
         <h3>Properties</h3>
         <button

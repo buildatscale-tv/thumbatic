@@ -1504,10 +1504,61 @@
     overflow: hidden;
   }
 
-  /* The properties panel needs a pointer to be useful, and it steals the height
-     the canvas needs. The toolbar and the status bar stay available. */
+  /* The panel becomes a sheet at the bottom, raised by selecting an element. As a
+     column beside the canvas it took the height the canvas needs, and hiding it left
+     no way to edit a property by hand. It sits under the text editor sheet, which
+     takes this space while typing. */
   .properties-panel {
-    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    /* A set height, so the padding that keeps the canvas clear can match it */
+    height: 50dvh;
+    z-index: 11000;
+    border-left: none;
+    border-top: 1px solid #1a1a1a;
+    box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.35);
+    padding-bottom: env(safe-area-inset-bottom);
+    transform: translateY(110%);
+    transition: transform 0.18s ease;
+  }
+
+  .properties-panel--open {
+    transform: translateY(0);
+  }
+
+  .editor-layout--sheet-open .canvas-container {
+    padding-bottom: 50dvh;
+  }
+
+  /* Fields are 16px here, or iOS zooms the page when one takes focus */
+  .properties-panel__input,
+  .properties-panel__textarea,
+  .properties-panel__coord input,
+  .properties-panel select {
+    font-size: 16px;
+    padding: 8px 10px;
+  }
+
+  .properties-panel__coord input {
+    width: 100%;
+  }
+
+  .properties-panel__field label {
+    font-size: 13px;
+  }
+
+  /* Targets a finger can hit */
+  .properties-panel__close {
+    width: 44px;
+    height: 44px;
+    font-size: 26px;
+  }
+
+  .properties-panel__delete {
+    min-height: 44px;
   }
 
   /* Swipe the toolbar sideways to reach every tool. This makes the toolbar a

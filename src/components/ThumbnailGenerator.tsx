@@ -2,6 +2,7 @@ import React from 'react';
 import { useThumbnailStore } from '../store/thumbnailStore';
 import { Toolbar } from './Toolbar';
 import { PropertiesPanel } from './PropertiesPanel';
+import { usePropertiesSheetOpen } from '../utils/propertiesSheet';
 import { StatusBar } from './StatusBar';
 import { ImageLibraryModal } from './ImageLibraryModal';
 import { MobileTextEditor } from './MobileTextEditor';
@@ -30,6 +31,10 @@ interface ThumbnailGeneratorProps {
 
 export const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({ dragState, dragCallbacks, snapThreshold }) => {
   const isHydrated = useThumbnailStore(state => state.isHydrated);
+  // The properties sheet takes the lower part of a narrow screen. The class gives the
+  // canvas container matching bottom padding, so the whole thumbnail stays visible
+  // above it rather than sitting behind it.
+  const sheetOpen = usePropertiesSheetOpen();
   const canvasContainerRef = React.useRef<HTMLDivElement>(null);
 
   // Scale the 1280x720 canvas down when the container is too small for it, so the
@@ -54,7 +59,7 @@ export const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({ dragStat
   }, []);
 
   return (
-    <div className="editor-layout">
+    <div className={`editor-layout ${sheetOpen ? 'editor-layout--sheet-open' : ''}`}>
       <Toolbar />
       <div className="editor-main">
         <div className="canvas-container" ref={canvasContainerRef}>

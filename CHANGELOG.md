@@ -11,6 +11,7 @@ Notable changes to Thumbatic, newest first. Each heading is the date the work la
 - Image deduplication by content hash. A thumbnail refers to an image by the SHA-256 of its bytes, so the same image used in ten thumbnails is stored once. Uploading a file you already have stores nothing and skips recompression.
 - Automatic clean up of images no longer used by any thumbnail, on start-up.
 - Uploaded images sync across devices when the thumbnails do. On the Cloudflare backend they go to an R2 bucket through the Worker, so an image added on a laptop is in the library on a phone. On a browser backend they stay on that device. A thumbnail refers to an image the same way either way.
+- Element properties can be edited on a phone. Selecting an element raises a sheet from the bottom of the screen holding the same controls as the panel on a wide screen, and the canvas moves up to sit clear of it so you can see what you are changing. Below 900 pixels the panel used to be hidden, because as a column beside the canvas it took the height the canvas needed. The sheet stays down while you type into a text element, since the keyboard sheet uses the same space.
 - Tests for the storage layer and the uploads tab, using a real IndexedDB implementation.
 
 ### Changed
