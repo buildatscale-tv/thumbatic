@@ -461,14 +461,14 @@ export const ImageLibraryModal: React.FC = () => {
 
               <div className="modal__selection-info">
                 <span>{tempSelectedImages.length} selected</span>
-                {tempSelectedImages.length > 0 && (
-                  <button
-                    className="modal__clear"
-                    onClick={() => setTempSelectedImages([])}
-                  >
-                    Clear All
-                  </button>
-                )}
+                <button
+                  className={`modal__clear ${tempSelectedImages.length ? '' : 'modal__clear--hidden'}`}
+                  onClick={() => setTempSelectedImages([])}
+                  disabled={!tempSelectedImages.length}
+                  aria-hidden={!tempSelectedImages.length}
+                >
+                  Clear All
+                </button>
               </div>
 
               <div className="modal__image-grid">
@@ -488,7 +488,7 @@ export const ImageLibraryModal: React.FC = () => {
                     <div className="modal__image-label">{image.label}</div>
                     {tempSelectedImages.includes(image.value) && (
                       <div className="modal__image-check">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M20 6L9 17l-5-5"/>
                         </svg>
                       </div>

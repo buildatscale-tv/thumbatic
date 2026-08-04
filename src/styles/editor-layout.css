@@ -1105,6 +1105,11 @@
   opacity: 0.8;
 }
 
+/* Hidden but still taking its space, so the grid below does not jump when it appears */
+.modal__clear--hidden {
+  visibility: hidden;
+}
+
 .modal__image-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));

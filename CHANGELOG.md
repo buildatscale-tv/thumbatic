@@ -24,6 +24,7 @@ Notable changes to Thumbatic, newest first. Each heading is the date the work la
 
 - Save errors were clipped to a red sliver on a phone, because the message sat inside the toolbar and the toolbar scrolls sideways. The message now renders outside the toolbar, wraps, and can be dismissed.
 - The canvas size was cut off in the status bar on a phone, showing "1280 ›" and nothing else. The labels are hidden at that width, the values stay whole, and the row scrolls if it still does not fit.
+- The tick on a chosen image in the picker was drawn as a solid blob, because the check outline was filled rather than stroked. Choosing the first image also pushed the grid down six pixels, since the Clear All button only entered the row once something was selected. The button now keeps its place and is only hidden.
 - An error from the server API reported only "Unknown error" whenever the response was not JSON, which is what a gate redirect or a wrong backend returns. It now reports the status, for example "404 Not Found from /api/thumbnails".
 
 ## 2026-08-02
