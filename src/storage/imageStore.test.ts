@@ -11,7 +11,6 @@ import {
   listImages,
   putImage,
   rememberSource,
-  sweepUnusedImages,
 } from './imageStore';
 import { useThumbnailStore, createInitialTextElements } from '../store/thumbnailStore';
 import type { ThumbnailState } from '../types';
@@ -103,8 +102,8 @@ describe('storing images', () => {
   });
 });
 
-describe('sharing one image between thumbnails', () => {
-  it('keeps a single copy and frees it only when the last user goes', async () => {
+describe('an upload is a library entry, not a cache entry', () => {
+  it('keeps one copy however many thumbnails use it, and keeps it when none do', async () => {
     const adapter = new IndexedDBAdapter();
     const shared = await putImage(bytes(9), { name: 'shared.png', width: 20, height: 10 });
     const unused = await putImage(bytes(10), { name: 'unused.png', width: 20, height: 10 });
@@ -117,27 +116,24 @@ describe('sharing one image between thumbnails', () => {
     const saved = await adapter.get(one.id);
     expect(JSON.stringify(saved)).toContain('img:');
     expect(JSON.stringify(saved)).not.toContain('base64');
+    expect(await listImages()).toHaveLength(2);
 
-    // The image nobody uses goes, the shared one stays
-    expect(await sweepUnusedImages()).toBe(1);
-    expect(await hasImage(unused.id)).toBe(false);
-    expect(await hasImage(shared.id)).toBe(true);
+    // An upload nobody has placed yet is still in the library. Nothing removes an
+    // image behind the user's back, because Your Uploads is theirs to keep.
+    expect(await hasImage(unused.id)).toBe(true);
 
-    // Losing one of the two users changes nothing
+    // Nor does losing every thumbnail that used one
     await adapter.delete(one.id);
-    expect(await sweepUnusedImages()).toBe(0);
-    expect(await hasImage(shared.id)).toBe(true);
-
-    // Losing the last user frees it
     await adapter.delete(two.id);
-    expect(await sweepUnusedImages()).toBe(1);
-    expect(await hasImage(shared.id)).toBe(false);
+    expect(await hasImage(shared.id)).toBe(true);
   });
 
-  it('does not sweep an image the caller asks to keep', async () => {
-    const pending = await putImage(bytes(11), { name: 'pending.png', width: 4, height: 4 });
+  it('goes when it is deleted by hand, and takes its source record with it', async () => {
+    const image = await putImage(bytes(12), { name: 'bye.png', width: 4, height: 4 });
 
-    expect(await sweepUnusedImages(new Set([pending.id]))).toBe(0);
-    expect(await hasImage(pending.id)).toBe(true);
+    await deleteImage(image.id);
+
+    expect(await hasImage(image.id)).toBe(false);
+    expect(await listImages()).toHaveLength(0);
   });
 });

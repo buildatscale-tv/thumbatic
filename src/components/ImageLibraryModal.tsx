@@ -8,12 +8,14 @@ import {
   deleteImage,
   findImageForSource,
   hashBlob,
+  imageUsage,
   listImages,
   putImage,
   rememberSource,
 } from '../storage/images';
 import type { StoredImage } from '../storage/images';
 import { forgetImageUrl, useImageSrc } from '../utils/imageUrls';
+import { usageLabel } from '../utils/usageLabel';
 import type { PreparedImage } from '../utils/imageStorage';
 import type { ImageElementProperties } from '../types';
 
@@ -61,6 +63,9 @@ export const ImageLibraryModal: React.FC = () => {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [imageInfo, setImageInfo] = useState<PreparedImage | null>(null);
   const [uploads, setUploads] = useState<StoredImage[]>([]);
+  // Which thumbnails use each upload, so deleting one can name what it takes it from
+  const [usage, setUsage] = useState<Record<string, string[]>>({});
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [reusedExisting, setReusedExisting] = useState(false);
   const dragDepth = useRef(0);
 
@@ -133,10 +138,18 @@ export const ImageLibraryModal: React.FC = () => {
     } catch {
       setUploads([]);
     }
+
+    try {
+      setUsage(await imageUsage());
+    } catch {
+      // Without this the delete still works, it just cannot say what uses the image
+      setUsage({});
+    }
   };
 
   const handleDeleteUpload = async (id: string, event: React.MouseEvent) => {
     event.stopPropagation();
+    setConfirmDeleteId(null);
     await deleteImage(id);
     forgetImageUrl(id);
     if (customUrl === idToImageRef(id)) handleRemoveImage();
@@ -204,6 +217,7 @@ export const ImageLibraryModal: React.FC = () => {
     if (!showImageLibrary) return;
     // Opening the picker shows the canvas as it is, so a tick means the image is there
     setTempSelectedImages(libraryOnCanvas);
+    setConfirmDeleteId(null);
     refreshUploads();
   }, [showImageLibrary]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -386,6 +400,7 @@ export const ImageLibraryModal: React.FC = () => {
                   {uploads.map(image => {
                     const reference = idToImageRef(image.id);
                     const isSelected = customUrl === reference;
+                    const usedBy = usage[image.id] ?? [];
                     return (
                       <div
                         key={image.id}
@@ -407,7 +422,10 @@ export const ImageLibraryModal: React.FC = () => {
                         <button
                           type="button"
                           className="modal__upload-delete"
-                          onClick={event => handleDeleteUpload(image.id, event)}
+                          onClick={event => {
+                            event.stopPropagation();
+                            setConfirmDeleteId(image.id);
+                          }}
                           title="Delete this upload"
                           aria-label={`Delete ${image.name}`}
                         >
@@ -416,6 +434,35 @@ export const ImageLibraryModal: React.FC = () => {
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                           </svg>
                         </button>
+
+                        {confirmDeleteId === image.id && (
+                          <div
+                            className="modal__upload-confirm"
+                            onClick={event => event.stopPropagation()}
+                            title={usedBy.length ? `Used on ${usedBy.join(', ')}` : 'Not used on any thumbnail'}
+                          >
+                            <p className="modal__upload-confirm-text">{usageLabel(usedBy)}</p>
+                            <div className="modal__upload-confirm-actions">
+                              <button
+                                type="button"
+                                className="modal__upload-confirm-yes"
+                                onClick={event => handleDeleteUpload(image.id, event)}
+                              >
+                                Delete
+                              </button>
+                              <button
+                                type="button"
+                                className="modal__upload-confirm-no"
+                                onClick={event => {
+                                  event.stopPropagation();
+                                  setConfirmDeleteId(null);
+                                }}
+                              >
+                                Keep
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}

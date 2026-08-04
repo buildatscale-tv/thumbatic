@@ -69,10 +69,9 @@ export function remoteImageUrl(id: string): string {
   return `${API_BASE}/${id}`;
 }
 
-/** Asks the worker to drop images that no saved thumbnail refers to. */
-export async function sweepRemoteImages(): Promise<number> {
-  const response = await fetch(`${API_BASE}/sweep`, { method: 'POST' });
-  if (!response.ok) throw await failed(response, 'sweep failed');
-  const result = await response.json() as { removed?: number };
-  return result.removed ?? 0;
+/** Which thumbnails use each image, keyed by image id. */
+export async function remoteImageUsage(): Promise<Record<string, string[]>> {
+  const response = await fetch('/api/thumbnails/image-usage');
+  if (!response.ok) throw await failed(response, 'could not read image usage');
+  return response.json() as Promise<Record<string, string[]>>;
 }

@@ -1,5 +1,4 @@
-import type { ThumbnailRecord } from './types';
-import { IMAGES_STORE, SOURCES_STORE, THUMBNAILS_STORE, getAllFrom, withStore } from './idb';
+import { IMAGES_STORE, SOURCES_STORE, getAllFrom, withStore } from './idb';
 
 /**
  * Uploaded images, stored once per unique file and referenced by every thumbnail that
@@ -127,37 +126,3 @@ export async function deleteImage(id: string): Promise<void> {
   await withStore(IMAGES_STORE, 'readwrite', store => store.delete(id));
 }
 
-/** Collects every image id referenced by a saved thumbnail. */
-export async function collectReferencedImageIds(): Promise<Set<string>> {
-  const records = await getAllFrom<ThumbnailRecord>(THUMBNAILS_STORE);
-  const referenced = new Set<string>();
-
-  for (const record of records) {
-    // An image is in use when it is on a canvas. Nothing else refers to one.
-    for (const element of record.elements ?? []) {
-      const src = (element as { properties?: { src?: string } }).properties?.src;
-      if (isImageRef(src)) referenced.add(imageRefToId(src));
-    }
-  }
-
-  return referenced;
-}
-
-/**
- * Deletes images that no saved thumbnail refers to any more.
- *
- * Mark and sweep rather than reference counting. Counting breaks whenever a write fails
- * between two stores, while a sweep is idempotent and a crash only postpones it.
- */
-export async function sweepUnusedImages(keepAlso: Set<string> = new Set()): Promise<number> {
-  const referenced = await collectReferencedImageIds();
-  const stored = await listImages();
-
-  let removed = 0;
-  for (const image of stored) {
-    if (referenced.has(image.id) || keepAlso.has(image.id)) continue;
-    await deleteImage(image.id);
-    removed += 1;
-  }
-  return removed;
-}

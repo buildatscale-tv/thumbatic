@@ -154,8 +154,8 @@ in the browser and stay on that device. With `durable-objects` they go to an R2 
 Worker, so the library follows you to another browser or device. Either way a thumbnail stores the
 same `img:` reference, so records do not change when the backend does.
 
-Images nobody refers to are removed by a mark and sweep pass on start-up. Deleting a thumbnail
-therefore frees its images only when no other thumbnail still uses them.
+An uploaded image stays in your library until you delete it in Your Uploads. Deleting a thumbnail
+that used it leaves the image in place, ready for the next one.
 
 This matters for size. `localStorage` can only hold strings, so an image has to be base64, which
 costs four characters per three bytes and then two bytes per character. A 600 KB image costs about

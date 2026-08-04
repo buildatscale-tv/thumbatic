@@ -7,9 +7,8 @@ Notable changes to Thumbatic, newest first. Each heading is the date the work la
 ### Added
 
 - IndexedDB storage backend, now the default. It holds far more than localStorage, and it stores uploads as blobs rather than base64, which costs about a third as much for the same image.
-- Personal image library. Uploaded images are stored once each and appear under Your Uploads in the image picker, ready to reuse in any thumbnail or delete.
+- Personal image library. Uploaded images are stored once each and appear under Your Uploads in the image picker, ready to reuse in any thumbnail. An upload stays there until you delete it, whether or not a thumbnail is using it.
 - Image deduplication by content hash. A thumbnail refers to an image by the SHA-256 of its bytes, so the same image used in ten thumbnails is stored once. Uploading a file you already have stores nothing and skips recompression.
-- Automatic clean up of images no longer used by any thumbnail, on start-up.
 - Uploaded images sync across devices when the thumbnails do. On the Cloudflare backend they go to an R2 bucket through the Worker, so an image added on a laptop is in the library on a phone. On a browser backend they stay on that device. A thumbnail refers to an image the same way either way.
 - Element properties can be edited on a phone. Selecting an element raises a sheet from the bottom of the screen holding the same controls as the panel on a wide screen, and the canvas moves up to sit clear of it so you can see what you are changing. Below 900 pixels the panel used to be hidden, because as a column beside the canvas it took the height the canvas needed. The sheet stays down while you type into a text element, since the keyboard sheet uses the same space.
 - Tests for the storage layer and the uploads tab, using a real IndexedDB implementation.
@@ -19,6 +18,7 @@ Notable changes to Thumbatic, newest first. Each heading is the date the work la
 - Everything called a logo is now called an image, because these were never limited to logos. That covers the toolbar button, the picker title and tabs, element names, the status bar, and the code behind them.
 - The picker tabs read Image Library, Your Uploads, and Upload Image, and the dialog heading follows whichever tab is open. The old third tab said Custom URL, which described the field rather than what the tab is for.
 - The image picker shows what the canvas holds. An image already on the canvas opens ticked, unticking it takes it off, and the button says what pressing it does, Add, Remove, or Apply. Uploads are never disturbed by a change in the library tab. A thumbnail is now described by its elements alone, where it used to carry a second list of images that could disagree with them.
+- Deleting an image in Your Uploads asks first and names the thumbnails that use it, for example "Kombai and Open Code will lose this image". When none do it says "Not used anywhere". A thumbnail that loses its image keeps the element and draws nothing in that spot.
 - The public demo runs on IndexedDB, so uploads on the demo no longer compete for a 5 MB budget.
 
 ### Fixed

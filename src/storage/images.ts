@@ -8,7 +8,6 @@ import {
   listImages as listLocalImages,
   putImage as putLocalImage,
   rememberSource,
-  sweepUnusedImages as sweepLocalImages,
 } from './imageStore';
 import type { StoredImage } from './imageStore';
 import {
@@ -17,8 +16,10 @@ import {
   listRemoteImages,
   putRemoteImage,
   remoteImageUrl,
-  sweepRemoteImages,
+  remoteImageUsage,
 } from './remoteImageStore';
+import { getStorageAdapter } from './index';
+import { isImageRef, imageRefToId } from './imageStore';
 
 /**
  * One way in to the uploaded images, whichever side is holding them.
@@ -55,8 +56,31 @@ export async function deleteImage(id: string): Promise<void> {
   return usesRemote() ? deleteRemoteImage(id) : deleteLocalImage(id);
 }
 
-export async function sweepUnusedImages(): Promise<number> {
-  return usesRemote() ? sweepRemoteImages() : sweepLocalImages();
+/**
+ * Which thumbnails use each image, keyed by image id.
+ *
+ * The picker shows this before deleting an upload, since deleting one that is in use
+ * leaves a blank space on those thumbnails. A browser backend reads its own records,
+ * which is local work. The Durable Object answers in a single request.
+ */
+export async function imageUsage(): Promise<Record<string, string[]>> {
+  if (usesRemote()) return remoteImageUsage();
+
+  const adapter = getStorageAdapter();
+  const usage: Record<string, string[]> = {};
+
+  for (const summary of await adapter.list()) {
+    const record = await adapter.get(summary.id);
+    const seen = new Set<string>();
+    for (const element of record.elements ?? []) {
+      const src = (element as { properties?: { src?: string } }).properties?.src;
+      if (!isImageRef(src) || seen.has(src)) continue;
+      seen.add(src);
+      (usage[imageRefToId(src)] ??= []).push(record.name || 'Untitled Thumbnail');
+    }
+  }
+
+  return usage;
 }
 
 /**

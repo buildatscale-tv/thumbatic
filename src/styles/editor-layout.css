@@ -1174,6 +1174,63 @@
   color: #fff;
 }
 
+/* Deleting an upload is confirmed on the tile itself, and says what it costs. The
+   overlay covers the tile so the wrong button is hard to hit. */
+.modal__upload-confirm {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(20, 20, 20, 0.96);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.modal__upload-confirm-text {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #ddd;
+  /* Four lines is what fits above the buttons. Names are shortened before they get
+     here, so the sentence itself always survives. */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.modal__upload-confirm-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.modal__upload-confirm-yes,
+.modal__upload-confirm-no {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.modal__upload-confirm-yes {
+  background: #c0392b;
+  color: #fff;
+}
+
+.modal__upload-confirm-no {
+  background: #444;
+  color: #ddd;
+}
+
+.modal__uploads .modal__image-grid {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+
 .modal__uploads {
   min-height: 200px;
 }
@@ -1559,6 +1616,18 @@
 
   .properties-panel__delete {
     min-height: 44px;
+  }
+
+  /* Same on the confirmation in the picker, where a mis-tap deletes an upload */
+  .modal__upload-confirm-yes,
+  .modal__upload-confirm-no {
+    min-height: 40px;
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .modal__upload-confirm-text {
+    font-size: 13px;
   }
 
   /* Swipe the toolbar sideways to reach every tool. This makes the toolbar a

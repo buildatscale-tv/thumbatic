@@ -136,11 +136,11 @@ outside-click check covering both the control and the menu.
 - Rendering an image goes through `useImageSrc`. It turns an `img:` reference into something an
   `img` tag can use, an object URL for a local blob or a plain `/api/images/<id>` URL for R2, and
   caches the result per image. A raw reference in an `img` tag renders nothing.
-- Unused images are deleted by a mark and sweep pass at start-up, never by reference counting.
-  The local sweep reads every thumbnail in IndexedDB. The remote sweep asks the Durable Object
-  for every `img:` reference across saved thumbnails, then deletes any R2 object outside that
-  set. Counting breaks the moment a write fails between two stores, while a sweep is idempotent
-  and a crash only postpones it.
+- Nothing deletes an uploaded image except the user, in Your Uploads. The image store is the
+  personal library, so an upload stays whether or not a thumbnail uses it. There used to be a
+  mark and sweep pass at start-up that kept only images on a saved canvas. It deleted an upload
+  that had not been placed yet, and it deleted one the moment you took it off a canvas, which is
+  the opposite of what a library is for. Do not reintroduce a pass that deletes by reachability.
 - The Durable Object backend uses one global instance and has no per-user authentication.
 
 ## Wrangler will not log in

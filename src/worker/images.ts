@@ -137,18 +137,3 @@ export async function handleImageRequest(
 
   return json({ error: 'Method not allowed' }, 405, corsHeaders);
 }
-
-/** Deletes images that no thumbnail refers to. */
-export async function sweepImages(bucket: R2Bucket, referenced: Set<string>): Promise<number> {
-  const listed = await bucket.list({ prefix: KEY_PREFIX });
-  let removed = 0;
-
-  for (const object of listed.objects) {
-    const id = object.key.slice(KEY_PREFIX.length);
-    if (referenced.has(id)) continue;
-    await bucket.delete(object.key);
-    removed += 1;
-  }
-
-  return removed;
-}

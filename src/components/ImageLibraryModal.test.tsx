@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { ImageLibraryModal } from './ImageLibraryModal';
 import { useThumbnailStore } from '../store/thumbnailStore';
-import { deleteImage, listImages, putImage } from '../storage/imageStore';
+import { deleteImage, idToImageRef, listImages, putImage } from '../storage/imageStore';
+import { getStorageAdapter } from '../storage';
 import { IMAGE_LIBRARY } from '../constants/images';
 import type { ImageElementProperties, ThumbnailElement } from '../types';
 
@@ -27,6 +28,8 @@ const png = (fill: number) => new Blob([new Uint8Array(32).fill(fill)], { type: 
 beforeEach(async () => {
   cleanup();
   for (const image of await listImages()) await deleteImage(image.id);
+  const adapter = getStorageAdapter();
+  for (const thumbnail of await adapter.list()) await adapter.delete(thumbnail.id);
   useThumbnailStore.setState({ showImageLibrary: true, elements: [] });
 });
 
@@ -50,17 +53,69 @@ describe('Your Uploads tab', () => {
     expect(screen.getByText('second-logo.png')).toBeTruthy();
   });
 
-  it('deleting an upload removes it from the list', async () => {
+  it('asks before deleting an upload, and says nothing is using it', async () => {
     await putImage(png(3), { name: 'temporary.png', width: 50, height: 50 });
 
     render(<ImageLibraryModal />);
     fireEvent.click(await screen.findByRole('button', { name: /your uploads/i }));
     fireEvent.click(await screen.findByRole('button', { name: /delete temporary\.png/i }));
 
+    expect(await screen.findByText(/not used anywhere/i)).toBeTruthy();
+    expect(await listImages()).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole('button', { name: /^Delete$/ }));
+
     // Wait on the DOM, not the store. The list re-renders after the delete resolves,
     // and asserting on the store first raced that render.
     await waitFor(() => expect(screen.queryByText('temporary.png')).toBeNull());
     expect(await listImages()).toHaveLength(0);
+  });
+
+  it('keeps the upload when the confirmation is dismissed', async () => {
+    await putImage(png(4), { name: 'staying.png', width: 50, height: 50 });
+
+    render(<ImageLibraryModal />);
+    fireEvent.click(await screen.findByRole('button', { name: /your uploads/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /delete staying\.png/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /^Keep$/ }));
+
+    expect(screen.queryByText(/not used anywhere/i)).toBeNull();
+    expect(await listImages()).toHaveLength(1);
+  });
+
+  it('counts the rest in thumbnails when more than two would lose it', async () => {
+    const stored = await putImage(png(6), { name: 'everywhere.png', width: 50, height: 50 });
+    const adapter = getStorageAdapter();
+    for (const name of ['Kombai', 'Open Code', 'Namespace', 'Zed']) {
+      await adapter.create(name, {
+        ...useThumbnailStore.getState(),
+        thumbnailId: null,
+        elements: [imageElement('image-1', idToImageRef(stored.id))],
+      } as never);
+    }
+
+    render(<ImageLibraryModal />);
+    fireEvent.click(await screen.findByRole('button', { name: /your uploads/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /delete everywhere\.png/i }));
+
+    // Names are sorted, so this reads the same however the store orders its records
+    expect(await screen.findByText('Kombai, Namespace and 2 more thumbnails will lose this image')).toBeTruthy();
+  });
+
+  it('names what loses the image if it is deleted', async () => {
+    const stored = await putImage(png(5), { name: 'in-use.png', width: 50, height: 50 });
+    // Through the adapter, so this follows whichever backend the build uses
+    await getStorageAdapter().create('Kombai', {
+      ...useThumbnailStore.getState(),
+      thumbnailId: null,
+      elements: [imageElement('image-1', idToImageRef(stored.id))],
+    } as never);
+
+    render(<ImageLibraryModal />);
+    fireEvent.click(await screen.findByRole('button', { name: /your uploads/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /delete in-use\.png/i }));
+
+    expect(await screen.findByText('Kombai will lose this image')).toBeTruthy();
   });
 });
 

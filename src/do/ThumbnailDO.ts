@@ -49,10 +49,10 @@ export class ThumbnailDO implements DurableObject {
         return this.listThumbnails();
       }
 
-      // Every image id any thumbnail refers to. The worker uses this to decide which
-      // stored images are still in use.
-      if (path === '/api/thumbnails/image-refs' && request.method === 'GET') {
-        return this.listImageRefs();
+      // Which thumbnails use each image. The picker warns with this before deleting
+      // an upload, and asking here costs one request instead of one per thumbnail.
+      if (path === '/api/thumbnails/image-usage' && request.method === 'GET') {
+        return this.listImageUsage();
       }
 
       if (path === '/api/thumbnails' && request.method === 'POST') {
@@ -84,19 +84,21 @@ export class ThumbnailDO implements DurableObject {
     }
   }
 
-  /** Collects the image ids referenced by every stored thumbnail. */
-  private listImageRefs(): Response {
-    const rows = this.sql.exec<{ data: string }>(`SELECT data FROM thumbnails`);
-    const referenced = new Set<string>();
+  private listImageUsage(): Response {
+    const rows = this.sql.exec<{ name: string; data: string }>(`SELECT name, data FROM thumbnails`);
+    const usage: Record<string, string[]> = {};
 
     for (const row of rows) {
       // The reference format is img:<sha-256>, wherever it appears in the record
+      const seen = new Set<string>();
       for (const match of row.data.matchAll(/img:([a-f0-9]{64})/g)) {
-        referenced.add(match[1]);
+        if (seen.has(match[1])) continue;
+        seen.add(match[1]);
+        (usage[match[1]] ??= []).push(row.name || 'Untitled Thumbnail');
       }
     }
 
-    return new Response(JSON.stringify([...referenced]), {
+    return new Response(JSON.stringify(usage), {
       headers: { 'Content-Type': 'application/json' },
     });
   }

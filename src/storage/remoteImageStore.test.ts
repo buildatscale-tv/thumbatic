@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import {
   deleteRemoteImage,
+  remoteImageUsage,
   hasRemoteImage,
   listRemoteImages,
   putRemoteImage,
   remoteImageUrl,
-  sweepRemoteImages,
 } from './remoteImageStore';
 
 const blob = () => new Blob([new Uint8Array(8).fill(1)], { type: 'image/png' });
@@ -72,6 +72,14 @@ describe('remote image store', () => {
     expect(calls.filter(call => call.method === 'PUT')).toHaveLength(1);
   });
 
+  it('asks which thumbnails use each image', async () => {
+    const usage = { ['a'.repeat(64)]: ['Kombai', 'Open Code'] };
+    respondWith(() => json(usage));
+
+    expect(await remoteImageUsage()).toEqual(usage);
+    expect(calls).toEqual([{ url: '/api/thumbnails/image-usage', method: 'GET' }]);
+  });
+
   it('reports the status when a request fails', async () => {
     respondWith(() => new Response('<!doctype html>', { status: 502, statusText: 'Bad Gateway' }));
     await expect(listRemoteImages()).rejects.toThrow(/502/);
@@ -82,8 +90,4 @@ describe('remote image store', () => {
     await expect(deleteRemoteImage(id)).rejects.toThrow('The bytes do not match the id');
   });
 
-  it('returns how many images the sweep removed', async () => {
-    respondWith(() => json({ removed: 3 }));
-    expect(await sweepRemoteImages()).toBe(3);
-  });
 });

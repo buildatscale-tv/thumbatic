@@ -6,8 +6,7 @@ import { useSnapping } from './hooks/useSnapping';
 import { snapToGrid } from './utils/gridSnapUtils';
 import type { ActiveSnap } from './types/snapping';
 import type { TextElementProperties } from './types';
-import { getStorageAdapter, STORAGE_BACKEND } from './storage';
-import { sweepUnusedImages } from './storage/images';
+import { getStorageAdapter } from './storage';
 import { saveCurrentThumbnail } from './storage/saveCurrent';
 import { persistedToState } from './storage/serialize';
 import './styles/thumbnail.css';
@@ -48,14 +47,9 @@ function App() {
         // Continue with default state if storage is unavailable
       }
     };
-    load().finally(() => {
-      setIsHydrated(true);
-      // Drop uploaded images that no thumbnail refers to any more. Mark and sweep, so a
-      // failure here only postpones the clean up and never deletes something in use.
-      if (STORAGE_BACKEND !== 'local') {
-        sweepUnusedImages().catch(err => console.error('Image clean up failed:', err));
-      }
-    });
+    // Uploads are a library rather than a cache, so nothing is removed here. An image
+    // goes when it is deleted in Your Uploads and not before.
+    load().finally(() => setIsHydrated(true));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-save with debounce
